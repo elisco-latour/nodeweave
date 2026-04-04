@@ -181,7 +181,7 @@ export class WfProcessList extends HTMLElement {
       if (!this.#storageService || !this.#state) return;
       const name = prompt('Pipeline name:');
       if (!name) return;
-      this.#storageService.save(name, this.#state);
+      this.#storageService.save(name, this.#state.toJSON());
       this.#activeName = name;
       this.#render();
     });
