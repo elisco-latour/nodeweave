@@ -47,6 +47,7 @@ export class WfEdgeLayer extends HTMLElement {
   #state = null;
   #svg;
   #paths = new Map();
+  #visibleNodes = null;
 
   #onEdgeAdded;
   #onEdgeRemoved;
@@ -72,6 +73,7 @@ export class WfEdgeLayer extends HTMLElement {
     }
     this.#svg.innerHTML = '';
     this.#paths.clear();
+    this.#visibleNodes = null;
     this.#state = s;
     if (!this.#state) return;
 
@@ -84,11 +86,27 @@ export class WfEdgeLayer extends HTMLElement {
     }
   }
 
+  setVisibleNodes(ids) {
+    this.#visibleNodes = ids;
+    this.#updateAll();
+  }
+
+  #isEdgeVisible(edge) {
+    if (!this.#visibleNodes) return true;
+    const srcPort = this.#state.getPort(edge.sourcePortId);
+    const tgtPort = this.#state.getPort(edge.targetPortId);
+    if (!srcPort || !tgtPort) return false;
+    return this.#visibleNodes.has(srcPort.nodeId) || this.#visibleNodes.has(tgtPort.nodeId);
+  }
+
   #addEdge(edge) {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     this.#svg.appendChild(path);
     this.#paths.set(edge.id, path);
     this.#updatePath(edge, path);
+    if (!this.#isEdgeVisible(edge)) {
+      path.style.display = 'none';
+    }
   }
 
   #removeEdge(edgeId) {
@@ -100,7 +118,13 @@ export class WfEdgeLayer extends HTMLElement {
     if (!this.#state) return;
     for (const edge of this.#state.edges.values()) {
       const path = this.#paths.get(edge.id);
-      if (path) this.#updatePath(edge, path);
+      if (!path) continue;
+      if (this.#isEdgeVisible(edge)) {
+        path.style.display = '';
+        this.#updatePath(edge, path);
+      } else {
+        path.style.display = 'none';
+      }
     }
   }
 

@@ -6,6 +6,7 @@
  */
 import './wf-node.js';
 import './wf-edge-layer.js';
+import { ViewportCulling } from '../../lib/core/viewport-culling.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -66,20 +67,24 @@ export class WfWorkspace extends HTMLElement {
       this.#viewportEl.style.setProperty('--pan-x', `${panX}px`);
       this.#viewportEl.style.setProperty('--pan-y', `${panY}px`);
       this.#viewportEl.style.setProperty('--zoom', zoom);
+      this.#updateCulling();
     };
 
     this.#onNodeAdded = (e) => {
       this.#createNodeElement(e.detail.node);
+      this.#updateCulling();
     };
 
     this.#onNodeRemoved = (e) => {
       const el = this.#nodeEls.get(e.detail.nodeId);
       if (el) { el.remove(); this.#nodeEls.delete(e.detail.nodeId); }
+      this.#updateCulling();
     };
 
     this.#onNodeMoved = (e) => {
       const el = this.#nodeEls.get(e.detail.nodeId);
       if (el) el.setPosition(e.detail.x, e.detail.y);
+      this.#updateCulling();
     };
 
     this.#onStateReset = () => {
@@ -186,6 +191,37 @@ export class WfWorkspace extends HTMLElement {
 
     this.#viewportEl.appendChild(el);
     this.#nodeEls.set(node.id, el);
+  }
+
+  #getViewportBounds() {
+    const { panX, panY, zoom } = this.#state.viewport;
+    const rect = this.getBoundingClientRect();
+    const w = rect.width || 1200;
+    const h = rect.height || 800;
+    return {
+      x: -panX / zoom,
+      y: -panY / zoom,
+      width: w / zoom,
+      height: h / zoom,
+    };
+  }
+
+  #updateCulling() {
+    if (!this.#state) return;
+    const bounds = this.#getViewportBounds();
+    const visibleIds = new Set(ViewportCulling.getVisibleNodes(this.#state, bounds));
+
+    for (const [nodeId, el] of this.#nodeEls) {
+      if (visibleIds.has(nodeId)) {
+        if (el.style.display === 'none') el.style.display = '';
+      } else {
+        if (el.style.display !== 'none') el.style.display = 'none';
+      }
+    }
+
+    if (this.#edgeLayer && this.#edgeLayer.setVisibleNodes) {
+      this.#edgeLayer.setVisibleNodes(visibleIds);
+    }
   }
 }
 
