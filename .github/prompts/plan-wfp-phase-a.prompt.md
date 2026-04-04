@@ -32,6 +32,14 @@ Make all 4 library controllers consumer-agnostic by requiring a `selectors` obje
 - Update any fixtures/test code that instantiate controllers to pass selectors.
 - Run full suite: `node --test tests/unit/*.test.js` + `pnpm exec playwright test --project=component --project=e2e`.
 
+### A4. Acceptance tests for selector-based controllers
+
+- **Unit test** `tests/unit/controller-selectors.test.js`:
+  - Verify each controller throws if `selectors` argument is missing.
+  - Verify `el.matches(selector)` is used instead of `tagName` comparison (test via mock elements with custom tag names).
+- **E2E regression**: Run existing `tests/e2e/full-workflow.spec.js` and `tests/e2e/drag-drop.spec.js` to confirm the app still works after the refactor. No new E2E file — reuse the existing suite.
+- Run: `node --test tests/unit/controller-selectors.test.js` + `pnpm exec playwright test --project=e2e`
+
 ## Files Modified
 
 - `lib/controllers/drag-controller.js`
@@ -40,6 +48,10 @@ Make all 4 library controllers consumer-agnostic by requiring a `selectors` obje
 - `lib/controllers/keyboard-controller.js`
 - `app/components/app-shell.js`
 - Any test files that instantiate controllers
+
+## Files Created
+
+- `tests/unit/controller-selectors.test.js`
 
 ## What Breaks in the App Consumer (Intentionally)
 

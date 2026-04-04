@@ -35,9 +35,23 @@ Build the 4 wireframe UI components that mirror the app's sidebar/toolbar/drawer
 - Uses `wireframe/services/storage-service.js`.
 - Lists saved pipelines, highlights active one.
 
+### D13. Component tests for wireframe UI components
+
+- **Shared fixture**: `tests/component/fixtures/wf-ui-fixture.html` — imports lib core + all 4 wireframe UI components, sets `window.__ready`.
+- **`tests/component/wf-config-drawer.spec.js`**: Render drawer, pass a schema, verify form fields render, verify `node-config-updated` dispatches on input change.
+- **`tests/component/wf-toolbar.spec.js`**: Render toolbar, verify 6 buttons present, verify disabled state syncs with `CommandHistory` (start disabled, enable after command execution).
+- **`tests/component/wf-palette.spec.js`**: Render palette with registry entries, verify items listed, verify `palette-add-node` dispatches on Enter key.
+- **`tests/component/wf-process-list.spec.js`**: Render process list with mocked storage service, verify list renders pipeline names, verify save/load/delete interactions.
+- Run: `pnpm exec playwright test tests/component/wf-config-drawer.spec.js tests/component/wf-toolbar.spec.js tests/component/wf-palette.spec.js tests/component/wf-process-list.spec.js`
+
 ## Files Created
 
 - `wireframe/components/wf-config-drawer.js`
 - `wireframe/components/wf-toolbar.js`
 - `wireframe/components/wf-palette.js`
 - `wireframe/components/wf-process-list.js`
+- `tests/component/fixtures/wf-ui-fixture.html`
+- `tests/component/wf-config-drawer.spec.js`
+- `tests/component/wf-toolbar.spec.js`
+- `tests/component/wf-palette.spec.js`
+- `tests/component/wf-process-list.spec.js`

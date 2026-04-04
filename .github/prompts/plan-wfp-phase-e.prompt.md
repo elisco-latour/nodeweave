@@ -32,9 +32,27 @@ Wire everything together in a `<wf-shell>` orchestrator and clean up `wireframe/
 - `wf-node` dispatches a context-menu event on ⋮ button click.
 - `wf-shell` shows a floating menu with Duplicate / Delete actions.
 
+### E16. E2E: wireframe full workflow
+
+- **File**: `tests/e2e/wf-full-workflow.spec.js`
+- **Fixture**: `tests/e2e/fixtures/wf-e2e-fixture.html` (or navigate directly to `wireframe/index.html`)
+- Palette → drag node onto canvas → connect two ports → open config drawer → edit config → undo → redo.
+- Follow existing `tests/e2e/full-workflow.spec.js` patterns: `waitForApp()` helper, `page.evaluate()` for state access, expose `window.__state`.
+- Run: `pnpm exec playwright test tests/e2e/wf-full-workflow.spec.js`
+
+### E17. E2E: wireframe save/load
+
+- **File**: `tests/e2e/wf-save-load.spec.js`
+- Create pipeline → save → create new → load saved → verify state restored.
+- Dialog interception pattern from existing `tests/e2e/save-load.spec.js`.
+- Run: `pnpm exec playwright test tests/e2e/wf-save-load.spec.js`
+
 ## Files Created
 
 - `wireframe/components/wf-shell.js`
+- `tests/e2e/wf-full-workflow.spec.js`
+- `tests/e2e/wf-save-load.spec.js`
+- `tests/e2e/fixtures/wf-e2e-fixture.html`
 
 ## Files Modified
 

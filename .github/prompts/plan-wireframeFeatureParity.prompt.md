@@ -13,7 +13,7 @@ The library becomes consumer-agnostic. No defaults, no backwards compat — ever
 | **C** | [plan-wfp-phase-c](plan-wfp-phase-c.prompt.md) | Wireframe services (parallel with B) |
 | **D** | [plan-wfp-phase-d](plan-wfp-phase-d.prompt.md) | Wireframe UI components (steps parallel) |
 | **E** | [plan-wfp-phase-e](plan-wfp-phase-e.prompt.md) | Shell & wiring (depends on A–D) |
-| **F** | [plan-wfp-phase-f](plan-wfp-phase-f.prompt.md) | Testing (depends on E) |
+| **F** | [plan-wfp-phase-f](plan-wfp-phase-f.prompt.md) | Cross-cutting verification: a11y audit & full regression (depends on E) |
 
 ## Dependency Graph
 
