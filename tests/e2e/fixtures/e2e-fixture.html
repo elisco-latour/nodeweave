@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>E2E test fixture</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #1a1a2e; }
+    canvas-workspace { width: 100vw; height: 100vh; display: block; }
+  </style>
+</head>
+<body>
+  <canvas-workspace id="workspace" tabindex="0"></canvas-workspace>
+  <script type="module">
+    import { CanvasState } from '/lib/core/canvas-state.js';
+    import { Node, Port, Edge } from '/lib/core/graph.js';
+    import { DragController } from '/lib/controllers/drag-controller.js';
+    import { PanZoomController } from '/lib/controllers/pan-zoom-controller.js';
+    import { SelectionController } from '/lib/controllers/selection-controller.js';
+    import { EdgeRoutingController } from '/lib/controllers/edge-routing-controller.js';
+    import { KeyboardController } from '/lib/controllers/keyboard-controller.js';
+    import '/lib/components/canvas-workspace.js';
+    import '/lib/components/canvas-node.js';
+    import '/lib/components/canvas-port.js';
+    import '/lib/components/canvas-edge-layer.js';
+
+    const state = new CanvasState();
+    const ws = document.getElementById('workspace');
+    ws.state = state;
+
+    // Create two nodes with ports
+    const nodeA = new Node({ id: 'node-a', type: 'action', x: 100, y: 100 });
+    nodeA.addPort(new Port({ id: 'port-a-in', direction: 'in', nodeId: 'node-a' }));
+    nodeA.addPort(new Port({ id: 'port-a-out', direction: 'out', nodeId: 'node-a' }));
+    state.addNode(nodeA);
+
+    const nodeB = new Node({ id: 'node-b', type: 'action', x: 400, y: 200 });
+    nodeB.addPort(new Port({ id: 'port-b-in', direction: 'in', nodeId: 'node-b' }));
+    nodeB.addPort(new Port({ id: 'port-b-out', direction: 'out', nodeId: 'node-b' }));
+    state.addNode(nodeB);
+
+    // Attach controllers
+    const edgeLayer = ws.shadowRoot.querySelector('canvas-edge-layer');
+    const controllers = {
+      drag: new DragController(ws, state),
+      panZoom: new PanZoomController(ws, state),
+      selection: new SelectionController(ws, state),
+      edgeRouting: new EdgeRoutingController(ws, state, edgeLayer),
+      keyboard: new KeyboardController(ws, state),
+    };
+
+    for (const c of Object.values(controllers)) c.attach();
+
+    // Expose for test access
+    window.__state = state;
+    window.__workspace = ws;
+    window.__controllers = controllers;
+    window.__ready = true;
+  </script>
+</body>
+</html>
