@@ -28,15 +28,29 @@
     const ws = document.getElementById('workspace');
     ws.state = state;
 
+    const selectors = { node: 'canvas-node', port: 'canvas-port' };
     const edgeLayer = ws.shadowRoot.querySelector('canvas-edge-layer');
     const controllers = {
-      drag: new DragController(ws, state),
+      drag: new DragController(ws, state, selectors),
       panZoom: new PanZoomController(ws, state),
-      selection: new SelectionController(ws, state),
-      edgeRouting: new EdgeRoutingController(ws, state, edgeLayer),
-      keyboard: new KeyboardController(ws, state),
+      selection: new SelectionController(ws, state, selectors),
+      edgeRouting: new EdgeRoutingController(ws, state, edgeLayer, selectors),
+      keyboard: new KeyboardController(ws, state, selectors),
     };
     for (const c of Object.values(controllers)) c.attach();
+
+    // Toggle data-selected on node elements (moved from SelectionController)
+    state.addEventListener('selection-changed', (e) => {
+      const selectedIds = e.detail.selectedIds;
+      const nodes = ws.shadowRoot.querySelectorAll(selectors.node);
+      for (const el of nodes) {
+        if (selectedIds.has(el.nodeId)) {
+          el.setAttribute('data-selected', '');
+        } else {
+          el.removeAttribute('data-selected');
+        }
+      }
+    });
 
     // Helper to add N nodes in a grid and connect neighbors
     window.__addNodesGrid = function(count) {

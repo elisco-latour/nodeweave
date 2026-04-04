@@ -35,6 +35,10 @@ template.innerHTML = `
     stroke-width: 2.5;
     transition: stroke 0.2s;
   }
+  path.phantom {
+    stroke-dasharray: 8 4;
+    opacity: 0.5;
+  }
 </style>
 <svg aria-hidden="true"></svg>
 `;
@@ -108,6 +112,10 @@ export class WfEdgeLayer extends HTMLElement {
     const dx = Math.max(100, Math.abs(tgt.x - src.x) * 0.5);
     const d = `M ${src.x} ${src.y} C ${src.x + dx} ${src.y}, ${tgt.x - dx} ${tgt.y}, ${tgt.x} ${tgt.y}`;
     path.setAttribute('d', d);
+  }
+
+  _getPortPosition(portId) {
+    return this.#getPortCenter(portId);
   }
 
   #getPortCenter(portId) {
