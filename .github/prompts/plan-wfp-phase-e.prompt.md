@@ -58,3 +58,8 @@ Wire everything together in a `<wf-shell>` orchestrator and clean up `wireframe/
 
 - `wireframe/index.html`
 - `wireframe/components/wf-node.js` (if ⋮ button dispatch not yet wired)
+
+# Constraints
+I would like to add some precision here. The shell of wireframe should not be matched to the shell of the app.
+The UI and the UX of the wireframe should not be broken. Right now in opposite to the app , the wireframe palette is at the top with 04 available elements, this design should be kept, eventually adding the toolbar in the bottom(you see how you adapt the UI), but the wirefame design and user experience should not be broken.
+Now continue where you were.
