@@ -160,6 +160,15 @@ export class WfNode extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.appendChild(template.content.cloneNode(true));
+
+    this.shadowRoot.querySelector('.menu-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.dispatchEvent(new CustomEvent('node-context-menu', {
+        detail: { nodeId: this.#nodeId, clientX: e.clientX, clientY: e.clientY },
+        bubbles: true,
+        composed: true,
+      }));
+    });
   }
 
   set nodeId(id) { this.#nodeId = id; }
