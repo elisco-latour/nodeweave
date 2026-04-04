@@ -31,7 +31,7 @@ template.innerHTML = `
   }
   path {
     fill: none;
-    stroke: #94a3b8;
+    stroke: var(--wf-edge-color, #94a3b8);
     stroke-width: 2.5;
     transition: stroke 0.2s;
   }

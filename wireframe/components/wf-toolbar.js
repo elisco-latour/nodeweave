@@ -12,11 +12,11 @@ template.innerHTML = `
     display: flex;
     gap: 2px;
     padding: 6px 8px;
-    background: rgba(255,255,255,0.92);
+    background: var(--wf-bg-elevated, rgba(255,255,255,0.92));
     backdrop-filter: blur(8px);
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 999px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px -1px var(--wf-shadow, rgba(0,0,0,0.05));
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     z-index: 50;
   }
@@ -31,16 +31,16 @@ template.innerHTML = `
     background: transparent;
     border: none;
     border-radius: 999px;
-    color: #475569;
+    color: var(--wf-text-secondary, #475569);
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
   }
   button:hover:not(:disabled) {
-    background: #f1f5f9;
-    color: #0f172a;
+    background: var(--wf-hover-bg, #f1f5f9);
+    color: var(--wf-hover-text, #0f172a);
   }
   button:focus-visible {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--wf-focus-ring, #3b82f6);
     outline-offset: 2px;
   }
   button:disabled {
@@ -55,7 +55,7 @@ template.innerHTML = `
 
   .divider {
     width: 1px;
-    background: #e2e8f0;
+    background: var(--wf-border, #e2e8f0);
     margin: 4px 4px;
     align-self: stretch;
   }

@@ -14,14 +14,14 @@ template.innerHTML = `
   :host {
     display: block;
     width: 220px;
-    background: rgba(255,255,255,0.95);
+    background: var(--wf-bg-elevated, rgba(255,255,255,0.95));
     backdrop-filter: blur(8px);
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px -1px var(--wf-shadow, rgba(0,0,0,0.05));
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-size: 0.8125rem;
-    color: #0f172a;
+    color: var(--wf-text, #0f172a);
     z-index: 50;
     overflow: hidden;
   }
@@ -31,8 +31,8 @@ template.innerHTML = `
     align-items: center;
     justify-content: space-between;
     padding: 10px 12px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+    border-bottom: 1px solid var(--wf-border, #e2e8f0);
+    background: var(--wf-bg-elevated, #f8fafc);
   }
   .header h3 {
     margin: 0;
@@ -40,22 +40,22 @@ template.innerHTML = `
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    color: #475569;
+    color: var(--wf-text-secondary, #475569);
   }
 
   .actions {
     display: flex;
     gap: 4px;
     padding: 8px 12px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--wf-border, #f1f5f9);
   }
   .actions button {
     flex: 1;
     padding: 6px 8px;
     background: transparent;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 6px;
-    color: #475569;
+    color: var(--wf-text-secondary, #475569);
     cursor: pointer;
     font-family: inherit;
     font-size: 0.75rem;
@@ -63,11 +63,11 @@ template.innerHTML = `
     transition: background 0.15s;
   }
   .actions button:hover {
-    background: #f1f5f9;
-    color: #0f172a;
+    background: var(--wf-hover-bg, #f1f5f9);
+    color: var(--wf-hover-text, #0f172a);
   }
   .actions button:focus-visible {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--wf-focus-ring, #3b82f6);
     outline-offset: 2px;
   }
 
@@ -89,11 +89,11 @@ template.innerHTML = `
     cursor: default;
   }
   .pipeline-item:hover {
-    background: #f1f5f9;
+    background: var(--wf-hover-bg, #f1f5f9);
   }
   .pipeline-item[aria-current="true"] {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
+    background: color-mix(in srgb, var(--wf-focus-ring, #3b82f6) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--wf-focus-ring, #3b82f6) 30%, transparent);
   }
 
   .pipeline-name {
@@ -103,7 +103,7 @@ template.innerHTML = `
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 0.8125rem;
-    color: #0f172a;
+    color: var(--wf-text, #0f172a);
   }
 
   .pipeline-actions {
@@ -116,27 +116,27 @@ template.innerHTML = `
     background: transparent;
     border: none;
     border-radius: 4px;
-    color: #64748b;
+    color: var(--wf-text-secondary, #64748b);
     cursor: pointer;
     font-size: 0.6875rem;
     font-family: inherit;
     transition: background 0.15s, color 0.15s;
   }
   .pipeline-actions button:hover {
-    background: #f1f5f9;
-    color: #0f172a;
+    background: var(--wf-hover-bg, #f1f5f9);
+    color: var(--wf-hover-text, #0f172a);
   }
   .pipeline-actions button:focus-visible {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--wf-focus-ring, #3b82f6);
     outline-offset: 2px;
   }
   .pipeline-actions .btn-delete:hover {
-    background: #fef2f2;
-    color: #dc2626;
+    background: var(--wf-danger-bg, #fef2f2);
+    color: var(--wf-danger-text, #dc2626);
   }
 
   .empty {
-    color: #94a3b8;
+    color: var(--wf-text-secondary, #94a3b8);
     font-style: italic;
     padding: 8px 4px;
     font-size: 0.75rem;

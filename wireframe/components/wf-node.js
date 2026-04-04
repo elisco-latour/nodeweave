@@ -26,33 +26,33 @@ template.innerHTML = `
     user-select: none;
   }
   :host(:focus-visible) {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--wf-focus-ring, #3b82f6);
     outline-offset: 2px;
     border-radius: 12px;
   }
 
   .card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+    background: var(--wf-bg-surface, #ffffff);
+    border: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    box-shadow: 0 4px 6px -1px var(--wf-shadow, rgba(0,0,0,0.05)), 0 2px 4px -1px rgba(0,0,0,0.03);
     display: flex;
     flex-direction: column;
     transition: box-shadow 0.2s, border-color 0.2s;
   }
   .card:hover {
     box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-    border-color: #cbd5e1;
+    border-color: var(--wf-grid-dot, #cbd5e1);
   }
   :host([aria-selected="true"]) .card {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
+    border-color: var(--wf-selection-border, #3b82f6);
+    box-shadow: 0 0 0 2px var(--wf-selection-shadow, rgba(59,130,246,0.3));
   }
 
   .header {
     padding: 10px 14px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+    background: var(--wf-bg-elevated, #f8fafc);
+    border-bottom: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 12px 12px 0 0;
     display: flex;
     justify-content: space-between;
@@ -79,18 +79,18 @@ template.innerHTML = `
   .label {
     font-size: 14px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--wf-text, #0f172a);
   }
   .menu-btn {
     background: none;
     border: none;
-    color: #94a3b8;
+    color: var(--wf-text-secondary, #94a3b8);
     cursor: pointer;
     font-size: 14px;
     padding: 2px 4px;
     border-radius: 4px;
   }
-  .menu-btn:hover { color: #475569; background: #f1f5f9; }
+  .menu-btn:hover { color: var(--wf-hover-text, #475569); background: var(--wf-hover-bg, #f1f5f9); }
 
   .body {
     padding: 12px 0;
@@ -112,7 +112,7 @@ template.innerHTML = `
     align-items: center;
     gap: 8px;
     font-size: 12px;
-    color: #475569;
+    color: var(--wf-text-secondary, #475569);
     font-weight: 500;
   }
   .port-in { padding-left: 14px; }
@@ -122,10 +122,10 @@ template.innerHTML = `
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid #ffffff;
+    border: 2px solid var(--wf-bg-surface, #ffffff);
     position: absolute;
     cursor: crosshair;
-    box-shadow: 0 0 0 1px #cbd5e1;
+    box-shadow: 0 0 0 1px var(--wf-border, #cbd5e1);
     transition: transform 0.1s, box-shadow 0.1s;
   }
   .port-dot:hover {

@@ -1,0 +1,99 @@
+/* ─── Wireframe Theme Variables ──────────────────────────────────────────── */
+
+/* :root defaults = light theme (current hardcoded palette) */
+:root {
+  --wf-bg: #f8fafc;
+  --wf-bg-surface: #ffffff;
+  --wf-bg-elevated: #f8fafc;
+  --wf-text: #1e293b;
+  --wf-text-secondary: #64748b;
+  --wf-border: #e2e8f0;
+  --wf-grid-dot: #cbd5e1;
+  --wf-edge-color: #94a3b8;
+  --wf-focus-ring: #3b82f6;
+  --wf-shadow: rgba(0, 0, 0, 0.05);
+  --wf-hover-bg: #f1f5f9;
+  --wf-hover-text: #0f172a;
+  --wf-input-bg: #ffffff;
+  --wf-input-border: #cbd5e1;
+  --wf-selection-border: #3b82f6;
+  --wf-selection-shadow: rgba(59, 130, 246, 0.3);
+  --wf-danger-bg: #fef2f2;
+  --wf-danger-border: #fca5a5;
+  --wf-danger-text: #dc2626;
+
+  /* Map to --vc-* for lib components */
+  --vc-toolbar-border: var(--wf-border);
+  --vc-node-bg: var(--wf-bg-surface);
+}
+
+/* ─── Explicit light theme ───────────────────────────────────────────────── */
+[data-theme="light"] {
+  --wf-bg: #f8fafc;
+  --wf-bg-surface: #ffffff;
+  --wf-bg-elevated: #f8fafc;
+  --wf-text: #1e293b;
+  --wf-text-secondary: #64748b;
+  --wf-border: #e2e8f0;
+  --wf-grid-dot: #cbd5e1;
+  --wf-edge-color: #94a3b8;
+  --wf-focus-ring: #3b82f6;
+  --wf-shadow: rgba(0, 0, 0, 0.05);
+  --wf-hover-bg: #f1f5f9;
+  --wf-hover-text: #0f172a;
+  --wf-input-bg: #ffffff;
+  --wf-input-border: #cbd5e1;
+  --wf-selection-border: #3b82f6;
+  --wf-selection-shadow: rgba(59, 130, 246, 0.3);
+  --wf-danger-bg: #fef2f2;
+  --wf-danger-border: #fca5a5;
+  --wf-danger-text: #dc2626;
+}
+
+/* ─── Dark theme ─────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --wf-bg: #0f172a;
+  --wf-bg-surface: #1e293b;
+  --wf-bg-elevated: #1e293b;
+  --wf-text: #e2e8f0;
+  --wf-text-secondary: #94a3b8;
+  --wf-border: #334155;
+  --wf-grid-dot: #334155;
+  --wf-edge-color: #64748b;
+  --wf-focus-ring: #60a5fa;
+  --wf-shadow: rgba(0, 0, 0, 0.3);
+  --wf-hover-bg: rgba(255, 255, 255, 0.08);
+  --wf-hover-text: #f1f5f9;
+  --wf-input-bg: #0f172a;
+  --wf-input-border: #475569;
+  --wf-selection-border: #60a5fa;
+  --wf-selection-shadow: rgba(96, 165, 250, 0.3);
+  --wf-danger-bg: rgba(239, 68, 68, 0.1);
+  --wf-danger-border: #ef4444;
+  --wf-danger-text: #fca5a5;
+}
+
+/* ─── Auto-detect when no data-theme is set ──────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --wf-bg: #0f172a;
+    --wf-bg-surface: #1e293b;
+    --wf-bg-elevated: #1e293b;
+    --wf-text: #e2e8f0;
+    --wf-text-secondary: #94a3b8;
+    --wf-border: #334155;
+    --wf-grid-dot: #334155;
+    --wf-edge-color: #64748b;
+    --wf-focus-ring: #60a5fa;
+    --wf-shadow: rgba(0, 0, 0, 0.3);
+    --wf-hover-bg: rgba(255, 255, 255, 0.08);
+    --wf-hover-text: #f1f5f9;
+    --wf-input-bg: #0f172a;
+    --wf-input-border: #475569;
+    --wf-selection-border: #60a5fa;
+    --wf-selection-shadow: rgba(96, 165, 250, 0.3);
+    --wf-danger-bg: rgba(239, 68, 68, 0.1);
+    --wf-danger-border: #ef4444;
+    --wf-danger-text: #fca5a5;
+  }
+}
