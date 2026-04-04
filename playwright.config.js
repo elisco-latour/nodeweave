@@ -14,7 +14,7 @@ export default defineConfig({
       testDir: './tests/component',
       use: {
         ...devices['Desktop Chrome'],
-        ctPort: 3100,
+        baseURL: 'http://localhost:3100',
       },
     },
     {
@@ -35,9 +35,16 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: 'npx serve app -l 3000 --no-clipboard',
-    port: 3000,
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: 'npx serve . -l 3100 --no-clipboard',
+      port: 3100,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: 'npx serve app -l 3000 --no-clipboard',
+      port: 3000,
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
 });
