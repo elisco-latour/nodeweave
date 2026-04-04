@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>canvas-edge-layer test fixture</title>
+  <style>body { margin: 0; background: #1a1a2e; width: 100vw; height: 100vh; }</style>
+</head>
+<body>
+  <script type="module">
+    import { CanvasState } from '/lib/core/canvas-state.js';
+    import { Node, Port, Edge } from '/lib/core/graph.js';
+    import '/lib/components/canvas-edge-layer.js';
+
+    // Expose to window for test access
+    window.CanvasState = CanvasState;
+    window.Node = Node;
+    window.Port = Port;
+    window.Edge = Edge;
+    window.__ready = true;
+  </script>
+</body>
+</html>

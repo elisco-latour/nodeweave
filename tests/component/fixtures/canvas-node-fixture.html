@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>canvas-node test fixture</title>
+  <style>body { margin: 0; background: #1a1a2e; }</style>
+</head>
+<body>
+  <script type="module">
+    import { CanvasState } from '/lib/core/canvas-state.js';
+    import { Node, Port } from '/lib/core/graph.js';
+    import '/lib/components/canvas-node.js';
+
+    // Expose to window for test access
+    window.CanvasState = CanvasState;
+    window.Node = Node;
+    window.Port = Port;
+    window.__ready = true;
+  </script>
+</body>
+</html>
