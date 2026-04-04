@@ -7,7 +7,6 @@ import {
   VisualRegistry,
   TopologyRegistry,
   SchemaRegistry,
-  registerStarterNodes,
   DragController,
   PanZoomController,
   SelectionController,
@@ -15,6 +14,7 @@ import {
   KeyboardController,
 } from '../../lib/index.js';
 
+import { registerStarterNodes } from '../starter-nodes.js';
 import { StorageService } from '../services/storage-service.js';
 import { ExportService } from '../services/export-service.js';
 import './component-palette.js';
