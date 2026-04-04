@@ -3,211 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Editor Wireframe (Light Theme)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Wireframe — Visual Editor (Light Theme)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; font-family: 'Inter', sans-serif; overflow: hidden; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            overflow: hidden;
-            background-color: #f8fafc;
-        }
-
-        /* The Dot Grid Background */
-        .canvas-bg {
-            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-            background-size: 24px 24px;
-            width: 100vw;
-            height: 100vh;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 0;
-            cursor: grab;
-        }
-
-        .canvas-bg:active {
-            cursor: grabbing;
-        }
-
-        /* SVG Layer for Connections */
-        #connection-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .connection-path {
-            fill: none;
-            stroke: #94a3b8;
-            stroke-width: 2.5;
-            transition: stroke 0.2s;
-        }
-
-        .connection-path:hover {
-            stroke: #3b82f6;
-            stroke-width: 3.5;
-        }
-
-        /* Node Styling */
-        .node {
-            position: absolute;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            width: 280px;
-            z-index: 20;
-            user-select: none;
-            display: flex;
-            flex-direction: column;
-            transition: box-shadow 0.2s, border-color 0.2s;
-        }
-
-        .node:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            border-color: #cbd5e1;
-        }
-
-        /* Node Header */
-        .node-header {
-            padding: 10px 14px;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            border-radius: 12px 12px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: grab;
-        }
-
-        .node-header:active {
-            cursor: grabbing;
-        }
-
-        .node-icon-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .node-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            color: white;
-            font-size: 12px;
-        }
-
-        /* Node Body & Ports */
-        .node-body {
-            padding: 12px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .port-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            min-height: 24px;
-        }
-
-        .port {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: #475569;
-            font-weight: 500;
-        }
-
-        /* Port Dot Positioning */
-        .port-in {
-            padding-left: 14px;
-        }
-        
-        .port-out {
-            padding-right: 14px;
-            flex-direction: row-reverse;
-        }
-
-        .port-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            border: 2px solid #ffffff;
-            position: absolute;
-            cursor: crosshair;
-            box-shadow: 0 0 0 1px #cbd5e1;
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
-
-        .port-dot:hover {
-            transform: scale(1.3);
-            box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px currentColor;
-        }
-
-        .port-in .port-dot { left: -6px; }
-        .port-out .port-dot { right: -6px; }
-
-        /* Inline Controls */
-        .inline-control {
-            padding: 0 14px;
-            margin-top: 4px;
-            margin-bottom: 4px;
-        }
-        
-        input[type="range"] {
-            width: 100%;
-            accent-color: #3b82f6;
-        }
-
-        .number-input {
-            width: 60px;
-            padding: 2px 6px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            font-size: 12px;
-            text-align: right;
-        }
-
-        /* Data Type Colors */
-        .type-number { color: #0ea5e9; background-color: #0ea5e9; } /* Sky Blue */
-        .type-string { color: #10b981; background-color: #10b981; } /* Emerald */
-        .type-boolean { color: #f59e0b; background-color: #f59e0b; } /* Amber */
-        .type-object { color: #8b5cf6; background-color: #8b5cf6; } /* Violet */
-        .type-any { color: #64748b; background-color: #64748b; } /* Slate */
-
-        /* Floating Toolbar */
+        /* Floating pill toolbar */
         .floating-toolbar {
-            position: absolute;
+            position: fixed;
             top: 24px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255,255,255,0.9);
             backdrop-filter: blur(8px);
             border: 1px solid #e2e8f0;
             border-radius: 999px;
             padding: 6px 8px;
             display: flex;
             gap: 4px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
             z-index: 50;
         }
-
         .toolbar-btn {
             display: flex;
             align-items: center;
@@ -217,369 +34,148 @@
             font-size: 13px;
             font-weight: 500;
             color: #475569;
-            transition: all 0.2s;
             cursor: pointer;
             border: none;
             background: transparent;
+            transition: all 0.2s;
         }
+        .toolbar-btn:hover { background: #f1f5f9; color: #0f172a; }
+        .toolbar-btn.active { background: #e0e7ff; color: #4f46e5; }
+        .toolbar-divider { width: 1px; background: #e2e8f0; margin: 0 4px; }
 
-        .toolbar-btn:hover {
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-
-        .toolbar-btn.active {
-            background: #e0e7ff;
-            color: #4f46e5;
-        }
-        
-        .toolbar-divider {
-            width: 1px;
-            background: #e2e8f0;
-            margin: 0 4px;
-        }
-
-        /* Context Menu */
-        .context-menu {
-            position: absolute;
-            background: #ffffff;
+        /* Zoom controls */
+        .zoom-ctrl {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            background: #fff;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            min-width: 160px;
-            z-index: 100;
-            padding: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
+            z-index: 50;
+        }
+        .zoom-ctrl button, .zoom-ctrl .zoom-level {
+            padding: 8px 16px;
             font-size: 13px;
-        }
-        
-        .context-menu.hidden {
-            display: none;
-        }
-        
-        .context-menu-item {
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: #475569;
+            border: none;
+            background: transparent;
             cursor: pointer;
-            border-radius: 4px;
-            color: #334155;
-            transition: background 0.1s;
         }
-        
-        .context-menu-item:hover {
-            background: #f1f5f9;
+        .zoom-ctrl .zoom-level {
+            font-weight: 600; color: #0f172a; background: #f8fafc;
+            min-width: 56px; text-align: center; cursor: default;
         }
-        
-        .context-menu-divider {
-            height: 1px;
-            background: #e2e8f0;
-            margin: 4px 0;
-        }
+        .zoom-ctrl button:hover { background: #f1f5f9; }
     </style>
 </head>
 <body>
 
-    <!-- Main Canvas Area -->
-    <main class="canvas-bg" id="canvas">
-        
-        <!-- SVG Layer for drawing connecting lines -->
-        <svg id="connection-layer">
-            <!-- Lines will be injected here by JS -->
-        </svg>
+    <wf-workspace id="workspace"></wf-workspace>
 
-        <!-- Floating Top Toolbar -->
-        <nav class="floating-toolbar">
-            <button class="toolbar-btn">
-                <i class="fa-solid fa-bolt text-amber-500"></i> Triggers
-            </button>
-            <button class="toolbar-btn">
-                <i class="fa-solid fa-play text-blue-500"></i> Actions
-            </button>
-            <button class="toolbar-btn">
-                <i class="fa-solid fa-code-branch text-purple-500"></i> Logic
-            </button>
-            <div class="toolbar-divider"></div>
-            <button class="toolbar-btn active">
-                <i class="fa-solid fa-database text-emerald-500"></i> Data
-            </button>
-            <div class="toolbar-divider"></div>
-            <button class="toolbar-btn text-slate-400">
-                <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
-        </nav>
+    <!-- Floating toolbar — node palette -->
+    <nav class="floating-toolbar" aria-label="Node palette">
+        <button class="toolbar-btn" data-type="range_input">&#9889; Inputs</button>
+        <button class="toolbar-btn" data-type="http_request">&#9654; Actions</button>
+        <div class="toolbar-divider"></div>
+        <button class="toolbar-btn active" data-type="data_mapper">&#9649; Data</button>
+    </nav>
 
-        <!-- UI Controls (Bottom Right) -->
-        <div class="absolute bottom-6 right-6 flex bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden z-50">
-            <button class="px-4 py-2 text-slate-500 hover:bg-slate-50 border-r border-slate-200"><i class="fa-solid fa-minus"></i></button>
-            <div class="px-4 py-2 text-slate-700 font-medium text-sm flex items-center justify-center bg-slate-50 w-16">100%</div>
-            <button class="px-4 py-2 text-slate-500 hover:bg-slate-50 border-l border-slate-200"><i class="fa-solid fa-plus"></i></button>
-        </div>
+    <!-- Zoom controls -->
+    <div class="zoom-ctrl">
+        <button id="zoom-out">&minus;</button>
+        <div class="zoom-level" id="zoom-display">100%</div>
+        <button id="zoom-in">&plus;</button>
+    </div>
 
-        <!-- ========================================== -->
-        <!-- NODE 1: Inline Input Node (Like the sliders) -->
-        <!-- ========================================== -->
-        <div class="node" id="node1" style="left: 150px; top: 150px;">
-            <div class="node-header">
-                <div class="node-icon-wrapper">
-                    <div class="node-icon bg-sky-500"><i class="fa-solid fa-sliders"></i></div>
-                    <span class="text-sm font-semibold text-slate-800">Range Input</span>
-                </div>
-                <button class="text-slate-400 hover:text-slate-600 node-menu-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-            </div>
-            <div class="node-body">
-                <!-- Inline Control -->
-                <div class="inline-control flex items-center justify-between gap-3">
-                    <input type="range" min="0" max="100" value="45">
-                    <input type="number" class="number-input" value="45">
-                </div>
-                <!-- Output Port -->
-                <div class="port-row">
-                    <div></div> <!-- Empty left spacer -->
-                    <div class="port port-out text-sky-600">
-                        <div class="port-dot type-number" id="port-out-1"></div>
-                        Number
-                    </div>
-                </div>
-            </div>
-        </div>
+    <script type="module">
+        import { CanvasState, Node, Port, Edge } from '../lib/core.js';
+        import { DragController, PanZoomController, KeyboardController } from '../lib/controllers.js';
+        import {
+            WfVisualRegistry,
+            WfTopologyRegistry,
+            WfSchemaRegistry,
+            registerWireframeNodes,
+        } from './registries.js';
+        import './components/wf-workspace.js';
 
-        <!-- ========================================== -->
-        <!-- NODE 2: HTTP Request Node (Inline Text)    -->
-        <!-- ========================================== -->
-        <div class="node" id="node2" style="left: 150px; top: 320px;">
-            <div class="node-header">
-                <div class="node-icon-wrapper">
-                    <div class="node-icon bg-emerald-500"><i class="fa-solid fa-globe"></i></div>
-                    <span class="text-sm font-semibold text-slate-800">HTTP Request</span>
-                </div>
-                <button class="text-slate-400 hover:text-slate-600 node-menu-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-            </div>
-            <div class="node-body">
-                <!-- Input Port -->
-                <div class="port-row">
-                    <div class="port port-in text-slate-500">
-                        <div class="port-dot type-any"></div>
-                        Trigger
-                    </div>
-                </div>
-                <!-- Inline Control for URL -->
-                <div class="inline-control">
-                    <div class="text-xs text-slate-500 mb-1">Endpoint URL</div>
-                    <input type="text" class="w-full border border-slate-200 rounded px-2 py-1 text-xs" value="https://api.example.com/data">
-                </div>
-                <!-- Output Port -->
-                <div class="port-row mt-2">
-                    <div></div>
-                    <div class="port port-out text-violet-600">
-                        <div class="port-dot type-object" id="port-out-2"></div>
-                        JSON Payload
-                    </div>
-                </div>
-            </div>
-        </div>
+        // --- Registries (consumer-defined) ---
+        const visual = new WfVisualRegistry();
+        const topology = new WfTopologyRegistry();
+        const schema = new WfSchemaRegistry();
+        registerWireframeNodes(visual, topology, schema);
 
-        <!-- ========================================== -->
-        <!-- NODE 3: Complex Multi-Port Node            -->
-        <!-- ========================================== -->
-        <div class="node" id="node3" style="left: 550px; top: 200px;">
-            <div class="node-header">
-                <div class="node-icon-wrapper">
-                    <div class="node-icon bg-violet-500"><i class="fa-solid fa-layer-group"></i></div>
-                    <span class="text-sm font-semibold text-slate-800">Data Mapper</span>
-                </div>
-                <button class="text-slate-400 hover:text-slate-600 node-menu-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-            </div>
-            <div class="node-body">
-                <!-- Data Input -->
-                <div class="port-row">
-                    <div class="port port-in text-violet-600">
-                        <div class="port-dot type-object" id="port-in-3a"></div>
-                        Source Data
-                    </div>
-                    <div class="port port-out text-violet-600">
-                        <div class="port-dot type-object" id="port-out-3"></div>
-                        Mapped Object
-                    </div>
-                </div>
-                
-                <!-- Number Input -->
-                <div class="port-row">
-                    <div class="port port-in text-sky-600">
-                        <div class="port-dot type-number" id="port-in-3b"></div>
-                        Batch Size
-                    </div>
-                </div>
+        // --- State ---
+        const state = new CanvasState();
 
-                <!-- Boolean Input -->
-                <div class="port-row">
-                    <div class="port port-in text-amber-500">
-                        <div class="port-dot type-boolean"></div>
-                        Strict Mode
-                    </div>
-                </div>
-                
-                 <!-- String Input -->
-                 <div class="port-row">
-                    <div class="port port-in text-emerald-500">
-                        <div class="port-dot type-string"></div>
-                        Fallback Value
-                    </div>
-                </div>
-            </div>
-        </div>
+        // --- Workspace ---
+        const workspace = document.getElementById('workspace');
+        workspace.visualRegistry = visual;
+        workspace.topologyRegistry = topology;
+        workspace.state = state;
 
-        <!-- Context Menu Component -->
-        <div id="node-context-menu" class="context-menu hidden">
-            <div class="context-menu-item"><i class="fa-solid fa-pen text-slate-400 fa-fw"></i> Rename</div>
-            <div class="context-menu-item"><i class="fa-solid fa-copy text-slate-400 fa-fw"></i> Duplicate</div>
-            <div class="context-menu-divider"></div>
-            <div class="context-menu-item text-red-600 delete-action"><i class="fa-solid fa-trash fa-fw"></i> Delete Node</div>
-        </div>
+        // --- Controllers (reused from lib) ---
+        const drag = new DragController(workspace, state);
+        const panZoom = new PanZoomController(workspace, state);
+        const keyboard = new KeyboardController(workspace, state);
+        drag.attach();
+        panZoom.attach();
+        keyboard.attach();
 
-    </main>
-
-    <script>
-        // --- 1. Basic Drag & Drop Interaction for Wireframe ---
-        let draggedNode = null;
-        let startX, startY, initialLeft, initialTop;
-
-        document.querySelectorAll('.node-header').forEach(header => {
-            header.addEventListener('mousedown', (e) => {
-                draggedNode = e.target.closest('.node');
-                startX = e.clientX;
-                startY = e.clientY;
-                initialLeft = parseInt(draggedNode.style.left, 10);
-                initialTop = parseInt(draggedNode.style.top, 10);
-                
-                // Bring to front
-                document.querySelectorAll('.node').forEach(n => n.style.zIndex = '20');
-                draggedNode.style.zIndex = '30';
-            });
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!draggedNode) return;
-            
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            
-            draggedNode.style.left = `${initialLeft + dx}px`;
-            draggedNode.style.top = `${initialTop + dy}px`;
-
-            // Redraw lines while moving
-            drawConnections();
-        });
-
-        document.addEventListener('mouseup', () => {
-            draggedNode = null;
-        });
-
-        // --- 2. Connection Drawing Logic (Bezier Curves) ---
-        const svgLayer = document.getElementById('connection-layer');
-
-        // Mock connections representing the state
-        let connections = [
-            { source: 'port-out-1', target: 'port-in-3b' },
-            { source: 'port-out-2', target: 'port-in-3a' }
-        ];
-
-        function drawConnections() {
-            svgLayer.innerHTML = ''; // Clear existing paths
-            
-            // Filter out connections whose endpoints have been deleted
-            connections = connections.filter(conn => document.getElementById(conn.source) && document.getElementById(conn.target));
-
-            connections.forEach(conn => {
-                const sourceEl = document.getElementById(conn.source);
-                const targetEl = document.getElementById(conn.target);
-                
-                if (!sourceEl || !targetEl) return;
-
-                // Get absolute coordinates of the dots
-                const sourceRect = sourceEl.getBoundingClientRect();
-                const targetRect = targetEl.getBoundingClientRect();
-
-                // Calculate center points of the dots
-                const x1 = sourceRect.left + (sourceRect.width / 2);
-                const y1 = sourceRect.top + (sourceRect.height / 2);
-                const x2 = targetRect.left + (targetRect.width / 2);
-                const y2 = targetRect.top + (targetRect.height / 2);
-
-                // Calculate cubic bezier control points for a smooth S-curve
-                // The multiplier (100) determines how far the control point stretches horizontally
-                const controlPointOffset = Math.max(100, Math.abs(x2 - x1) * 0.5);
-                
-                const d = `M ${x1} ${y1} C ${x1 + controlPointOffset} ${y1}, ${x2 - controlPointOffset} ${y2}, ${x2} ${y2}`;
-
-                // Create SVG Path
-                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                path.setAttribute('d', d);
-                path.setAttribute('class', 'connection-path');
-                
-                // Optional: Inherit color from source port for the line (uncomment to test)
-                // const sourceColor = window.getComputedStyle(sourceEl).backgroundColor;
-                // path.setAttribute('stroke', sourceColor);
-                // path.style.opacity = '0.5';
-
-                svgLayer.appendChild(path);
-            });
+        // --- Seed demo nodes (same as the static wireframe) ---
+        function addNode(type, x, y) {
+            const id = `wf-${type}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+            const node = new Node({ id, type, x, y });
+            if (topology.has(type)) {
+                const topo = topology.get(type);
+                for (const def of topo.inputs) {
+                    node.addPort(new Port({ id: `${id}:${def.id}`, direction: 'in', nodeId: id, positionHint: def.position }));
+                }
+                for (const def of topo.outputs) {
+                    node.addPort(new Port({ id: `${id}:${def.id}`, direction: 'out', nodeId: id, positionHint: def.position }));
+                }
+                // Match wf-node CSS: 280px wide, height = header + body with port rows
+                const rows = Math.max(topo.inputs.length, topo.outputs.length);
+                node.width = 280;
+                node.height = 45 + 12 + rows * 24 + Math.max(0, rows - 1) * 8 + 12;
+            }
+            state.addNode(node);
+            return id;
         }
 
-        // Initial draw
-        window.addEventListener('resize', drawConnections);
-        drawConnections();
+        const n1 = addNode('range_input', 150, 150);
+        const n2 = addNode('http_request', 150, 320);
+        const n3 = addNode('data_mapper', 550, 200);
 
-        // Prevent inputs from triggering drag
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('mousedown', (e) => e.stopPropagation());
-        });
+        state.addEdge(new Edge({ id: 'e1', sourcePortId: `${n1}:out`, targetPortId: `${n3}:batch_size` }));
+        state.addEdge(new Edge({ id: 'e2', sourcePortId: `${n2}:out`, targetPortId: `${n3}:source` }));
 
-        // --- 3. Context Menu Logic ---
-        const contextMenu = document.getElementById('node-context-menu');
-        let activeNodeForMenu = null;
-
-        // Open menu
-        document.querySelectorAll('.node-menu-btn').forEach(btn => {
-            btn.addEventListener('mousedown', (e) => {
-                // Prevent node dragging when clicking the menu button
-                e.stopPropagation();
-            });
-            
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                activeNodeForMenu = e.target.closest('.node');
-                
-                const rect = btn.getBoundingClientRect();
-                // Position to the right of the button
-                contextMenu.style.left = `${rect.right + 8}px`;
-                contextMenu.style.top = `${rect.top}px`;
-                contextMenu.classList.remove('hidden');
+        // --- Toolbar: click to add node at center ---
+        document.querySelectorAll('.toolbar-btn[data-type]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                const rect = workspace.getBoundingClientRect();
+                const { panX, panY, zoom } = state.viewport;
+                const cx = (rect.width / 2 - panX) / zoom;
+                const cy = (rect.height / 2 - panY) / zoom;
+                addNode(type, cx, cy);
             });
         });
 
-        // Close menu on outside click
-        document.addEventListener('click', (e) => {
-            if (!contextMenu.contains(e.target)) {
-                contextMenu.classList.add('hidden');
-                activeNodeForMenu = null;
-            }
+        // --- Zoom controls ---
+        const zoomDisplay = document.getElementById('zoom-display');
+        state.addEventListener('viewport-changed', (e) => {
+            zoomDisplay.textContent = `${Math.round(e.detail.zoom * 100)}%`;
         });
-
-        // Delete Action
-        document.querySelector('.delete-action').addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (activeNodeForMenu) {
-                // Remove the node from DOM
-                activeNodeForMenu.remove();
-                
-                // Hide menu
-                contextMenu.classList.add('hidden');
-                activeNodeForMenu = null;
-                
-                // Redraw connections (which will filter out dangling lines)
-                drawConnections();
-            }
+        document.getElementById('zoom-in').addEventListener('click', () => {
+            const { panX, panY, zoom } = state.viewport;
+            state.setViewport(panX, panY, Math.min(zoom + 0.1, 3));
+        });
+        document.getElementById('zoom-out').addEventListener('click', () => {
+            const { panX, panY, zoom } = state.viewport;
+            state.setViewport(panX, panY, Math.max(zoom - 0.1, 0.1));
         });
     </script>
 </body>
