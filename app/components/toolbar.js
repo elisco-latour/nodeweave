@@ -66,6 +66,10 @@ template.innerHTML = `
 <button id="btn-delete" aria-label="Delete selected" title="Delete selected (Delete)">
   <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
 </button>
+<div class="separator"></div>
+<button id="btn-theme" aria-label="Toggle theme" title="Toggle light/dark theme">
+  <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+</button>
 `;
 
 export class Toolbar extends HTMLElement {
@@ -114,6 +118,15 @@ export class Toolbar extends HTMLElement {
         bubbles: true,
         composed: true,
       }));
+    });
+
+    this.shadowRoot.getElementById('btn-theme').addEventListener('click', () => {
+      const shell = this.closest('app-shell') || document.querySelector('app-shell');
+      if (!shell) return;
+      const current = shell.getAttribute('data-theme');
+      const next = current === 'light' ? 'dark' : 'light';
+      shell.setAttribute('data-theme', next);
+      document.documentElement.setAttribute('data-theme', next);
     });
   }
 

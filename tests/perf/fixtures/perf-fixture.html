@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Performance benchmark fixture</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #1a1a2e; }
+    canvas-workspace { width: 100vw; height: 100vh; display: block; }
+  </style>
+</head>
+<body>
+  <canvas-workspace id="workspace" tabindex="0"></canvas-workspace>
+  <script type="module">
+    import { CanvasState } from '/lib/core/canvas-state.js';
+    import { Node, Port, Edge } from '/lib/core/graph.js';
+    import { DragController } from '/lib/controllers/drag-controller.js';
+    import { PanZoomController } from '/lib/controllers/pan-zoom-controller.js';
+    import { SelectionController } from '/lib/controllers/selection-controller.js';
+    import { EdgeRoutingController } from '/lib/controllers/edge-routing-controller.js';
+    import { KeyboardController } from '/lib/controllers/keyboard-controller.js';
+    import '/lib/components/canvas-workspace.js';
+    import '/lib/components/canvas-node.js';
+    import '/lib/components/canvas-port.js';
+    import '/lib/components/canvas-edge-layer.js';
+
+    const state = new CanvasState();
+    const ws = document.getElementById('workspace');
+    ws.state = state;
+
+    const edgeLayer = ws.shadowRoot.querySelector('canvas-edge-layer');
+    const controllers = {
+      drag: new DragController(ws, state),
+      panZoom: new PanZoomController(ws, state),
+      selection: new SelectionController(ws, state),
+      edgeRouting: new EdgeRoutingController(ws, state, edgeLayer),
+      keyboard: new KeyboardController(ws, state),
+    };
+    for (const c of Object.values(controllers)) c.attach();
+
+    // Helper to add N nodes in a grid and connect neighbors
+    window.__addNodesGrid = function(count) {
+      const cols = Math.ceil(Math.sqrt(count));
+      const nodes = [];
+      for (let i = 0; i < count; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const id = `perf-node-${i}`;
+        const node = new Node({ id, type: 'action', x: col * 220, y: row * 100 });
+        node.addPort(new Port({ id: `${id}:in`, direction: 'in', nodeId: id, positionHint: 'left' }));
+        node.addPort(new Port({ id: `${id}:out`, direction: 'out', nodeId: id, positionHint: 'right' }));
+        state.addNode(node);
+        nodes.push(node);
+      }
+      // Connect each to its right neighbor in the grid
+      for (let i = 0; i < count - 1; i++) {
+        const col = i % cols;
+        if (col < cols - 1) {
+          state.addEdge(new Edge({
+            id: `perf-edge-${i}`,
+            sourcePortId: `perf-node-${i}:out`,
+            targetPortId: `perf-node-${i + 1}:in`,
+          }));
+        }
+      }
+      return nodes.length;
+    };
+
+    // Helper to add a single extra node
+    window.__addOneNode = function() {
+      const id = `extra-${Date.now()}`;
+      const node = new Node({ id, type: 'action', x: -200, y: -200 });
+      node.addPort(new Port({ id: `${id}:in`, direction: 'in', nodeId: id }));
+      node.addPort(new Port({ id: `${id}:out`, direction: 'out', nodeId: id }));
+      state.addNode(node);
+    };
+
+    // Expose for tests
+    window.__state = state;
+    window.__workspace = ws;
+    window.__controllers = controllers;
+    window.__ready = true;
+    window.Node = Node;
+    window.Port = Port;
+    window.Edge = Edge;
+  </script>
+</body>
+</html>

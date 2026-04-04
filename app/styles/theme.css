@@ -34,6 +34,9 @@
   --vc-btn-bg: transparent;
   --vc-btn-hover-bg: rgba(255,255,255,0.1);
   --vc-btn-disabled-opacity: 0.4;
+  --vc-edge-color: #666;
+  --vc-edge-color-phantom: #999;
+  --vc-minimap-bg: #16213e;
 
   /* Spacing */
   --space-xs: 4px;
@@ -49,6 +52,85 @@
   --font-family: system-ui, -apple-system, sans-serif;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
+}
+
+/* ─── Dark theme (explicit) ──────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --color-bg: #1a1a2e;
+  --color-surface: #16213e;
+  --color-text: #e0e0e0;
+  --color-primary: #0f3460;
+  --vc-text-color: #e0e0e0;
+  --vc-node-bg: #16213e;
+  --vc-node-border: #2a3a5e;
+  --vc-port-color: #888;
+  --vc-port-border-color: #555;
+  --vc-drawer-bg: #16213e;
+  --vc-drawer-border: #2a3a5e;
+  --vc-drawer-hover: rgba(255,255,255,0.1);
+  --vc-input-bg: #1a1a2e;
+  --vc-input-border: #2a3a5e;
+  --vc-label-color: #aab;
+  --vc-sidebar-bg: #16213e;
+  --vc-toolbar-bg: #16213e;
+  --vc-toolbar-border: #2a3a5e;
+  --vc-btn-bg: transparent;
+  --vc-btn-hover-bg: rgba(255,255,255,0.1);
+  --vc-edge-color: #666;
+  --vc-edge-color-phantom: #999;
+  --vc-minimap-bg: #16213e;
+}
+
+/* ─── Light theme ────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --color-bg: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-text: #1a1a2e;
+  --color-primary: #4dabf7;
+  --vc-text-color: #1a1a2e;
+  --vc-focus-ring-color: #1971c2;
+  --vc-node-bg: #ffffff;
+  --vc-node-border: #d0d5dd;
+  --vc-port-color: #aaa;
+  --vc-port-border-color: #999;
+  --vc-port-hover-color: #1971c2;
+  --vc-port-hover-border-color: #1864ab;
+  --vc-drawer-bg: #ffffff;
+  --vc-drawer-border: #d0d5dd;
+  --vc-drawer-hover: rgba(0,0,0,0.06);
+  --vc-input-bg: #f5f5f5;
+  --vc-input-border: #d0d5dd;
+  --vc-label-color: #555;
+  --vc-selection-border: #1971c2;
+  --vc-selection-bg: rgba(25, 113, 194, 0.1);
+  --vc-sidebar-bg: #ffffff;
+  --vc-toolbar-bg: #ffffff;
+  --vc-toolbar-border: #d0d5dd;
+  --vc-btn-bg: transparent;
+  --vc-btn-hover-bg: rgba(0,0,0,0.06);
+  --vc-edge-color: #999;
+  --vc-edge-color-phantom: #bbb;
+  --vc-minimap-bg: #ffffff;
+}
+
+/* ─── prefers-color-scheme default ───────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-bg: #1a1a2e;
+    --color-surface: #16213e;
+    --color-text: #e0e0e0;
+    --vc-text-color: #e0e0e0;
+    --vc-node-bg: #16213e;
+    --vc-node-border: #2a3a5e;
+    --vc-sidebar-bg: #16213e;
+    --vc-toolbar-bg: #16213e;
+    --vc-toolbar-border: #2a3a5e;
+  }
+}
+
+/* ─── Theme transition ───────────────────────────────────────────────────── */
+:root {
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 *, *::before, *::after {
