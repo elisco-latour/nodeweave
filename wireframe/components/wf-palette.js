@@ -64,8 +64,12 @@ template.innerHTML = `
     margin: 0 4px;
     align-self: stretch;
   }
+
+  .wf-tools-palette{
+    display: flex;
+  }
 </style>
-<div id="items" role="list" aria-label="Available node types"></div>
+<div class="wf-tools-palette" id="items" role="list" aria-label="Available node types"></div>
 `;
 
 export class WfPalette extends HTMLElement {

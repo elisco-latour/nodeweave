@@ -55,6 +55,7 @@ export function registerWireframeNodes(visual, topology, schema) {
     fields: [
       { id: 'url', type: 'string', label: 'Endpoint URL', default: 'https://api.example.com/data' },
       { id: 'method', type: 'select', label: 'Method', default: 'GET', options: ['GET', 'POST', 'PUT', 'DELETE'] },
+      { id: 'body', type: 'textarea', label: 'Request Body', default: '', rows: 4, placeholder: '{\"key\": \"value\"}', showIf: { field: 'method', operator: 'in', value: ['POST', 'PUT'] } },
     ],
   });
 

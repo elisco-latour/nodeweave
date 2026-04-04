@@ -52,6 +52,7 @@ export class WfWorkspace extends HTMLElement {
   #onNodeAdded;
   #onNodeRemoved;
   #onNodeMoved;
+  #onStateReset;
 
   constructor() {
     super();
@@ -80,6 +81,23 @@ export class WfWorkspace extends HTMLElement {
       const el = this.#nodeEls.get(e.detail.nodeId);
       if (el) el.setPosition(e.detail.x, e.detail.y);
     };
+
+    this.#onStateReset = () => {
+      this.#clear();
+      if (!this.#state) return;
+
+      const { panX, panY, zoom } = this.#state.viewport;
+      this.#viewportEl.style.setProperty('--pan-x', `${panX}px`);
+      this.#viewportEl.style.setProperty('--pan-y', `${panY}px`);
+      this.#viewportEl.style.setProperty('--zoom', zoom);
+
+      for (const node of this.#state.nodes.values()) {
+        this.#createNodeElement(node);
+      }
+
+      // Re-sync edge layer
+      this.#edgeLayer.state = this.#state;
+    };
   }
 
   connectedCallback() {
@@ -106,6 +124,7 @@ export class WfWorkspace extends HTMLElement {
     this.#state.addEventListener('node-added', this.#onNodeAdded);
     this.#state.addEventListener('node-removed', this.#onNodeRemoved);
     this.#state.addEventListener('node-moved', this.#onNodeMoved);
+    this.#state.addEventListener('state-reset', this.#onStateReset);
 
     this.#edgeLayer.state = this.#state;
 
@@ -125,6 +144,7 @@ export class WfWorkspace extends HTMLElement {
     this.#state.removeEventListener('node-added', this.#onNodeAdded);
     this.#state.removeEventListener('node-removed', this.#onNodeRemoved);
     this.#state.removeEventListener('node-moved', this.#onNodeMoved);
+    this.#state.removeEventListener('state-reset', this.#onStateReset);
   }
 
   #clear() {
