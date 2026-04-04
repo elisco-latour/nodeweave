@@ -1,0 +1,19 @@
+{
+  "name": "visual-canvas",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test tests/unit/"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.26.2",
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
+    "@playwright/experimental-ct-core": "^1.59.1",
+    "@playwright/test": "^1.59.1"
+  }
+}
