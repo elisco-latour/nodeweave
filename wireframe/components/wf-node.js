@@ -224,6 +224,10 @@ export class WfNode extends HTMLElement {
     const dot = document.createElement('div');
     dot.classList.add('port-dot');
     dot.id = portDef.id;
+    dot.portId = portDef.id;
+    dot.direction = direction;
+    dot.nodeId = this.#nodeId;
+    dot.setAttribute('data-port', portDef.id);
     const dataType = portDef.dataType || 'any';
     const color = DATA_TYPE_COLORS[dataType] || DATA_TYPE_COLORS.any;
     dot.style.backgroundColor = color;

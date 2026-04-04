@@ -102,6 +102,8 @@ template.innerHTML = `
 
 let nodeCounter = 0;
 
+const SELECTORS = { node: 'canvas-node', port: 'canvas-port' };
+
 export class AppShell extends HTMLElement {
   #state;
   #commandHistory;
@@ -113,6 +115,7 @@ export class AppShell extends HTMLElement {
   #controllers = {};
   #autoSaveTimer = null;
   #onSelectionChanged;
+  #onSelectionStyled;
   #onConfigUpdated;
   #onStateChanged;
   #onStateReset;
@@ -136,6 +139,20 @@ export class AppShell extends HTMLElement {
 
     // Bind event handlers
     this.#onSelectionChanged = (e) => this.#handleSelectionChanged(e);
+    this.#onSelectionStyled = (e) => {
+      const selectedIds = e.detail.selectedIds;
+      const workspace = this.shadowRoot.getElementById('workspace');
+      const nodes = workspace.shadowRoot
+        ? workspace.shadowRoot.querySelectorAll(SELECTORS.node)
+        : workspace.querySelectorAll(SELECTORS.node);
+      for (const el of nodes) {
+        if (selectedIds.has(el.nodeId)) {
+          el.setAttribute('data-selected', '');
+        } else {
+          el.removeAttribute('data-selected');
+        }
+      }
+    };
     this.#onConfigUpdated = (e) => this.#handleConfigUpdated(e);
     this.#onStateChanged = () => this.#scheduleAutoSave();
     this.#onStateReset = () => {
@@ -166,6 +183,9 @@ export class AppShell extends HTMLElement {
 
     // Wire selection → config drawer
     this.#state.addEventListener('selection-changed', this.#onSelectionChanged);
+
+    // Wire selection → data-selected styling
+    this.#state.addEventListener('selection-changed', this.#onSelectionStyled);
 
     // Wire config drawer changes → state
     drawer.addEventListener('node-config-updated', this.#onConfigUpdated);
@@ -224,6 +244,7 @@ export class AppShell extends HTMLElement {
 
   disconnectedCallback() {
     this.#state.removeEventListener('selection-changed', this.#onSelectionChanged);
+    this.#state.removeEventListener('selection-changed', this.#onSelectionStyled);
     this.#state.removeEventListener('node-added', this.#onStateChanged);
     this.#state.removeEventListener('node-removed', this.#onStateChanged);
     this.#state.removeEventListener('node-moved', this.#onStateChanged);
@@ -242,11 +263,11 @@ export class AppShell extends HTMLElement {
   #attachControllers(workspace) {
     const edgeLayer = workspace.shadowRoot.querySelector('canvas-edge-layer');
     this.#controllers = {
-      drag: new DragController(workspace, this.#state),
+      drag: new DragController(workspace, this.#state, SELECTORS),
       panZoom: new PanZoomController(workspace, this.#state),
-      selection: new SelectionController(workspace, this.#state),
-      edgeRouting: new EdgeRoutingController(workspace, this.#state, edgeLayer),
-      keyboard: new KeyboardController(workspace, this.#state),
+      selection: new SelectionController(workspace, this.#state, SELECTORS),
+      edgeRouting: new EdgeRoutingController(workspace, this.#state, edgeLayer, SELECTORS),
+      keyboard: new KeyboardController(workspace, this.#state, SELECTORS),
     };
     for (const c of Object.values(this.#controllers)) c.attach();
   }
