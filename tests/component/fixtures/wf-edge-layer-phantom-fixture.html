@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>wf-edge-layer phantom test fixture</title>
+  <style>body { margin: 0; background: #f8fafc; width: 100vw; height: 100vh; }</style>
+</head>
+<body>
+  <script type="module">
+    import { CanvasState } from '/lib/core/canvas-state.js';
+    import { Node, Port, Edge } from '/lib/core/graph.js';
+    import '/wireframe/components/wf-edge-layer.js';
+
+    window.CanvasState = CanvasState;
+    window.Node = Node;
+    window.Port = Port;
+    window.Edge = Edge;
+    window.__ready = true;
+  </script>
+</body>
+</html>
