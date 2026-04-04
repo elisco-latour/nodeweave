@@ -31,6 +31,7 @@ import './wf-palette.js';
 import './wf-toolbar.js';
 import './wf-process-list.js';
 import './wf-config-drawer.js';
+import './wf-theme-toggle.js';
 
 const SELECTORS = { node: 'wf-node', port: '[data-port]' };
 
@@ -81,17 +82,24 @@ template.innerHTML = `
     z-index: 100;
   }
 
+  wf-theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 100;
+  }
+
   .context-menu {
     position: fixed;
     z-index: 200;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+    background: var(--wf-bg-surface, #ffffff);
+    border: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px var(--wf-shadow, rgba(0,0,0,0.1));
     padding: 4px 0;
     min-width: 140px;
     font-size: 13px;
-    color: #0f172a;
+    color: var(--wf-text, #0f172a);
   }
   .context-menu[hidden] { display: none; }
 
@@ -109,11 +117,11 @@ template.innerHTML = `
     transition: background 0.1s;
   }
   .context-menu button:hover {
-    background: #f1f5f9;
+    background: var(--wf-hover-bg, #f1f5f9);
   }
   .context-menu button.danger:hover {
-    background: #fef2f2;
-    color: #dc2626;
+    background: var(--wf-danger-bg, #fef2f2);
+    color: var(--wf-danger-text, #dc2626);
   }
 </style>
 
@@ -132,6 +140,8 @@ template.innerHTML = `
 </div>
 
 <wf-config-drawer id="drawer"></wf-config-drawer>
+
+<wf-theme-toggle></wf-theme-toggle>
 
 <div id="context-menu" class="context-menu" hidden>
   <button id="ctx-duplicate">Duplicate</button>

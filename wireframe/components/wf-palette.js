@@ -14,11 +14,11 @@ template.innerHTML = `
     display: flex;
     gap: 4px;
     padding: 6px 8px;
-    background: rgba(255,255,255,0.9);
+    background: var(--wf-bg-elevated, rgba(255,255,255,0.9));
     backdrop-filter: blur(8px);
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 999px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px -1px var(--wf-shadow, rgba(0,0,0,0.05));
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     z-index: 50;
   }
@@ -31,7 +31,7 @@ template.innerHTML = `
     border-radius: 999px;
     font-size: 13px;
     font-weight: 500;
-    color: #475569;
+    color: var(--wf-text-secondary, #475569);
     cursor: grab;
     border: none;
     background: transparent;
@@ -40,14 +40,14 @@ template.innerHTML = `
     font-family: inherit;
   }
   .palette-item:hover {
-    background: #f1f5f9;
-    color: #0f172a;
+    background: var(--wf-hover-bg, #f1f5f9);
+    color: var(--wf-hover-text, #0f172a);
   }
   .palette-item:active {
     cursor: grabbing;
   }
   .palette-item:focus-visible {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--wf-focus-ring, #3b82f6);
     outline-offset: 2px;
   }
 
@@ -60,7 +60,7 @@ template.innerHTML = `
 
   .divider {
     width: 1px;
-    background: #e2e8f0;
+    background: var(--wf-border, #e2e8f0);
     margin: 0 4px;
     align-self: stretch;
   }

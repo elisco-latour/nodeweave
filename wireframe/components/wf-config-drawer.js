@@ -20,12 +20,12 @@ template.innerHTML = `
     width: 320px;
     transform: translateX(100%);
     transition: transform 0.25s ease;
-    background: #ffffff;
-    color: #0f172a;
+    background: var(--wf-bg-surface, #ffffff);
+    color: var(--wf-text, #0f172a);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-size: 0.875rem;
-    border-left: 1px solid #e2e8f0;
-    box-shadow: -4px 0 12px rgba(0,0,0,0.05);
+    border-left: 1px solid var(--wf-border, #e2e8f0);
+    box-shadow: -4px 0 12px var(--wf-shadow, rgba(0,0,0,0.05));
     box-sizing: border-box;
     overflow-y: auto;
     z-index: 100;
@@ -39,19 +39,19 @@ template.innerHTML = `
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+    border-bottom: 1px solid var(--wf-border, #e2e8f0);
+    background: var(--wf-bg-elevated, #f8fafc);
   }
   .drawer-header h2 {
     margin: 0;
     font-size: 0.9375rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--wf-text, #0f172a);
   }
   .drawer-header button {
     background: none;
     border: none;
-    color: #64748b;
+    color: var(--wf-text-secondary, #64748b);
     cursor: pointer;
     font-size: 1.25rem;
     padding: 4px 8px;
@@ -59,11 +59,11 @@ template.innerHTML = `
     line-height: 1;
   }
   .drawer-header button:hover {
-    background: #f1f5f9;
-    color: #0f172a;
+    background: var(--wf-hover-bg, #f1f5f9);
+    color: var(--wf-text, #0f172a);
   }
   .drawer-header button:focus-visible {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--wf-focus-ring, #3b82f6);
     outline-offset: 2px;
   }
 
@@ -82,7 +82,7 @@ template.innerHTML = `
     margin-bottom: 4px;
     font-weight: 500;
     font-size: 0.8125rem;
-    color: #64748b;
+    color: var(--wf-text-secondary, #64748b);
   }
 
   .form-group input[type="text"],
@@ -91,9 +91,9 @@ template.innerHTML = `
   .form-group textarea {
     width: 100%;
     padding: 8px 10px;
-    background: #ffffff;
-    color: #0f172a;
-    border: 1px solid #cbd5e1;
+    background: var(--wf-input-bg, #ffffff);
+    color: var(--wf-text, #0f172a);
+    border: 1px solid var(--wf-input-border, #cbd5e1);
     border-radius: 8px;
     font-family: inherit;
     font-size: inherit;
@@ -105,7 +105,7 @@ template.innerHTML = `
   .form-group select:focus,
   .form-group textarea:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--wf-focus-ring, #3b82f6);
     box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
   }
 
@@ -116,7 +116,7 @@ template.innerHTML = `
   }
   .checkbox-group label {
     margin-bottom: 0;
-    color: #0f172a;
+    color: var(--wf-text, #0f172a);
   }
 
   .list-container {
@@ -129,9 +129,9 @@ template.innerHTML = `
     flex-direction: column;
     gap: 4px;
     padding: 10px;
-    background: #f8fafc;
+    background: var(--wf-bg-elevated, #f8fafc);
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--wf-border, #e2e8f0);
   }
   .list-item .item-fields {
     display: flex;
@@ -144,9 +144,9 @@ template.innerHTML = `
   .list-item .item-field input {
     width: 100%;
     padding: 6px 8px;
-    background: #ffffff;
-    color: #0f172a;
-    border: 1px solid #cbd5e1;
+    background: var(--wf-input-bg, #ffffff);
+    color: var(--wf-text, #0f172a);
+    border: 1px solid var(--wf-input-border, #cbd5e1);
     border-radius: 6px;
     font-family: inherit;
     font-size: inherit;
@@ -154,14 +154,14 @@ template.innerHTML = `
   }
   .list-item .item-field input:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--wf-focus-ring, #3b82f6);
     box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
   }
 
   .btn-remove, .btn-add {
     background: none;
-    border: 1px solid #cbd5e1;
-    color: #475569;
+    border: 1px solid var(--wf-input-border, #cbd5e1);
+    color: var(--wf-text-secondary, #475569);
     cursor: pointer;
     padding: 4px 10px;
     border-radius: 6px;
@@ -170,15 +170,15 @@ template.innerHTML = `
     transition: background 0.15s;
   }
   .btn-remove:hover {
-    background: #fef2f2;
-    border-color: #fca5a5;
-    color: #dc2626;
+    background: var(--wf-danger-bg, #fef2f2);
+    border-color: var(--wf-danger-border, #fca5a5);
+    color: var(--wf-danger-text, #dc2626);
   }
   .btn-add {
     align-self: flex-start;
   }
   .btn-add:hover {
-    background: #f1f5f9;
+    background: var(--wf-hover-bg, #f1f5f9);
   }
 </style>
 <div class="drawer-header">

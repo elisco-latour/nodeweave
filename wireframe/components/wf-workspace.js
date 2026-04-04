@@ -17,14 +17,14 @@ template.innerHTML = `
     overflow: hidden;
     width: 100%;
     height: 100%;
-    background-color: #f8fafc;
-    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+    background-color: var(--wf-bg, #f8fafc);
+    background-image: radial-gradient(var(--wf-grid-dot, #cbd5e1) 1px, transparent 1px);
     background-size: 24px 24px;
     cursor: grab;
   }
   :host(:active) { cursor: grabbing; }
   :host(:focus-visible) {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--wf-focus-ring, #3b82f6);
     outline-offset: -2px;
   }
   .viewport {
