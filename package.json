@@ -1,16 +1,51 @@
 {
   "name": "visual-canvas",
   "version": "1.0.0",
-  "description": "",
+  "description": "Zero-dependency vanilla JS node editor library with Web Components, Command pattern, and DAG validation",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./core": {
+      "types": "./lib/types/core.d.ts",
+      "default": "./lib/core.js"
+    },
+    "./controllers": {
+      "types": "./lib/types/controllers.d.ts",
+      "default": "./lib/controllers.js"
+    },
+    "./registries": {
+      "types": "./lib/types/registries.d.ts",
+      "default": "./lib/registries.js"
+    },
+    "./components": {
+      "types": "./lib/types/components.d.ts",
+      "default": "./lib/components.js"
+    }
+  },
+  "files": [
+    "lib/",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "test": "node --test tests/unit/",
     "types": "tsc"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "node-editor",
+    "canvas",
+    "dag",
+    "web-components",
+    "pipeline",
+    "workflow",
+    "vanilla-js"
+  ],
+  "author": "Koffie Lik Ponblanou",
   "license": "ISC",
   "packageManager": "pnpm@10.26.2",
   "devDependencies": {
