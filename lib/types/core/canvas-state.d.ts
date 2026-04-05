@@ -7,6 +7,12 @@
 /**
  * @typedef {{ nodes: Array<*>, edges: Array<*> }} ClipboardData
  */
+/**
+ * Central state manager for the pipeline canvas.
+ * Extends EventTarget — all mutations go through CommandHistory.
+ * Fires: node-added, node-removed, node-moved, edge-added, edge-removed,
+ * node-config-updated, viewport-changed, selection-changed, state-reset.
+ */
 export class CanvasState extends EventTarget {
     /**
      * @param {CanvasStateJSON} json
@@ -63,6 +69,7 @@ export class CanvasState extends EventTarget {
     selectNode(nodeId: string): void;
     /** @param {string} nodeId */
     toggleNodeSelection(nodeId: string): void;
+    /** Deselects all nodes. */
     clearSelection(): void;
     /** @param {string[]} nodeIds */
     selectNodes(nodeIds: string[]): void;
@@ -76,13 +83,17 @@ export class CanvasState extends EventTarget {
      * @returns {Port | null}
      */
     _findPort(portId: string): Port | null;
+    /** Copies currently selected nodes (and internal edges) to the clipboard. */
     copySelection(): void;
+    /** Pastes clipboard contents as new nodes/edges with offset. Undoable. */
     paste(): void;
+    /** Shorthand: copies selection then immediately pastes. */
     duplicate(): void;
     /** @returns {boolean} */
     hasCycle(): boolean;
     /** @returns {CanvasStateJSON} */
     toJSON(): CanvasStateJSON;
+    /** Resets all state: nodes, edges, selection, history, viewport. Fires 'state-reset'. */
     clear(): void;
     /** @param {CanvasStateJSON} json */
     loadFromJSON(json: CanvasStateJSON): void;
