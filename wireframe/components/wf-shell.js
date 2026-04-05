@@ -26,12 +26,14 @@ import {
   registerWireframeNodes,
 } from '../registries.js';
 import { StorageService } from '../services/storage-service.js';
+import { ExportService } from '../services/export-service.js';
 import './wf-workspace.js';
 import './wf-palette.js';
 import './wf-toolbar.js';
 import './wf-process-list.js';
 import './wf-config-drawer.js';
 import './wf-theme-toggle.js';
+import '../../lib/components/canvas-minimap.js';
 
 const SELECTORS = { node: 'wf-node', port: '[data-port]' };
 
@@ -89,6 +91,17 @@ template.innerHTML = `
     z-index: 100;
   }
 
+  canvas-minimap {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    z-index: 100;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--wf-shadow, rgba(0,0,0,0.15));
+    overflow: hidden;
+    border: 1px solid var(--wf-border, #e2e8f0);
+  }
+
   .context-menu {
     position: fixed;
     z-index: 200;
@@ -142,6 +155,8 @@ template.innerHTML = `
 <wf-config-drawer id="drawer"></wf-config-drawer>
 
 <wf-theme-toggle></wf-theme-toggle>
+
+<canvas-minimap id="minimap"></canvas-minimap>
 
 <div id="context-menu" class="context-menu" hidden>
   <button id="ctx-duplicate">Duplicate</button>
@@ -206,6 +221,11 @@ export class WfShell extends HTMLElement {
     processList.storageService = this.#storageService;
     processList.state = this.#state;
 
+    // Wire minimap
+    const minimap = this.shadowRoot.getElementById('minimap');
+    minimap.canvasState = this.#state;
+    minimap.visualRegistry = this.#visualRegistry;
+
     // Expose state for E2E test access
     window.__state = this.#state;
 
@@ -265,6 +285,10 @@ export class WfShell extends HTMLElement {
 
     this.addEventListener('toolbar-fit-view', () => {
       this.#fitToView(workspace);
+    });
+
+    this.addEventListener('toolbar-export-png', () => {
+      ExportService.exportPNG(this.#state, this.#visualRegistry);
     });
 
     // Context menu events from wf-node ⋮ button

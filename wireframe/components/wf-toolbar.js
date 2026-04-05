@@ -81,6 +81,10 @@ template.innerHTML = `
 <button id="btn-delete" aria-label="Delete selected" title="Delete selected (Delete)">
   <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
 </button>
+<div class="divider"></div>
+<button id="btn-export-png" aria-label="Export as PNG" title="Export as PNG">
+  <svg viewBox="0 0 24 24"><path d="M16 13h-3V3h-2v10H8l4 4 4-4zM4 19v2h16v-2H4z"/></svg>
+</button>
 `;
 
 export class WfToolbar extends HTMLElement {
@@ -126,6 +130,13 @@ export class WfToolbar extends HTMLElement {
 
     this.shadowRoot.getElementById('btn-delete').addEventListener('click', () => {
       this.dispatchEvent(new CustomEvent('toolbar-delete-selected', {
+        bubbles: true,
+        composed: true,
+      }));
+    });
+
+    this.shadowRoot.getElementById('btn-export-png').addEventListener('click', () => {
+      this.dispatchEvent(new CustomEvent('toolbar-export-png', {
         bubbles: true,
         composed: true,
       }));
