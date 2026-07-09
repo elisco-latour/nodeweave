@@ -1,0 +1,23 @@
+:root {
+  --vc-bg-pattern: #334155;
+  --vc-node-bg: #16213e;
+  --vc-node-border: #2a3a5e;
+  --vc-node-radius: 8px;
+  --vc-text-color: #e2e8f0;
+  --vc-edge-color: #64748b;
+  --vc-edge-label-bg: #16213e;
+  --vc-edge-label-border: #2a3a5e;
+  --vc-edge-label-color: #e2e8f0;
+  --vc-port-color: #64748b;
+  --vc-port-border-color: #94a3b8;
+  --vc-controls-bg: #16213e;
+  --vc-controls-border: #2a3a5e;
+  --vc-controls-fg: #e2e8f0;
+  --vc-focus-ring-color: #4dabf7;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: system-ui, -apple-system, sans-serif;
+}
