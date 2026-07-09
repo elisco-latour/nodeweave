@@ -12,7 +12,7 @@ import {
   SelectionController,
   EdgeRoutingController,
   KeyboardController,
-} from '../../lib/index.js';
+} from '../../dist/index.js';
 
 import { registerStarterNodes } from '../starter-nodes.js';
 import { StorageService } from '../services/storage-service.js';
@@ -102,7 +102,7 @@ template.innerHTML = `
 
 let nodeCounter = 0;
 
-const SELECTORS = { node: 'canvas-node', port: 'canvas-port' };
+const SELECTORS = { nodeSelector: 'canvas-node', portSelector: 'canvas-port' };
 
 export class AppShell extends HTMLElement {
   #state;
@@ -143,8 +143,8 @@ export class AppShell extends HTMLElement {
       const selectedIds = e.detail.selectedIds;
       const workspace = this.shadowRoot.getElementById('workspace');
       const nodes = workspace.shadowRoot
-        ? workspace.shadowRoot.querySelectorAll(SELECTORS.node)
-        : workspace.querySelectorAll(SELECTORS.node);
+        ? workspace.shadowRoot.querySelectorAll(SELECTORS.nodeSelector)
+        : workspace.querySelectorAll(SELECTORS.nodeSelector);
       for (const el of nodes) {
         if (selectedIds.has(el.nodeId)) {
           el.setAttribute('data-selected', '');

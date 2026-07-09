@@ -11,14 +11,14 @@ import {
   Node,
   Port,
   Edge,
-} from '../../lib/core.js';
+} from '../../dist/core.js';
 import {
   DragController,
   PanZoomController,
   SelectionController,
   EdgeRoutingController,
   KeyboardController,
-} from '../../lib/controllers.js';
+} from '../../dist/controllers.js';
 import {
   WfVisualRegistry,
   WfTopologyRegistry,
@@ -33,9 +33,9 @@ import './wf-toolbar.js';
 import './wf-process-list.js';
 import './wf-config-drawer.js';
 import './wf-theme-toggle.js';
-import '../../lib/components/canvas-minimap.js';
+import '../../dist/components/canvas-minimap.js';
 
-const SELECTORS = { node: 'wf-node', port: '[data-port]' };
+const SELECTORS = { nodeSelector: 'wf-node', portSelector: '[data-port]' };
 
 let nodeCounter = 0;
 
@@ -403,7 +403,7 @@ export class WfShell extends HTMLElement {
 
     // Update aria-selected on wf-node elements
     const nodes = workspace.shadowRoot
-      ? workspace.shadowRoot.querySelectorAll(SELECTORS.node)
+      ? workspace.shadowRoot.querySelectorAll(SELECTORS.nodeSelector)
       : [];
     for (const el of nodes) {
       if (selectedIds.has(el.nodeId)) {

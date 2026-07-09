@@ -3,38 +3,41 @@
   "version": "1.0.0",
   "description": "Zero-dependency vanilla JS node editor library with Web Components, Command pattern, and DAG validation",
   "type": "module",
-  "main": "lib/index.js",
-  "types": "lib/types/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./lib/types/index.d.ts",
-      "default": "./lib/index.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./core": {
-      "types": "./lib/types/core.d.ts",
-      "default": "./lib/core.js"
+      "types": "./dist/core.d.ts",
+      "default": "./dist/core.js"
     },
     "./controllers": {
-      "types": "./lib/types/controllers.d.ts",
-      "default": "./lib/controllers.js"
+      "types": "./dist/controllers.d.ts",
+      "default": "./dist/controllers.js"
     },
     "./registries": {
-      "types": "./lib/types/registries.d.ts",
-      "default": "./lib/registries.js"
+      "types": "./dist/registries.d.ts",
+      "default": "./dist/registries.js"
     },
     "./components": {
-      "types": "./lib/types/components.d.ts",
-      "default": "./lib/components.js"
+      "types": "./dist/components.d.ts",
+      "default": "./dist/components.js"
     }
   },
   "files": [
-    "lib/",
+    "dist/",
     "LICENSE",
     "README.md"
   ],
   "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "prepare": "tsc",
     "test": "node --test tests/unit/",
-    "types": "tsc"
+    "types": "tsc --noEmit"
   },
   "keywords": [
     "node-editor",
@@ -43,9 +46,10 @@
     "web-components",
     "pipeline",
     "workflow",
-    "vanilla-js"
+    "vanilla-js",
+    "angular"
   ],
-  "author": "Koffie Lik Ponblanou",
+  "author": "Koffi Eli Kponblanou",
   "license": "ISC",
   "packageManager": "pnpm@10.26.2",
   "devDependencies": {

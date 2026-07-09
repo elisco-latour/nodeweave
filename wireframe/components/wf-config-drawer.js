@@ -6,7 +6,7 @@
  * Dispatches `node-config-updated` CustomEvent on input changes.
  */
 
-import { RuleEvaluator } from '../../lib/core/rule-evaluator.js';
+import { RuleEvaluator } from '../../dist/core/rule-evaluator.js';
 
 const template = document.createElement('template');
 template.innerHTML = `

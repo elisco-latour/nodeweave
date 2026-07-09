@@ -6,7 +6,7 @@
  */
 import './wf-node.js';
 import './wf-edge-layer.js';
-import { ViewportCulling } from '../../lib/core/viewport-culling.js';
+import { ViewportCulling } from '../../dist/core/viewport-culling.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
