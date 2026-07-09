@@ -1,8 +1,11 @@
+import { buildEdgePath } from '../../dist/core/edge-paths.js';
+
 // Layout constants matching wf-node.js CSS
 const WF_HEADER_HEIGHT = 45; // 10px pad + 24px icon + 10px pad + 1px border
 const WF_BODY_PAD = 12;
 const WF_ROW_HEIGHT = 24;
 const WF_ROW_GAP = 8;
+const WF_BEZIER_OPTS = { minBow: 100 };
 
 /**
  * <wf-edge-layer> — SVG Bézier edge layer for the wireframe consumer.
@@ -133,9 +136,7 @@ export class WfEdgeLayer extends HTMLElement {
     const tgt = this.#getPortCenter(edge.targetPortId);
     if (!src || !tgt) return;
 
-    const dx = Math.max(100, Math.abs(tgt.x - src.x) * 0.5);
-    const d = `M ${src.x} ${src.y} C ${src.x + dx} ${src.y}, ${tgt.x - dx} ${tgt.y}, ${tgt.x} ${tgt.y}`;
-    path.setAttribute('d', d);
+    path.setAttribute('d', buildEdgePath(edge.type ?? 'bezier', src, tgt, WF_BEZIER_OPTS));
   }
 
   _getPortPosition(portId) {
