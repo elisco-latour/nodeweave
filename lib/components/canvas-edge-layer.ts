@@ -85,6 +85,7 @@ export class CanvasEdgeLayer extends HTMLElement {
   readonly #onEdgeAdded: (e: Event) => void;
   readonly #onEdgeRemoved: (e: Event) => void;
   readonly #onNodeMoved: (e: Event) => void;
+  readonly #onNodeResized: (e: Event) => void;
 
   constructor() {
     super();
@@ -102,6 +103,9 @@ export class CanvasEdgeLayer extends HTMLElement {
     this.#onNodeMoved = (e: Event) => {
       this.#updateEdgesForNode((e as CustomEvent).detail.nodeId);
     };
+    this.#onNodeResized = (e: Event) => {
+      this.#updateEdgesForNode((e as CustomEvent).detail.nodeId);
+    };
   }
 
   disconnectedCallback(): void {
@@ -109,6 +113,7 @@ export class CanvasEdgeLayer extends HTMLElement {
       this.#state.removeEventListener('edge-added', this.#onEdgeAdded);
       this.#state.removeEventListener('edge-removed', this.#onEdgeRemoved);
       this.#state.removeEventListener('node-moved', this.#onNodeMoved);
+      this.#state.removeEventListener('node-resized', this.#onNodeResized);
     }
   }
 
@@ -118,12 +123,14 @@ export class CanvasEdgeLayer extends HTMLElement {
       this.#state.removeEventListener('edge-added', this.#onEdgeAdded);
       this.#state.removeEventListener('edge-removed', this.#onEdgeRemoved);
       this.#state.removeEventListener('node-moved', this.#onNodeMoved);
+      this.#state.removeEventListener('node-resized', this.#onNodeResized);
     }
     this.#state = canvasState;
     if (this.#state) {
       this.#state.addEventListener('edge-added', this.#onEdgeAdded);
       this.#state.addEventListener('edge-removed', this.#onEdgeRemoved);
       this.#state.addEventListener('node-moved', this.#onNodeMoved);
+      this.#state.addEventListener('node-resized', this.#onNodeResized);
       this.#renderAllEdges();
     }
   }

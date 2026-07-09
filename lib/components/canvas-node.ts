@@ -65,6 +65,7 @@ export class CanvasNode extends HTMLElement {
   #ports: Port[] = [];
   #state: CanvasState | null = null;
   readonly #onNodeMoved: (e: Event) => void;
+  readonly #onNodeResized: (e: Event) => void;
 
   constructor() {
     super();
@@ -75,6 +76,14 @@ export class CanvasNode extends HTMLElement {
       const detail = (e as CustomEvent).detail;
       if (detail.nodeId === this.#nodeId) {
         this.setPosition(detail.x, detail.y);
+      }
+    };
+
+    this.#onNodeResized = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail.nodeId === this.#nodeId) {
+        this.setPosition(detail.x, detail.y);
+        this.setSize(detail.width, detail.height);
       }
     };
   }
@@ -90,6 +99,7 @@ export class CanvasNode extends HTMLElement {
   disconnectedCallback(): void {
     if (this.#state) {
       this.#state.removeEventListener('node-moved', this.#onNodeMoved);
+      this.#state.removeEventListener('node-resized', this.#onNodeResized);
     }
   }
 
@@ -117,16 +127,25 @@ export class CanvasNode extends HTMLElement {
   set state(canvasState: CanvasState | null) {
     if (this.#state) {
       this.#state.removeEventListener('node-moved', this.#onNodeMoved);
+      this.#state.removeEventListener('node-resized', this.#onNodeResized);
     }
     this.#state = canvasState;
     if (this.#state) {
       this.#state.addEventListener('node-moved', this.#onNodeMoved);
+      this.#state.addEventListener('node-resized', this.#onNodeResized);
     }
   }
 
   setPosition(x: number, y: number): void {
     this.style.setProperty('--x', String(x));
     this.style.setProperty('--y', String(y));
+  }
+
+  setSize(width: number, height: number): void {
+    // Clear the template min-width so an explicit resize below it takes effect.
+    this.style.minWidth = '0';
+    this.style.width = `${width}px`;
+    this.style.height = `${height}px`;
   }
 
   setHeaderColor(color: string): void {

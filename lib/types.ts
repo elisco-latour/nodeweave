@@ -9,6 +9,13 @@ export interface Viewport {
   zoom: number;
 }
 
+export interface NodeGeometry {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface NodeMetadata {
   config?: Record<string, unknown>;
   [key: string]: unknown;
