@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { Port, Node, Edge } from '../../dist/core/graph.js';
+import { Port, Node, Edge } from '../dist/core/graph.js';
 
 describe('Port', () => {
   it('constructs with valid direction "in"', () => {

@@ -1,61 +1,22 @@
 {
-  "name": "visual-canvas",
-  "version": "1.0.0",
-  "description": "Zero-dependency vanilla JS node editor library with Web Components, Command pattern, and DAG validation",
+  "name": "nodeweave",
+  "version": "0.0.0",
+  "private": true,
+  "description": "nodeweave monorepo — a framework-agnostic node/graph canvas engine and its framework bindings.",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./core": {
-      "types": "./dist/core.d.ts",
-      "default": "./dist/core.js"
-    },
-    "./controllers": {
-      "types": "./dist/controllers.d.ts",
-      "default": "./dist/controllers.js"
-    },
-    "./registries": {
-      "types": "./dist/registries.d.ts",
-      "default": "./dist/registries.js"
-    },
-    "./components": {
-      "types": "./dist/components.d.ts",
-      "default": "./dist/components.js"
-    }
-  },
-  "files": [
-    "dist/",
-    "LICENSE",
-    "README.md"
-  ],
+  "packageManager": "pnpm@10.26.2",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "prepare": "tsc",
-    "test": "node --test tests/unit/",
-    "types": "tsc --noEmit"
+    "build": "pnpm --filter @nodeweave/core --filter @nodeweave/angular build",
+    "test": "pnpm --filter @nodeweave/core test",
+    "test:e2e": "playwright test",
+    "typecheck": "pnpm --filter @nodeweave/core exec tsc --noEmit"
   },
-  "keywords": [
-    "node-editor",
-    "canvas",
-    "dag",
-    "web-components",
-    "pipeline",
-    "workflow",
-    "vanilla-js",
-    "angular"
-  ],
   "author": "Koffi Eli Kponblanou",
   "license": "ISC",
-  "packageManager": "pnpm@10.26.2",
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
     "@playwright/experimental-ct-core": "^1.59.1",
     "@playwright/test": "^1.59.1",
-    "typescript": "^6.0.2"
+    "typescript": "~6.0.2"
   }
 }

@@ -9,7 +9,7 @@ test.describe('wf-palette', () => {
   test('renders items from visual registry', async ({ page }) => {
     await page.evaluate(async () => {
       const { WfVisualRegistry, registerWireframeNodes, WfTopologyRegistry, WfSchemaRegistry } =
-        await import('/wireframe/registries.js');
+        await import('/examples/wireframe/registries.js');
       const visual = new WfVisualRegistry();
       const topology = new WfTopologyRegistry();
       const schema = new WfSchemaRegistry();
@@ -32,7 +32,7 @@ test.describe('wf-palette', () => {
   test('items have correct labels', async ({ page }) => {
     await page.evaluate(async () => {
       const { WfVisualRegistry, registerWireframeNodes, WfTopologyRegistry, WfSchemaRegistry } =
-        await import('/wireframe/registries.js');
+        await import('/examples/wireframe/registries.js');
       const visual = new WfVisualRegistry();
       const topology = new WfTopologyRegistry();
       const schema = new WfSchemaRegistry();
@@ -68,7 +68,7 @@ test.describe('wf-palette', () => {
   test('dispatches palette-add-node on Enter key', async ({ page }) => {
     const result = await page.evaluate(async () => {
       const { WfVisualRegistry, registerWireframeNodes, WfTopologyRegistry, WfSchemaRegistry } =
-        await import('/wireframe/registries.js');
+        await import('/examples/wireframe/registries.js');
       const visual = new WfVisualRegistry();
       const topology = new WfTopologyRegistry();
       const schema = new WfSchemaRegistry();
@@ -95,7 +95,7 @@ test.describe('wf-palette', () => {
   test('items are draggable', async ({ page }) => {
     await page.evaluate(async () => {
       const { WfVisualRegistry, registerWireframeNodes, WfTopologyRegistry, WfSchemaRegistry } =
-        await import('/wireframe/registries.js');
+        await import('/examples/wireframe/registries.js');
       const visual = new WfVisualRegistry();
       const topology = new WfTopologyRegistry();
       const schema = new WfSchemaRegistry();

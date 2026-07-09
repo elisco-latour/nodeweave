@@ -12,7 +12,7 @@ async function waitForShell(page) {
   }, null, { timeout: 10000 });
   // Expose Edge class for programmatic edge creation
   await page.evaluate(() => {
-    import('/lib/core/graph.js').then(m => { window.__libExports = m; });
+    import('/packages/core/dist/core/graph.js').then(m => { window.__libExports = m; });
   });
   await page.waitForFunction(() => window.__libExports && window.__libExports.Edge);
 }

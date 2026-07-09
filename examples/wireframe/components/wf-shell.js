@@ -11,14 +11,14 @@ import {
   Node,
   Port,
   Edge,
-} from '../../dist/core.js';
+} from '/packages/core/dist/core.js';
 import {
   DragController,
   PanZoomController,
   SelectionController,
   EdgeRoutingController,
   KeyboardController,
-} from '../../dist/controllers.js';
+} from '/packages/core/dist/controllers.js';
 import {
   WfVisualRegistry,
   WfTopologyRegistry,
@@ -33,7 +33,7 @@ import './wf-toolbar.js';
 import './wf-process-list.js';
 import './wf-config-drawer.js';
 import './wf-theme-toggle.js';
-import '../../dist/components/canvas-minimap.js';
+import '/packages/core/dist/components/canvas-minimap.js';
 
 const SELECTORS = { nodeSelector: 'wf-node', portSelector: '[data-port]' };
 

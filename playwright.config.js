@@ -42,7 +42,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: 'npx serve app -l 3000 --no-clipboard',
+      command: 'npx serve examples/vanilla -l 3000 --no-clipboard',
       port: 3000,
       reuseExistingServer: !process.env.CI,
     },

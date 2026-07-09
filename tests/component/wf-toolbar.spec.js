@@ -50,7 +50,7 @@ test.describe('wf-toolbar', () => {
 
   test('undo enables after command execution on state', async ({ page }) => {
     const undoEnabled = await page.evaluate(async () => {
-      const { CanvasState, Node } = await import('/lib/core.js');
+      const { CanvasState, Node } = await import('/packages/core/dist/core.js');
       const state = new CanvasState();
       const toolbar = document.createElement('wf-toolbar');
       document.body.appendChild(toolbar);
@@ -75,7 +75,7 @@ test.describe('wf-toolbar', () => {
 
   test('redo enables after undo', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { CanvasState, Node } = await import('/lib/core.js');
+      const { CanvasState, Node } = await import('/packages/core/dist/core.js');
       const state = new CanvasState();
       const toolbar = document.createElement('wf-toolbar');
       document.body.appendChild(toolbar);

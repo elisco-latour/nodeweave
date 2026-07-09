@@ -1,4 +1,4 @@
-import { Registry } from '../../dist/core/registry.js';
+import { Registry } from '/packages/core/dist/core/registry.js';
 
 // --- Visual ---
 

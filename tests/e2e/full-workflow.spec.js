@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const APP_URL = '/app/index.html';
+const APP_URL = '/examples/vanilla/index.html';
 
 /** Wait for app-shell to be fully wired. */
 async function waitForApp(page) {
@@ -78,7 +78,7 @@ test.describe('Full workflow', () => {
     await waitForApp(page);
     // Expose the Edge class for programmatic edge creation
     await page.evaluate(() => {
-      import('/lib/core/graph.js').then(m => { window.__libExports = m; });
+      import('/packages/core/dist/core/graph.js').then(m => { window.__libExports = m; });
     });
     await page.waitForFunction(() => window.__libExports && window.__libExports.Edge);
   });

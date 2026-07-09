@@ -7,7 +7,7 @@ import {
   getSmoothStepPath,
   getEdgeCenter,
   buildEdgePath,
-} from '../../dist/core/edge-paths.js';
+} from '../dist/core/edge-paths.js';
 
 const S = { x: 0, y: 0 };
 const T = { x: 200, y: 100 };

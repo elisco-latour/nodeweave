@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { CanvasState } from '../../dist/core/canvas-state.js';
-import { Node, Port, Edge } from '../../dist/core/graph.js';
+import { CanvasState } from '../dist/core/canvas-state.js';
+import { Node, Port, Edge } from '../dist/core/graph.js';
 
 function createNodeWithPorts(id, type = 'action', x = 0, y = 0) {
   const node = new Node({ id, type, x, y, metadata: { config: {} } });

@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, type Signal, type OnDestroy } from '@angular/core';
-import { CanvasState, Node, Edge } from 'visual-canvas/core';
-import { VisualRegistry, TopologyRegistry, SchemaRegistry } from 'visual-canvas/registries';
+import { CanvasState, Node, Edge } from '@nodeweave/core/core';
+import { VisualRegistry, TopologyRegistry, SchemaRegistry } from '@nodeweave/core/registries';
 
 type Viewport = CanvasState['viewport'];
 type CanvasJSON = ReturnType<CanvasState['toJSON']>;

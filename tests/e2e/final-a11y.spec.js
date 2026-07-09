@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-const APP_URL = '/app/index.html';
+const APP_URL = '/examples/vanilla/index.html';
 
 async function waitForApp(page) {
   await page.goto(APP_URL);
@@ -29,7 +29,7 @@ async function addNodes(page, types) {
 
 async function connectNodes(page, aIdx, bIdx) {
   await page.evaluate(({ a, b }) => {
-    import('/lib/core/graph.js').then(({ Edge }) => {
+    import('/packages/core/dist/core/graph.js').then(({ Edge }) => {
       const shell = document.querySelector('app-shell');
       const ws = shell.shadowRoot.getElementById('workspace');
       const state = ws.state;
@@ -62,7 +62,7 @@ test.describe('Final accessibility audit', () => {
 
     // Wait for the Graph module to be available
     await page.evaluate(() => {
-      return import('/lib/core/graph.js').then(m => { window.__Edge = m.Edge; });
+      return import('/packages/core/dist/core/graph.js').then(m => { window.__Edge = m.Edge; });
     });
     await page.waitForFunction(() => window.__Edge);
 

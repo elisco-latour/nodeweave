@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const APP_URL = '/app/index.html';
+const APP_URL = '/examples/vanilla/index.html';
 
 async function waitForApp(page) {
   await page.goto(APP_URL);
@@ -12,7 +12,7 @@ async function waitForApp(page) {
   }, null, { timeout: 10000 });
   // Expose Edge class
   await page.evaluate(() => {
-    import('/lib/core/graph.js').then(m => { window.__libExports = m; });
+    import('/packages/core/dist/core/graph.js').then(m => { window.__libExports = m; });
   });
   await page.waitForFunction(() => window.__libExports && window.__libExports.Edge);
 }

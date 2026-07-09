@@ -6,7 +6,7 @@ test('debug app load', async ({ page }) => {
   page.on('response', resp => {
     if (resp.status() >= 400) console.log('HTTP_ERR:', resp.status(), resp.url());
   });
-  await page.goto('/app/index.html');
+  await page.goto('/examples/vanilla/index.html');
   await page.waitForTimeout(5000);
   const result = await page.evaluate(() => {
     const shell = document.querySelector('app-shell');

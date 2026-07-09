@@ -1,9 +1,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { DragController } from '../../dist/controllers/drag-controller.js';
-import { SelectionController } from '../../dist/controllers/selection-controller.js';
-import { EdgeRoutingController } from '../../dist/controllers/edge-routing-controller.js';
-import { KeyboardController } from '../../dist/controllers/keyboard-controller.js';
+import { DragController } from '../dist/controllers/drag-controller.js';
+import { SelectionController } from '../dist/controllers/selection-controller.js';
+import { EdgeRoutingController } from '../dist/controllers/edge-routing-controller.js';
+import { KeyboardController } from '../dist/controllers/keyboard-controller.js';
 
 // Minimal stubs
 const stubWorkspace = {

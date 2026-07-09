@@ -11,7 +11,7 @@ async function waitForShell(page) {
     return ws && ws.state;
   }, null, { timeout: 10000 });
   await page.evaluate(() => {
-    import('/lib/core/graph.js').then(m => { window.__libExports = m; });
+    import('/packages/core/dist/core/graph.js').then(m => { window.__libExports = m; });
   });
   await page.waitForFunction(() => window.__libExports && window.__libExports.Edge);
 }
