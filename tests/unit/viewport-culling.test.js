@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ViewportCulling } from '../../lib/core/viewport-culling.js';
-import { CanvasState } from '../../lib/core/canvas-state.js';
-import { Node, Port } from '../../lib/core/graph.js';
+import { ViewportCulling } from '../../dist/core/viewport-culling.js';
+import { CanvasState } from '../../dist/core/canvas-state.js';
+import { Node, Port } from '../../dist/core/graph.js';
 
 function createNode(id, x, y, width = 180, height = 60) {
   const node = new Node({ id, type: 'action', x, y });

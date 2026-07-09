@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { RuleEvaluator } from "../../lib/core/rule-evaluator.js";
+import { RuleEvaluator } from "../../dist/core/rule-evaluator.js";
 
 // ─── Leaf operators ──────────────────────────────────────────────────────────
 

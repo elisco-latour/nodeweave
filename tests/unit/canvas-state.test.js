@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { CanvasState } from '../../lib/core/canvas-state.js';
-import { Node, Port, Edge } from '../../lib/core/graph.js';
-import { PipelineBuilder } from '../../lib/core/pipeline-builder.js';
+import { CanvasState } from '../../dist/core/canvas-state.js';
+import { Node, Port, Edge } from '../../dist/core/graph.js';
+import { PipelineBuilder } from '../../dist/core/pipeline-builder.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

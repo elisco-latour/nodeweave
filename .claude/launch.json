@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "app",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", ".", "--no-clipboard", "-p", "5174"],
+      "port": 5174
+    },
+    {
+      "name": "wireframe",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", ".", "--no-clipboard", "-p", "5175"],
+      "port": 5175
+    }
+  ]
+}
