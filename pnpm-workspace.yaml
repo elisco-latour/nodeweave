@@ -1,2 +1,8 @@
 packages:
   - 'packages/*'
+  - 'examples/*'
+
+# Allow these native/binary deps to run their install scripts (pnpm blocks by default).
+onlyBuiltDependencies:
+  - esbuild
+  - '@parcel/watcher'

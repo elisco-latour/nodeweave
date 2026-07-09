@@ -12,6 +12,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", ".", "--no-clipboard", "-p", "5175"],
       "port": 5175
+    },
+    {
+      "name": "angular-example",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@visual-canvas/angular-example", "exec", "ng", "serve", "example", "--port", "4200"],
+      "port": 4200
     }
   ]
 }
