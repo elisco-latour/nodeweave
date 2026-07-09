@@ -27,7 +27,7 @@
       "default": "./dist/components.js"
     }
   },
-  "sideEffects": ["./dist/components.js", "./dist/components/*.js"],
+  "sideEffects": ["./dist/index.js", "./dist/components.js", "./dist/components/*.js"],
   "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsc",
@@ -38,6 +38,18 @@
   "keywords": ["node-editor", "canvas", "dag", "web-components", "graph", "flow"],
   "author": "Koffi Eli Kponblanou",
   "license": "ISC",
+  "homepage": "https://github.com/arasuite/visual-canvas/tree/main/packages/core#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arasuite/visual-canvas.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/arasuite/visual-canvas/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "typescript": "~6.0.2"
   }
