@@ -5,6 +5,7 @@ import {
   getBezierPath,
   getStepPath,
   getSmoothStepPath,
+  getEdgeCenter,
   buildEdgePath,
 } from '../../dist/core/edge-paths.js';
 
@@ -63,6 +64,16 @@ describe('getSmoothStepPath', () => {
 
   it('degenerates to a straight line when source and target share a row', () => {
     assert.equal(getSmoothStepPath({ x: 0, y: 50 }, { x: 200, y: 50 }), 'M 0,50 L 200,50');
+  });
+});
+
+describe('getEdgeCenter', () => {
+  it('returns the geometric midpoint', () => {
+    assert.deepEqual(getEdgeCenter(S, T), { x: 100, y: 50 });
+  });
+
+  it('handles negative offsets', () => {
+    assert.deepEqual(getEdgeCenter({ x: 200, y: 100 }, { x: 0, y: 0 }), { x: 100, y: 50 });
   });
 });
 

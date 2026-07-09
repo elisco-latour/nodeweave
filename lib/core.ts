@@ -15,6 +15,7 @@ export {
   getBezierPath,
   getStepPath,
   getSmoothStepPath,
+  getEdgeCenter,
   buildEdgePath,
 } from './core/edge-paths.js';
 export type { Point, EdgePathOptions } from './core/edge-paths.js';
