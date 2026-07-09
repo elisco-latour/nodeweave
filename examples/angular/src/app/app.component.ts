@@ -1,5 +1,6 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Type } from '@angular/core';
 import { VisualCanvasComponent, Node, Port } from '@visual-canvas/angular';
+import { FancyNodeComponent } from './fancy-node.component';
 
 @Component({
   selector: 'app-root',
@@ -9,7 +10,8 @@ import { VisualCanvasComponent, Node, Port } from '@visual-canvas/angular';
   template: `
     <header class="toolbar">
       <strong>visual-canvas &times; Angular</strong>
-      <button type="button" (click)="addNode(cv)">Add node</button>
+      <button type="button" (click)="addNode(cv, 'task')">Add node</button>
+      <button type="button" (click)="addNode(cv, 'fancy')">Add fancy node</button>
       <button type="button" (click)="cv.service.undo()" [disabled]="!cv.service.canUndo()">Undo</button>
       <button type="button" (click)="cv.service.redo()" [disabled]="!cv.service.canRedo()">Redo</button>
       <button type="button" (click)="cv.service.clear()">Clear</button>
@@ -22,6 +24,7 @@ import { VisualCanvasComponent, Node, Port } from '@visual-canvas/angular';
       background="dots"
       [backgroundGap]="24"
       [snapToGrid]="true"
+      [nodeTypes]="nodeTypes"
       (connect)="onConnect($event)"
     ></visual-canvas>
   `,
@@ -57,11 +60,15 @@ import { VisualCanvasComponent, Node, Port } from '@visual-canvas/angular';
 export class AppComponent {
   #counter = 0;
 
-  addNode(cv: VisualCanvasComponent): void {
+  readonly nodeTypes: Record<string, Type<unknown>> = {
+    fancy: FancyNodeComponent,
+  };
+
+  addNode(cv: VisualCanvasComponent, type: string): void {
     const id = `n${++this.#counter}`;
     const node = new Node({
       id,
-      type: 'task',
+      type,
       x: 80 + (this.#counter % 5) * 60,
       y: 80 + (this.#counter % 5) * 50,
     });
