@@ -40,7 +40,7 @@ test.describe('canvas-edge-layer', () => {
 
     const pathCount = await page.evaluate(() => {
       const layer = document.querySelector('canvas-edge-layer');
-      return layer.shadowRoot.querySelectorAll('path').length;
+      return layer.shadowRoot.querySelectorAll('path[data-edge-id]').length;
     });
     expect(pathCount).toBe(2);
   });
@@ -72,7 +72,7 @@ test.describe('canvas-edge-layer', () => {
     // Get initial path
     const initialD = await page.evaluate(() => {
       const layer = document.querySelector('canvas-edge-layer');
-      return layer.shadowRoot.querySelector('path').getAttribute('d');
+      return layer.shadowRoot.querySelector('path[data-edge-id]').getAttribute('d');
     });
 
     // Move node
@@ -83,7 +83,7 @@ test.describe('canvas-edge-layer', () => {
     // Check path changed
     const updatedD = await page.evaluate(() => {
       const layer = document.querySelector('canvas-edge-layer');
-      return layer.shadowRoot.querySelector('path').getAttribute('d');
+      return layer.shadowRoot.querySelector('path[data-edge-id]').getAttribute('d');
     });
     expect(updatedD).not.toBe(initialD);
   });
@@ -122,7 +122,7 @@ test.describe('canvas-edge-layer', () => {
     // Initially 2 paths
     let pathCount = await page.evaluate(() => {
       const layer = document.querySelector('canvas-edge-layer');
-      return layer.shadowRoot.querySelectorAll('path').length;
+      return layer.shadowRoot.querySelectorAll('path[data-edge-id]').length;
     });
     expect(pathCount).toBe(2);
 
@@ -137,7 +137,7 @@ test.describe('canvas-edge-layer', () => {
 
     pathCount = await page.evaluate(() => {
       const layer = document.querySelector('canvas-edge-layer');
-      return layer.shadowRoot.querySelectorAll('path').length;
+      return layer.shadowRoot.querySelectorAll('path[data-edge-id]').length;
     });
     expect(pathCount).toBe(3);
   });
@@ -179,7 +179,7 @@ test.describe('canvas-edge-layer', () => {
 
     const pathCount = await page.evaluate(() => {
       const layer = document.querySelector('canvas-edge-layer');
-      return layer.shadowRoot.querySelectorAll('path').length;
+      return layer.shadowRoot.querySelectorAll('path[data-edge-id]').length;
     });
     expect(pathCount).toBe(1);
   });

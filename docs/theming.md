@@ -1,17 +1,17 @@
 # Theming
 
 Every `@nodeweave/core` Web Component (and the `@nodeweave/angular` renderer)
-styles itself through `--vc-*` CSS custom properties with built-in fallbacks.
+styles itself through `--nw-*` CSS custom properties with built-in fallbacks.
 Set them on `:root` (or any ancestor) to theme the canvas — no build step,
 and dark/light is just a different set of values.
 
 ```css
 :root {
-  --vc-node-bg: #16213e;
-  --vc-node-border: #2a3a5e;
-  --vc-text-color: #e2e8f0;
-  --vc-edge-color: #64748b;
-  --vc-bg-pattern: #334155;
+  --nw-node-bg: #16213e;
+  --nw-node-border: #2a3a5e;
+  --nw-text-color: #e2e8f0;
+  --nw-edge-color: #64748b;
+  --nw-bg-pattern: #334155;
 }
 ```
 
@@ -20,87 +20,87 @@ and dark/light is just a different set of values.
 ### Nodes & text
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `--vc-node-bg` | `#16213e` | Node background |
-| `--vc-node-border` | `#2a3a5e` | Node border |
-| `--vc-node-radius` | `8px` | Node corner radius |
-| `--vc-text-color` | `#e0e0e0` | Node / drawer text |
-| `--vc-font-family` | `system-ui, …` | Font family |
-| `--vc-font-size` | `0.875rem` | Font size |
+| `--nw-node-bg` | `#16213e` | Node background |
+| `--nw-node-border` | `#2a3a5e` | Node border |
+| `--nw-node-radius` | `8px` | Node corner radius |
+| `--nw-text-color` | `#e0e0e0` | Node / drawer text |
+| `--nw-font-family` | `system-ui, …` | Font family |
+| `--nw-font-size` | `0.875rem` | Font size |
 
 ### Ports
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `--vc-port-color` | `#888` | Port fill |
-| `--vc-port-border-color` | `#555` | Port border |
-| `--vc-port-hover-color` | `#4dabf7` | Port fill on hover / valid target |
-| `--vc-port-hover-border-color` | `#339af0` | Port border on hover |
+| `--nw-port-color` | `#888` | Port fill |
+| `--nw-port-border-color` | `#555` | Port border |
+| `--nw-port-hover-color` | `#4dabf7` | Port fill on hover / valid target |
+| `--nw-port-hover-border-color` | `#339af0` | Port border on hover |
 
 ### Edges
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `--vc-edge-color` | `#666` | Edge stroke (also the arrowhead, via `context-stroke`) |
-| `--vc-edge-color-phantom` | `#999` | In-progress (phantom) edge while connecting |
-| `--vc-edge-label-bg` | `#16213e` | Edge label pill background |
-| `--vc-edge-label-border` | `#2a3a5e` | Edge label pill border |
-| `--vc-edge-label-color` | `#e0e0e0` | Edge label text |
+| `--nw-edge-color` | `#666` | Edge stroke (also the arrowhead, via `context-stroke`) |
+| `--nw-edge-color-phantom` | `#999` | In-progress (phantom) edge while connecting |
+| `--nw-edge-label-bg` | `#16213e` | Edge label pill background |
+| `--nw-edge-label-border` | `#2a3a5e` | Edge label pill border |
+| `--nw-edge-label-color` | `#e0e0e0` | Edge label text |
 
 ### Background
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `--vc-bg-color` | `transparent` | `<canvas-background>` fill behind the pattern |
-| `--vc-bg-pattern` | `#cbd5e1` | Dot / line / cross colour |
+| `--nw-bg-color` | `transparent` | `<canvas-background>` fill behind the pattern |
+| `--nw-bg-pattern` | `#cbd5e1` | Dot / line / cross colour |
 
 ### Selection, focus & resize
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `--vc-selection-border` | `#4dabf7` | Selected-node outline / rubber band border |
-| `--vc-selection-bg` | `rgba(77,171,247,0.1)` | Rubber-band fill |
-| `--vc-focus-ring-color` | `#4dabf7` | Keyboard focus ring |
-| `--vc-resize-outline` | `#4dabf7` | Resize bounding outline |
-| `--vc-resize-handle` | `#fff` | Resize handle fill |
-| `--vc-resize-handle-border` | `#4dabf7` | Resize handle border |
+| `--nw-selection-border` | `#4dabf7` | Selected-node outline / rubber band border |
+| `--nw-selection-bg` | `rgba(77,171,247,0.1)` | Rubber-band fill |
+| `--nw-focus-ring-color` | `#4dabf7` | Keyboard focus ring |
+| `--nw-resize-outline` | `#4dabf7` | Resize bounding outline |
+| `--nw-resize-handle` | `#fff` | Resize handle fill |
+| `--nw-resize-handle-border` | `#4dabf7` | Resize handle border |
 
 ### Controls
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `--vc-controls-bg` | `#16213e` | `<canvas-controls>` background |
-| `--vc-controls-border` | `#2a3a5e` | Controls border |
-| `--vc-controls-fg` | `#e0e0e0` | Control icon colour |
-| `--vc-controls-hover` | `rgba(255,255,255,0.1)` | Control hover background |
-| `--vc-controls-radius` | `8px` | Controls corner radius |
+| `--nw-controls-bg` | `#16213e` | `<canvas-controls>` background |
+| `--nw-controls-border` | `#2a3a5e` | Controls border |
+| `--nw-controls-fg` | `#e0e0e0` | Control icon colour |
+| `--nw-controls-hover` | `rgba(255,255,255,0.1)` | Control hover background |
+| `--nw-controls-radius` | `8px` | Controls corner radius |
 
 ### Config drawer & form inputs
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `--vc-drawer-bg` | `#16213e` | Drawer background |
-| `--vc-drawer-border` | `#2a3a5e` | Drawer border |
-| `--vc-drawer-hover` | `rgba(255,255,255,0.1)` | Drawer button hover |
-| `--vc-input-bg` | `#1a1a2e` | Form input background |
-| `--vc-input-border` | `#2a3a5e` | Form input border |
-| `--vc-label-color` | `#aab` | Field label |
-| `--vc-error-bg` | `rgba(244,67,54,0.2)` | Remove-button hover |
-| `--vc-error-color` | `#f44336` | Remove-button hover border |
+| `--nw-drawer-bg` | `#16213e` | Drawer background |
+| `--nw-drawer-border` | `#2a3a5e` | Drawer border |
+| `--nw-drawer-hover` | `rgba(255,255,255,0.1)` | Drawer button hover |
+| `--nw-input-bg` | `#1a1a2e` | Form input background |
+| `--nw-input-border` | `#2a3a5e` | Form input border |
+| `--nw-label-color` | `#aab` | Field label |
+| `--nw-error-bg` | `rgba(244,67,54,0.2)` | Remove-button hover |
+| `--nw-error-color` | `#f44336` | Remove-button hover border |
 
 ### Minimap
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `--vc-toolbar-border` | `#2a3a5e` | Minimap border |
+| `--nw-toolbar-border` | `#2a3a5e` | Minimap border |
 
-(The minimap also reuses `--vc-node-bg` for its own background.)
+(The minimap also reuses `--nw-node-bg` for its own background.)
 
 ## Light theme example
 
 ```css
 :root {
-  --vc-node-bg: #ffffff;
-  --vc-node-border: #e2e8f0;
-  --vc-text-color: #0f172a;
-  --vc-edge-color: #94a3b8;
-  --vc-bg-pattern: #cbd5e1;
-  --vc-controls-bg: #ffffff;
-  --vc-controls-fg: #0f172a;
-  --vc-drawer-bg: #ffffff;
-  --vc-input-bg: #f8fafc;
+  --nw-node-bg: #ffffff;
+  --nw-node-border: #e2e8f0;
+  --nw-text-color: #0f172a;
+  --nw-edge-color: #94a3b8;
+  --nw-bg-pattern: #cbd5e1;
+  --nw-controls-bg: #ffffff;
+  --nw-controls-fg: #0f172a;
+  --nw-drawer-bg: #ffffff;
+  --nw-input-bg: #f8fafc;
 }
 ```
 

@@ -6,7 +6,7 @@ test.describe('wf-toolbar', () => {
     await page.waitForFunction(() => window.__ready === true);
   });
 
-  test('renders all 6 buttons', async ({ page }) => {
+  test('renders all 7 buttons', async ({ page }) => {
     await page.evaluate(() => {
       const toolbar = document.createElement('wf-toolbar');
       document.body.appendChild(toolbar);
@@ -16,7 +16,7 @@ test.describe('wf-toolbar', () => {
     const buttonCount = await toolbar.evaluate((el) =>
       el.shadowRoot.querySelectorAll('button').length,
     );
-    expect(buttonCount).toBe(6);
+    expect(buttonCount).toBe(7);
   });
 
   test('has correct ARIA role', async ({ page }) => {

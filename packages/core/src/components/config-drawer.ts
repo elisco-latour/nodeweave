@@ -17,11 +17,11 @@ template.innerHTML = `
     width: 320px;
     transform: translateX(100%);
     transition: transform 0.2s;
-    background: var(--vc-drawer-bg, #16213e);
-    color: var(--vc-text-color, #e0e0e0);
-    font-family: var(--vc-font-family, system-ui, -apple-system, sans-serif);
-    font-size: var(--vc-font-size, 0.875rem);
-    border-left: 1px solid var(--vc-drawer-border, #2a3a5e);
+    background: var(--nw-drawer-bg, #16213e);
+    color: var(--nw-text-color, #e0e0e0);
+    font-family: var(--nw-font-family, system-ui, -apple-system, sans-serif);
+    font-size: var(--nw-font-size, 0.875rem);
+    border-left: 1px solid var(--nw-drawer-border, #2a3a5e);
     box-sizing: border-box;
     overflow-y: auto;
     z-index: 100;
@@ -34,7 +34,7 @@ template.innerHTML = `
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    border-bottom: 1px solid var(--vc-drawer-border, #2a3a5e);
+    border-bottom: 1px solid var(--nw-drawer-border, #2a3a5e);
   }
   .drawer-header h2 {
     margin: 0;
@@ -44,14 +44,14 @@ template.innerHTML = `
   .drawer-header button {
     background: none;
     border: none;
-    color: var(--vc-text-color, #e0e0e0);
+    color: var(--nw-text-color, #e0e0e0);
     cursor: pointer;
     font-size: 1.25rem;
     padding: 4px 8px;
     border-radius: 4px;
   }
   .drawer-header button:hover {
-    background: var(--vc-drawer-hover, rgba(255,255,255,0.1));
+    background: var(--nw-drawer-hover, rgba(255,255,255,0.1));
   }
   #form-container {
     padding: 16px;
@@ -67,7 +67,7 @@ template.innerHTML = `
     margin-bottom: 4px;
     font-weight: 500;
     font-size: 0.8125rem;
-    color: var(--vc-label-color, #aab);
+    color: var(--nw-label-color, #aab);
   }
   .form-group input[type="text"],
   .form-group input[type="number"],
@@ -75,9 +75,9 @@ template.innerHTML = `
   .form-group textarea {
     width: 100%;
     padding: 6px 8px;
-    background: var(--vc-input-bg, #1a1a2e);
-    color: var(--vc-text-color, #e0e0e0);
-    border: 1px solid var(--vc-input-border, #2a3a5e);
+    background: var(--nw-input-bg, #1a1a2e);
+    color: var(--nw-text-color, #e0e0e0);
+    border: 1px solid var(--nw-input-border, #2a3a5e);
     border-radius: 4px;
     font-family: inherit;
     font-size: inherit;
@@ -87,7 +87,7 @@ template.innerHTML = `
   .form-group input[type="number"]:focus,
   .form-group select:focus,
   .form-group textarea:focus {
-    outline: 2px solid var(--vc-focus-ring-color, #4dabf7);
+    outline: 2px solid var(--nw-focus-ring-color, #4dabf7);
     outline-offset: -1px;
   }
   .checkbox-group {
@@ -108,9 +108,9 @@ template.innerHTML = `
     flex-direction: column;
     gap: 4px;
     padding: 8px;
-    background: var(--vc-input-bg, #1a1a2e);
+    background: var(--nw-input-bg, #1a1a2e);
     border-radius: 4px;
-    border: 1px solid var(--vc-input-border, #2a3a5e);
+    border: 1px solid var(--nw-input-border, #2a3a5e);
   }
   .list-item .item-fields {
     display: flex;
@@ -123,9 +123,9 @@ template.innerHTML = `
   .list-item .item-field input {
     width: 100%;
     padding: 4px 6px;
-    background: var(--vc-drawer-bg, #16213e);
-    color: var(--vc-text-color, #e0e0e0);
-    border: 1px solid var(--vc-input-border, #2a3a5e);
+    background: var(--nw-drawer-bg, #16213e);
+    color: var(--nw-text-color, #e0e0e0);
+    border: 1px solid var(--nw-input-border, #2a3a5e);
     border-radius: 3px;
     font-family: inherit;
     font-size: inherit;
@@ -133,22 +133,22 @@ template.innerHTML = `
   }
   .btn-remove, .btn-add {
     background: none;
-    border: 1px solid var(--vc-input-border, #2a3a5e);
-    color: var(--vc-text-color, #e0e0e0);
+    border: 1px solid var(--nw-input-border, #2a3a5e);
+    color: var(--nw-text-color, #e0e0e0);
     cursor: pointer;
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 0.8125rem;
   }
   .btn-remove:hover {
-    background: var(--vc-error-bg, rgba(244,67,54,0.2));
-    border-color: var(--vc-error-color, #f44336);
+    background: var(--nw-error-bg, rgba(244,67,54,0.2));
+    border-color: var(--nw-error-color, #f44336);
   }
   .btn-add {
     align-self: flex-start;
   }
   .btn-add:hover {
-    background: var(--vc-drawer-hover, rgba(255,255,255,0.1));
+    background: var(--nw-drawer-hover, rgba(255,255,255,0.1));
   }
 </style>
 <div class="drawer-header">

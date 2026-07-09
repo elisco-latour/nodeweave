@@ -20,9 +20,9 @@ template.innerHTML = `
     width: ${MINIMAP_WIDTH}px;
     height: ${MINIMAP_HEIGHT}px;
     z-index: 50;
-    border: 1px solid var(--vc-toolbar-border, #2a3a5e);
+    border: 1px solid var(--nw-toolbar-border, #2a3a5e);
     border-radius: var(--radius-sm, 4px);
-    background: var(--vc-node-bg, #16213e);
+    background: var(--nw-node-bg, #16213e);
     overflow: hidden;
     cursor: pointer;
   }

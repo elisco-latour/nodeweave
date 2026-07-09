@@ -122,8 +122,8 @@ export class SelectionController {
     this.#rubberBandEl = document.createElement('div');
     Object.assign(this.#rubberBandEl.style, {
       position: 'fixed',
-      border: '1px dashed var(--vc-selection-border, #4dabf7)',
-      background: 'var(--vc-selection-bg, rgba(77, 171, 247, 0.1))',
+      border: '1px dashed var(--nw-selection-border, #4dabf7)',
+      background: 'var(--nw-selection-bg, rgba(77, 171, 247, 0.1))',
       pointerEvents: 'none',
       zIndex: '9999',
     });

@@ -9,7 +9,7 @@ import { FancyNodeComponent } from './fancy-node.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="toolbar">
-      <strong>visual-canvas &times; Angular</strong>
+      <strong>nodeweave &times; Angular</strong>
       <button type="button" (click)="addNode(cv, 'task')">Add node</button>
       <button type="button" (click)="addNode(cv, 'fancy')">Add fancy node</button>
       <button type="button" (click)="cv.service.undo()" [disabled]="!cv.service.canUndo()">Undo</button>
@@ -19,14 +19,14 @@ import { FancyNodeComponent } from './fancy-node.component';
       <span class="stat">{{ cv.service.edges().length }} edges</span>
       <span class="stat">{{ cv.service.selectedIds().size }} selected</span>
     </header>
-    <visual-canvas
+    <nodeweave
       #cv
       background="dots"
       [backgroundGap]="24"
       [snapToGrid]="true"
       [nodeTypes]="nodeTypes"
       (connect)="onConnect($event)"
-    ></visual-canvas>
+    ></nodeweave>
   `,
   styles: `
     :host {
@@ -54,7 +54,7 @@ import { FancyNodeComponent } from './fancy-node.component';
     }
     .toolbar button:disabled { opacity: 0.4; cursor: default; }
     .stat { font-size: 0.85rem; opacity: 0.8; margin-left: 4px; }
-    visual-canvas { display: block; }
+    nodeweave { display: block; }
   `,
 })
 export class AppComponent {

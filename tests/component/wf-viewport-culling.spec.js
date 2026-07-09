@@ -133,7 +133,7 @@ test.describe('wf-workspace viewport culling', () => {
 
       const edgeLayer = ws.shadowRoot.querySelector('wf-edge-layer');
       const svg = edgeLayer.shadowRoot.querySelector('svg');
-      const paths = svg.querySelectorAll('path');
+      const paths = svg.querySelectorAll(':scope > path');
 
       // n1 is visible, n2 is not, but the edge connects a visible node → should still show
       // (edge is visible if EITHER source or target is visible)
@@ -173,7 +173,7 @@ test.describe('wf-workspace viewport culling', () => {
 
       const edgeLayer = ws.shadowRoot.querySelector('wf-edge-layer');
       const svg = edgeLayer.shadowRoot.querySelector('svg');
-      const path = svg.querySelector('path');
+      const path = svg.querySelector(':scope > path');
 
       return path ? path.style.display : 'no path';
     });

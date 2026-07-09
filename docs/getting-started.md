@@ -24,10 +24,10 @@ Or load it directly in the browser (it's plain ESM):
 <style>
   canvas-workspace { display: block; width: 100vw; height: 100vh; }
   :root {
-    --vc-node-bg: #16213e;
-    --vc-node-border: #2a3a5e;
-    --vc-text-color: #e2e8f0;
-    --vc-edge-color: #64748b;
+    --nw-node-bg: #16213e;
+    --nw-node-border: #2a3a5e;
+    --nw-text-color: #e2e8f0;
+    --nw-edge-color: #64748b;
   }
 </style>
 ```

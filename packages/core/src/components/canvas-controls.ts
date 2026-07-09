@@ -19,9 +19,9 @@ template.innerHTML = `
     flex-direction: column;
     gap: 2px;
     padding: 4px;
-    background: var(--vc-controls-bg, #16213e);
-    border: 1px solid var(--vc-controls-border, #2a3a5e);
-    border-radius: var(--vc-controls-radius, 8px);
+    background: var(--nw-controls-bg, #16213e);
+    border: 1px solid var(--nw-controls-border, #2a3a5e);
+    border-radius: var(--nw-controls-radius, 8px);
     box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   }
   button {
@@ -33,16 +33,16 @@ template.innerHTML = `
     background: none;
     border: none;
     border-radius: 4px;
-    color: var(--vc-controls-fg, #e0e0e0);
+    color: var(--nw-controls-fg, #e0e0e0);
     font-size: 1rem;
     line-height: 1;
     cursor: pointer;
   }
   button:hover:not(:disabled) {
-    background: var(--vc-controls-hover, rgba(255,255,255,0.1));
+    background: var(--nw-controls-hover, rgba(255,255,255,0.1));
   }
   button:focus-visible {
-    outline: 2px solid var(--vc-focus-ring-color, #4dabf7);
+    outline: 2px solid var(--nw-focus-ring-color, #4dabf7);
     outline-offset: -1px;
   }
   button:disabled {

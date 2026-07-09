@@ -1,19 +1,19 @@
 :root {
-  --vc-bg-pattern: #334155;
-  --vc-node-bg: #16213e;
-  --vc-node-border: #2a3a5e;
-  --vc-node-radius: 8px;
-  --vc-text-color: #e2e8f0;
-  --vc-edge-color: #64748b;
-  --vc-edge-label-bg: #16213e;
-  --vc-edge-label-border: #2a3a5e;
-  --vc-edge-label-color: #e2e8f0;
-  --vc-port-color: #64748b;
-  --vc-port-border-color: #94a3b8;
-  --vc-controls-bg: #16213e;
-  --vc-controls-border: #2a3a5e;
-  --vc-controls-fg: #e2e8f0;
-  --vc-focus-ring-color: #4dabf7;
+  --nw-bg-pattern: #334155;
+  --nw-node-bg: #16213e;
+  --nw-node-border: #2a3a5e;
+  --nw-node-radius: 8px;
+  --nw-text-color: #e2e8f0;
+  --nw-edge-color: #64748b;
+  --nw-edge-label-bg: #16213e;
+  --nw-edge-label-border: #2a3a5e;
+  --nw-edge-label-color: #e2e8f0;
+  --nw-port-color: #64748b;
+  --nw-port-border-color: #94a3b8;
+  --nw-controls-bg: #16213e;
+  --nw-controls-border: #2a3a5e;
+  --nw-controls-fg: #e2e8f0;
+  --nw-focus-ring-color: #4dabf7;
 }
 
 html, body {

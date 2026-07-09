@@ -28,7 +28,7 @@
     const ws = document.getElementById('workspace');
     ws.state = state;
 
-    const selectors = { node: 'canvas-node', port: 'canvas-port' };
+    const selectors = { nodeSelector: 'canvas-node', portSelector: 'canvas-port' };
     const edgeLayer = ws.shadowRoot.querySelector('canvas-edge-layer');
     const controllers = {
       drag: new DragController(ws, state, selectors),
@@ -42,7 +42,7 @@
     // Toggle data-selected on node elements (moved from SelectionController)
     state.addEventListener('selection-changed', (e) => {
       const selectedIds = e.detail.selectedIds;
-      const nodes = ws.shadowRoot.querySelectorAll(selectors.node);
+      const nodes = ws.shadowRoot.querySelectorAll(selectors.nodeSelector);
       for (const el of nodes) {
         if (selectedIds.has(el.nodeId)) {
           el.setAttribute('data-selected', '');

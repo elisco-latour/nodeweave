@@ -98,7 +98,7 @@ export class ResizeController {
     Object.assign(outline.style, {
       position: 'fixed',
       boxSizing: 'border-box',
-      border: '1px solid var(--vc-resize-outline, #4dabf7)',
+      border: '1px solid var(--nw-resize-outline, #4dabf7)',
       pointerEvents: 'none',
     });
     overlay.appendChild(outline);
@@ -112,8 +112,8 @@ export class ResizeController {
         width: `${HANDLE_SIZE}px`,
         height: `${HANDLE_SIZE}px`,
         boxSizing: 'border-box',
-        background: 'var(--vc-resize-handle, #fff)',
-        border: '1px solid var(--vc-resize-handle-border, #4dabf7)',
+        background: 'var(--nw-resize-handle, #fff)',
+        border: '1px solid var(--nw-resize-handle-border, #4dabf7)',
         borderRadius: '2px',
         pointerEvents: 'auto',
         cursor: CURSORS[pos],

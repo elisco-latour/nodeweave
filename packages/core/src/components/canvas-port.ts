@@ -8,17 +8,17 @@ template.innerHTML = `
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: var(--vc-port-color, #888);
-    border: 2px solid var(--vc-port-border-color, #555);
+    background: var(--nw-port-color, #888);
+    border: 2px solid var(--nw-port-border-color, #555);
     cursor: pointer;
     box-sizing: border-box;
   }
   :host(:hover) {
-    background: var(--vc-port-hover-color, #4dabf7);
-    border-color: var(--vc-port-hover-border-color, #339af0);
+    background: var(--nw-port-hover-color, #4dabf7);
+    border-color: var(--nw-port-hover-border-color, #339af0);
   }
   :host(:focus-visible) {
-    outline: 2px solid var(--vc-focus-ring-color, #4dabf7);
+    outline: 2px solid var(--nw-focus-ring-color, #4dabf7);
     outline-offset: 2px;
   }
 </style>

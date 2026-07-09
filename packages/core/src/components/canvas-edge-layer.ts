@@ -27,7 +27,7 @@ template.innerHTML = `
   /* Scope to direct children so marker paths inside <defs> keep their own fill/stroke */
   svg > path {
     fill: none;
-    stroke: var(--vc-edge-color, #666);
+    stroke: var(--nw-edge-color, #666);
     stroke-width: 2;
   }
   svg > path:hover {
@@ -36,7 +36,7 @@ template.innerHTML = `
   }
   svg > path.phantom {
     stroke-dasharray: 6 4;
-    stroke: var(--vc-edge-color-phantom, #999);
+    stroke: var(--nw-edge-color-phantom, #999);
   }
   @keyframes vc-edge-flow {
     to { stroke-dashoffset: -10; }
@@ -49,13 +49,13 @@ template.innerHTML = `
     svg > path.animated { animation: none; }
   }
   .edge-label-bg {
-    fill: var(--vc-edge-label-bg, #16213e);
-    stroke: var(--vc-edge-label-border, #2a3a5e);
+    fill: var(--nw-edge-label-bg, #16213e);
+    stroke: var(--nw-edge-label-border, #2a3a5e);
     stroke-width: 1;
   }
   .edge-label-text {
-    fill: var(--vc-edge-label-color, #e0e0e0);
-    font-family: var(--vc-font-family, system-ui, -apple-system, sans-serif);
+    fill: var(--nw-edge-label-color, #e0e0e0);
+    font-family: var(--nw-font-family, system-ui, -apple-system, sans-serif);
     font-size: 11px;
     pointer-events: none;
   }
