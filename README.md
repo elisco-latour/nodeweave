@@ -111,7 +111,12 @@ See [docs/angular.md](docs/angular.md) — including custom Angular node compone
 - [Getting started (vanilla)](docs/getting-started.md)
 - [Angular guide](docs/angular.md)
 - [`@nodeweave/core` API reference](docs/core-api.md)
+- [Custom edges](docs/custom-edges.md)
+- [Layout](docs/layout.md)
+- [Export & persistence](docs/export.md)
 - [Theming (`--vc-*` variables)](docs/theming.md)
+- [Accessibility](docs/accessibility.md)
+- [Coming from React Flow](docs/migration.md)
 
 ## Concepts
 

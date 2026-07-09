@@ -1,0 +1,104 @@
+/* nodeweave docs — flat, black-dominated theme */
+
+:root {
+  --ifm-color-primary: #ffffff;
+  --ifm-color-primary-dark: #e6e6e6;
+  --ifm-color-primary-darker: #d9d9d9;
+  --ifm-color-primary-darkest: #b3b3b3;
+  --ifm-color-primary-light: #ffffff;
+  --ifm-color-primary-lighter: #ffffff;
+  --ifm-color-primary-lightest: #ffffff;
+
+  --ifm-code-font-size: 90%;
+  --ifm-global-radius: 4px;
+  --docusaurus-highlighted-code-line-bg: #1a1a1a;
+}
+
+/* Force a black-dominated dark palette (color switch is disabled). */
+[data-theme='dark'] {
+  --ifm-background-color: #000000;
+  --ifm-background-surface-color: #0a0a0a;
+
+  --ifm-navbar-background-color: #000000;
+  --ifm-footer-background-color: #000000;
+  --ifm-footer-color: #a3a3a3;
+  --ifm-footer-link-color: #e5e5e5;
+
+  --ifm-font-color-base: #e5e5e5;
+  --ifm-heading-color: #ffffff;
+  --ifm-link-color: #ffffff;
+
+  --ifm-code-background: #111111;
+  --ifm-pre-background: #0a0a0a;
+  --ifm-color-emphasis-100: #0a0a0a;
+  --ifm-color-emphasis-200: #141414;
+  --ifm-color-emphasis-300: #1f1f1f;
+  --ifm-toc-border-color: #1a1a1a;
+  --ifm-hr-background-color: #1a1a1a;
+  --ifm-table-border-color: #1a1a1a;
+  --ifm-table-stripe-background: #0a0a0a;
+  --ifm-menu-color: #a3a3a3;
+  --ifm-menu-color-active: #ffffff;
+  --ifm-menu-color-background-active: #141414;
+  --ifm-menu-color-background-hover: #141414;
+
+  /* Flat: no shadows */
+  --ifm-global-shadow-lw: none;
+  --ifm-global-shadow-md: none;
+  --ifm-global-shadow-tl: none;
+  --ifm-navbar-shadow: none;
+}
+
+/* Flat surfaces + hairline separators */
+.navbar {
+  border-bottom: 1px solid #1a1a1a;
+}
+.footer {
+  border-top: 1px solid #1a1a1a;
+}
+.menu {
+  background: #000000;
+}
+.card,
+.theme-doc-markdown table,
+.theme-code-block,
+pre {
+  border: 1px solid #1a1a1a;
+  box-shadow: none !important;
+}
+.button {
+  border-radius: var(--ifm-global-radius);
+  box-shadow: none !important;
+}
+
+/* Monochrome inline code */
+[data-theme='dark'] code {
+  border: 1px solid #1f1f1f;
+  color: #e5e5e5;
+}
+
+/* Sidebar section headings (type: html items) */
+.sidebar-heading {
+  padding: 1rem 0.75rem 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}
+
+/* Landing hero */
+.hero--nodeweave {
+  background: #000000;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 5rem 0 4rem;
+}
+.hero--nodeweave .hero__title {
+  font-size: 3.25rem;
+  letter-spacing: -0.02em;
+}
+.hero--nodeweave .hero__subtitle {
+  color: #a3a3a3;
+  max-width: 40rem;
+  margin: 1rem auto 0;
+}
