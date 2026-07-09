@@ -34,6 +34,11 @@ export interface SchemaField {
   options?: string[];
   showIf?: Rule;
   itemSchema?: Record<string, SchemaField>;
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  rows?: number;
 }
 
 export interface VisualDefinition {

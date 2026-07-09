@@ -1,4 +1,7 @@
 import { buildEdgePath, getEdgeCenter } from '../core/edge-paths.js';
+import type { Point } from '../core/edge-paths.js';
+import type { CanvasState } from '../core/canvas-state.js';
+import type { Edge } from '../core/graph.js';
 
 const HEADER_HEIGHT = 6;
 const PORT_SPACING = 22;
@@ -35,6 +38,16 @@ template.innerHTML = `
     stroke-dasharray: 6 4;
     stroke: var(--vc-edge-color-phantom, #999);
   }
+  @keyframes vc-edge-flow {
+    to { stroke-dashoffset: -10; }
+  }
+  svg > path.animated {
+    stroke-dasharray: 6 4;
+    animation: vc-edge-flow 0.5s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    svg > path.animated { animation: none; }
+  }
   .edge-label-bg {
     fill: var(--vc-edge-label-bg, #16213e);
     stroke: var(--vc-edge-label-border, #2a3a5e);
@@ -62,34 +75,36 @@ template.innerHTML = `
 `;
 
 export class CanvasEdgeLayer extends HTMLElement {
-  #state = null;
-  #svg;
-  #pathMap = new Map(); // edgeId → <path>
-  #labelMap = new Map(); // edgeId → <g> label group
-  #visibleNodeIds = null; // null = show all
+  readonly #root: ShadowRoot;
+  #state: CanvasState | null = null;
+  readonly #svg: SVGSVGElement;
+  readonly #pathMap: Map<string, SVGPathElement> = new Map();
+  readonly #labelMap: Map<string, SVGGElement> = new Map();
+  #visibleNodeIds: Set<string> | null = null; // null = show all
 
-  #onEdgeAdded;
-  #onEdgeRemoved;
-  #onNodeMoved;
+  readonly #onEdgeAdded: (e: Event) => void;
+  readonly #onEdgeRemoved: (e: Event) => void;
+  readonly #onNodeMoved: (e: Event) => void;
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
-    this.#svg = this.shadowRoot.querySelector('svg');
+    this.#root = this.attachShadow({ mode: 'open' });
+    this.#root.appendChild(template.content.cloneNode(true));
+    this.#svg = this.#root.querySelector('svg')!;
 
-    this.#onEdgeAdded = (e) => {
-      this.#addEdgePath(e.detail.edge);
+    this.#onEdgeAdded = (e: Event) => {
+      this.#addEdgePath((e as CustomEvent).detail.edge);
     };
-    this.#onEdgeRemoved = (e) => {
-      this.#removeEdgePath(e.detail.edgeId ?? e.detail.edge.id);
+    this.#onEdgeRemoved = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      this.#removeEdgePath(detail.edgeId ?? detail.edge.id);
     };
-    this.#onNodeMoved = (e) => {
-      this.#updateEdgesForNode(e.detail.nodeId);
+    this.#onNodeMoved = (e: Event) => {
+      this.#updateEdgesForNode((e as CustomEvent).detail.nodeId);
     };
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     if (this.#state) {
       this.#state.removeEventListener('edge-added', this.#onEdgeAdded);
       this.#state.removeEventListener('edge-removed', this.#onEdgeRemoved);
@@ -97,8 +112,8 @@ export class CanvasEdgeLayer extends HTMLElement {
     }
   }
 
-  get state() { return this.#state; }
-  set state(canvasState) {
+  get state(): CanvasState | null { return this.#state; }
+  set state(canvasState: CanvasState | null) {
     if (this.#state) {
       this.#state.removeEventListener('edge-added', this.#onEdgeAdded);
       this.#state.removeEventListener('edge-removed', this.#onEdgeRemoved);
@@ -113,19 +128,18 @@ export class CanvasEdgeLayer extends HTMLElement {
     }
   }
 
-  _getPortPosition(portId) {
-    if (!this.#state) return null;
-    const port = this.#state.getPort(portId);
+  _getPortPosition(portId: string): Point | null {
+    const state = this.#state;
+    if (!state) return null;
+    const port = state.getPort(portId);
     if (!port) return null;
-    const node = this.#state.nodes.get(port.nodeId);
+    const node = state.nodes.get(port.nodeId);
     if (!node) return null;
 
     // Determine port index among same-direction ports of this node
-    const sameDirPorts = [];
+    const sameDirPorts: typeof port[] = [];
     for (const p of node.ports.values()) {
-      if (p.direction === port.direction) {
-        sameDirPorts.push(p);
-      }
+      if (p.direction === port.direction) sameDirPorts.push(p);
     }
     const portIndex = sameDirPorts.indexOf(port);
     const portOffsetY = HEADER_HEIGHT + (portIndex * PORT_SPACING) + PORT_SPACING / 2 + 8; // +8 for label padding
@@ -136,11 +150,11 @@ export class CanvasEdgeLayer extends HTMLElement {
     return { x: node.x, y: node.y + portOffsetY };
   }
 
-  #buildPath(edge, source, target) {
+  #buildPath(edge: Edge, source: Point, target: Point): string {
     return buildEdgePath(edge.type ?? 'bezier', source, target, BEZIER_OPTS);
   }
 
-  #applyMarker(path, edge) {
+  #applyMarker(path: SVGPathElement, edge: Edge): void {
     if (edge.markerEnd === 'arrow') {
       path.setAttribute('marker-end', 'url(#vc-arrow)');
     } else if (edge.markerEnd === 'arrowclosed') {
@@ -150,7 +164,7 @@ export class CanvasEdgeLayer extends HTMLElement {
     }
   }
 
-  #syncLabel(edge, source, target) {
+  #syncLabel(edge: Edge, source: Point, target: Point): void {
     let g = this.#labelMap.get(edge.id);
 
     if (!edge.label) {
@@ -173,12 +187,12 @@ export class CanvasEdgeLayer extends HTMLElement {
       this.#labelMap.set(edge.id, g);
     }
 
-    const text = g.querySelector('text');
-    const rect = g.querySelector('rect');
+    const text = g.querySelector('text') as SVGTextElement;
+    const rect = g.querySelector('rect') as SVGRectElement;
     const mid = getEdgeCenter(source, target);
     if (text.textContent !== edge.label) text.textContent = edge.label;
-    text.setAttribute('x', mid.x);
-    text.setAttribute('y', mid.y);
+    text.setAttribute('x', String(mid.x));
+    text.setAttribute('y', String(mid.y));
 
     // Size the background pill around the text
     const padX = 5;
@@ -187,13 +201,13 @@ export class CanvasEdgeLayer extends HTMLElement {
     let h = 0;
     try { const bb = text.getBBox(); w = bb.width; h = bb.height; } catch { /* not laid out yet */ }
     if (!w) { w = String(edge.label).length * 6.2; h = 12; }
-    rect.setAttribute('x', mid.x - w / 2 - padX);
-    rect.setAttribute('y', mid.y - h / 2 - padY);
-    rect.setAttribute('width', w + padX * 2);
-    rect.setAttribute('height', h + padY * 2);
+    rect.setAttribute('x', String(mid.x - w / 2 - padX));
+    rect.setAttribute('y', String(mid.y - h / 2 - padY));
+    rect.setAttribute('width', String(w + padX * 2));
+    rect.setAttribute('height', String(h + padY * 2));
   }
 
-  #addEdgePath(edge) {
+  #addEdgePath(edge: Edge): void {
     const source = this._getPortPosition(edge.sourcePortId);
     const target = this._getPortPosition(edge.targetPortId);
     if (!source || !target) return;
@@ -202,12 +216,13 @@ export class CanvasEdgeLayer extends HTMLElement {
     path.setAttribute('d', this.#buildPath(edge, source, target));
     path.dataset.edgeId = edge.id;
     this.#applyMarker(path, edge);
+    path.classList.toggle('animated', !!edge.animated);
     this.#svg.appendChild(path);
     this.#pathMap.set(edge.id, path);
     this.#syncLabel(edge, source, target);
   }
 
-  #removeEdgePath(edgeId) {
+  #removeEdgePath(edgeId: string): void {
     const path = this.#pathMap.get(edgeId);
     if (path) {
       path.remove();
@@ -220,12 +235,14 @@ export class CanvasEdgeLayer extends HTMLElement {
     }
   }
 
-  #updateEdgesForNode(nodeId) {
-    const node = this.#state.nodes.get(nodeId);
+  #updateEdgesForNode(nodeId: string): void {
+    const state = this.#state;
+    if (!state) return;
+    const node = state.nodes.get(nodeId);
     if (!node) return;
     const portIds = new Set(node.ports.keys());
 
-    for (const [edgeId, edge] of this.#state.edges) {
+    for (const [edgeId, edge] of state.edges) {
       if (portIds.has(edge.sourcePortId) || portIds.has(edge.targetPortId)) {
         const path = this.#pathMap.get(edgeId);
         if (path) {
@@ -240,39 +257,42 @@ export class CanvasEdgeLayer extends HTMLElement {
     }
   }
 
-  #renderAllEdges() {
+  #renderAllEdges(): void {
+    const state = this.#state;
+    if (!state) return;
+
     // Clear existing paths and labels
-    for (const path of this.#pathMap.values()) {
-      path.remove();
-    }
+    for (const path of this.#pathMap.values()) path.remove();
     this.#pathMap.clear();
-    for (const label of this.#labelMap.values()) {
-      label.remove();
-    }
+    for (const label of this.#labelMap.values()) label.remove();
     this.#labelMap.clear();
 
     // Render all edges
-    for (const edge of this.#state.edges.values()) {
+    for (const edge of state.edges.values()) {
       this.#addEdgePath(edge);
     }
   }
 
-  setVisibleNodes(visibleNodeIds) {
+  setVisibleNodes(visibleNodeIds: Set<string>): void {
     this.#visibleNodeIds = visibleNodeIds;
     this.#updateEdgeVisibility();
   }
 
-  #isEdgeVisible(edge) {
+  #isEdgeVisible(edge: Edge): boolean {
     if (!this.#visibleNodeIds) return true;
-    const sourcePort = this.#state.getPort(edge.sourcePortId);
-    const targetPort = this.#state.getPort(edge.targetPortId);
+    const state = this.#state;
+    if (!state) return false;
+    const sourcePort = state.getPort(edge.sourcePortId);
+    const targetPort = state.getPort(edge.targetPortId);
     if (!sourcePort || !targetPort) return false;
     return this.#visibleNodeIds.has(sourcePort.nodeId) || this.#visibleNodeIds.has(targetPort.nodeId);
   }
 
-  #updateEdgeVisibility() {
+  #updateEdgeVisibility(): void {
+    const state = this.#state;
+    if (!state) return;
     for (const [edgeId, path] of this.#pathMap) {
-      const edge = this.#state.edges.get(edgeId);
+      const edge = state.edges.get(edgeId);
       if (!edge) continue;
       const visible = this.#isEdgeVisible(edge);
       path.style.display = visible ? '' : 'none';

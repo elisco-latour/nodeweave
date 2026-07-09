@@ -1,4 +1,7 @@
 import './canvas-port.js';
+import type { CanvasPort } from './canvas-port.js';
+import type { CanvasState } from '../core/canvas-state.js';
+import type { Port } from '../core/graph.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -55,26 +58,28 @@ template.innerHTML = `
 `;
 
 export class CanvasNode extends HTMLElement {
+  readonly #root: ShadowRoot;
   #nodeId = '';
-  #nodeType = '';
+  #nodeKind = '';
   #label = '';
-  #ports = [];
-  #state = null;
-  #onNodeMoved;
+  #ports: Port[] = [];
+  #state: CanvasState | null = null;
+  readonly #onNodeMoved: (e: Event) => void;
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    this.#root = this.attachShadow({ mode: 'open' });
+    this.#root.appendChild(template.content.cloneNode(true));
 
-    this.#onNodeMoved = (e) => {
-      if (e.detail.nodeId === this.#nodeId) {
-        this.setPosition(e.detail.x, e.detail.y);
+    this.#onNodeMoved = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail.nodeId === this.#nodeId) {
+        this.setPosition(detail.x, detail.y);
       }
     };
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.setAttribute('role', 'treeitem');
     this.setAttribute('tabindex', '0');
     this.setAttribute('aria-grabbed', 'false');
@@ -82,33 +87,34 @@ export class CanvasNode extends HTMLElement {
     this.#updateAriaLabel();
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     if (this.#state) {
       this.#state.removeEventListener('node-moved', this.#onNodeMoved);
     }
   }
 
-  get nodeId() { return this.#nodeId; }
-  set nodeId(value) { this.#nodeId = value; }
+  get nodeId(): string { return this.#nodeId; }
+  set nodeId(value: string) { this.#nodeId = value; }
 
-  get nodeType() { return this.#nodeType; }
-  set nodeType(value) { this.#nodeType = value; }
+  get nodeKind(): string { return this.#nodeKind; }
+  set nodeKind(value: string) { this.#nodeKind = value; }
 
-  get label() { return this.#label; }
-  set label(value) {
+  get label(): string { return this.#label; }
+  set label(value: string) {
     this.#label = value;
-    this.shadowRoot.querySelector('.label').textContent = value;
+    const labelEl = this.#root.querySelector('.label');
+    if (labelEl) labelEl.textContent = value;
     this.#updateAriaLabel();
   }
 
-  get ports() { return this.#ports; }
-  set ports(portArray) {
+  get ports(): Port[] { return this.#ports; }
+  set ports(portArray: Port[]) {
     this.#ports = portArray;
     this.#renderPorts();
   }
 
-  get state() { return this.#state; }
-  set state(canvasState) {
+  get state(): CanvasState | null { return this.#state; }
+  set state(canvasState: CanvasState | null) {
     if (this.#state) {
       this.#state.removeEventListener('node-moved', this.#onNodeMoved);
     }
@@ -118,24 +124,25 @@ export class CanvasNode extends HTMLElement {
     }
   }
 
-  setPosition(x, y) {
-    this.style.setProperty('--x', x);
-    this.style.setProperty('--y', y);
+  setPosition(x: number, y: number): void {
+    this.style.setProperty('--x', String(x));
+    this.style.setProperty('--y', String(y));
   }
 
-  setHeaderColor(color) {
-    this.shadowRoot.querySelector('.header').style.setProperty('--header-color', color);
+  setHeaderColor(color: string): void {
+    const header = this.#root.querySelector('.header') as HTMLElement | null;
+    header?.style.setProperty('--header-color', color);
   }
 
-  #updateAriaLabel() {
+  #updateAriaLabel(): void {
     if (this.#label) {
       this.setAttribute('aria-label', `${this.#label} node`);
     }
   }
 
-  #renderPorts() {
-    const portsIn = this.shadowRoot.querySelector('.ports-in');
-    const portsOut = this.shadowRoot.querySelector('.ports-out');
+  #renderPorts(): void {
+    const portsIn = this.#root.querySelector('.ports-in')!;
+    const portsOut = this.#root.querySelector('.ports-out')!;
     portsIn.innerHTML = '';
     portsOut.innerHTML = '';
 
@@ -143,7 +150,7 @@ export class CanvasNode extends HTMLElement {
     const fragOut = document.createDocumentFragment();
 
     for (const port of this.#ports) {
-      const el = document.createElement('canvas-port');
+      const el = document.createElement('canvas-port') as CanvasPort;
       el.portId = port.id;
       el.direction = port.direction;
       el.nodeId = port.nodeId;

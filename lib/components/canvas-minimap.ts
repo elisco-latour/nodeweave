@@ -1,3 +1,6 @@
+import type { CanvasState } from '../core/canvas-state.js';
+import type { VisualRegistry } from '../registries/visual-registry.js';
+
 const MINIMAP_WIDTH = 200;
 const MINIMAP_HEIGHT = 140;
 const PADDING = 10;
@@ -33,10 +36,11 @@ template.innerHTML = `
 `;
 
 export class CanvasMinimap extends HTMLElement {
-  #canvas;
-  #ctx;
-  #state = null;
-  #visualRegistry = null;
+  readonly #root: ShadowRoot;
+  readonly #canvas: HTMLCanvasElement;
+  readonly #ctx: CanvasRenderingContext2D;
+  #state: CanvasState | null = null;
+  #visualRegistry: VisualRegistry | null = null;
   #isDragging = false;
   #scale = 1;
   #offsetX = 0;
@@ -44,22 +48,22 @@ export class CanvasMinimap extends HTMLElement {
   #bbMinX = 0;
   #bbMinY = 0;
 
-  #onNodeAdded;
-  #onNodeRemoved;
-  #onNodeMoved;
-  #onViewportChanged;
-  #onStateReset;
+  readonly #onNodeAdded: () => void;
+  readonly #onNodeRemoved: () => void;
+  readonly #onNodeMoved: () => void;
+  readonly #onViewportChanged: () => void;
+  readonly #onStateReset: () => void;
 
-  #onPointerDown;
-  #onPointerMove;
-  #onPointerUp;
+  readonly #onPointerDown: (e: PointerEvent) => void;
+  readonly #onPointerMove: (e: PointerEvent) => void;
+  readonly #onPointerUp: (e: PointerEvent) => void;
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
-    this.#canvas = this.shadowRoot.querySelector('canvas');
-    this.#ctx = this.#canvas.getContext('2d');
+    this.#root = this.attachShadow({ mode: 'open' });
+    this.#root.appendChild(template.content.cloneNode(true));
+    this.#canvas = this.#root.querySelector('canvas')!;
+    this.#ctx = this.#canvas.getContext('2d')!;
 
     this.#onNodeAdded = () => this.render();
     this.#onNodeRemoved = () => this.render();
@@ -67,24 +71,23 @@ export class CanvasMinimap extends HTMLElement {
     this.#onViewportChanged = () => this.render();
     this.#onStateReset = () => this.render();
 
-    this.#onPointerDown = (e) => this.#handlePointerDown(e);
-    this.#onPointerMove = (e) => this.#handlePointerMove(e);
-    this.#onPointerUp = (e) => this.#handlePointerUp(e);
+    this.#onPointerDown = (e: PointerEvent) => this.#handlePointerDown(e);
+    this.#onPointerMove = (e: PointerEvent) => this.#handlePointerMove(e);
+    this.#onPointerUp = (e: PointerEvent) => this.#handlePointerUp(e);
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.setAttribute('role', 'img');
     this.setAttribute('aria-label', 'Pipeline overview minimap');
-
     this.#canvas.addEventListener('pointerdown', this.#onPointerDown);
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     this.#canvas.removeEventListener('pointerdown', this.#onPointerDown);
     this.#detachState();
   }
 
-  set canvasState(state) {
+  set canvasState(state: CanvasState | null) {
     this.#detachState();
     this.#state = state;
     if (this.#state) {
@@ -97,16 +100,16 @@ export class CanvasMinimap extends HTMLElement {
     }
   }
 
-  get canvasState() {
+  get canvasState(): CanvasState | null {
     return this.#state;
   }
 
-  set visualRegistry(registry) {
+  set visualRegistry(registry: VisualRegistry | null) {
     this.#visualRegistry = registry;
     this.render();
   }
 
-  #detachState() {
+  #detachState(): void {
     if (this.#state) {
       this.#state.removeEventListener('node-added', this.#onNodeAdded);
       this.#state.removeEventListener('node-removed', this.#onNodeRemoved);
@@ -116,43 +119,40 @@ export class CanvasMinimap extends HTMLElement {
     }
   }
 
-  render() {
+  render(): void {
     const ctx = this.#ctx;
     const w = MINIMAP_WIDTH;
     const h = MINIMAP_HEIGHT;
 
     ctx.clearRect(0, 0, w, h);
 
-    if (!this.#state || this.#state.nodes.size === 0) {
+    const state = this.#state;
+    if (!state || state.nodes.size === 0) {
       this.#drawViewportRect(ctx, w, h);
       return;
     }
 
     // Compute bounding box of all nodes
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (const node of this.#state.nodes.values()) {
+    for (const node of state.nodes.values()) {
       minX = Math.min(minX, node.x);
       minY = Math.min(minY, node.y);
       maxX = Math.max(maxX, node.x + node.width);
       maxY = Math.max(maxY, node.y + node.height);
     }
 
-    // Add padding to bounding box
     const bbWidth = maxX - minX || 1;
     const bbHeight = maxY - minY || 1;
 
-    // Scale to fit within minimap with padding
     const availW = w - PADDING * 2;
     const availH = h - PADDING * 2;
     const scale = Math.min(availW / bbWidth, availH / bbHeight);
 
-    // Center the content
     const scaledW = bbWidth * scale;
     const scaledH = bbHeight * scale;
     const offsetX = PADDING + (availW - scaledW) / 2;
     const offsetY = PADDING + (availH - scaledH) / 2;
 
-    // Store transform for pointer event conversion
     this.#scale = scale;
     this.#offsetX = offsetX;
     this.#offsetY = offsetY;
@@ -160,13 +160,13 @@ export class CanvasMinimap extends HTMLElement {
     this.#bbMinY = minY;
 
     // Draw edges as simple lines
-    for (const edge of this.#state.edges.values()) {
-      const sourcePort = this.#state.getPort(edge.sourcePortId);
-      const targetPort = this.#state.getPort(edge.targetPortId);
+    for (const edge of state.edges.values()) {
+      const sourcePort = state.getPort(edge.sourcePortId);
+      const targetPort = state.getPort(edge.targetPortId);
       if (!sourcePort || !targetPort) continue;
 
-      const sourceNode = this.#state.nodes.get(sourcePort.nodeId);
-      const targetNode = this.#state.nodes.get(targetPort.nodeId);
+      const sourceNode = state.nodes.get(sourcePort.nodeId);
+      const targetNode = state.nodes.get(targetPort.nodeId);
       if (!sourceNode || !targetNode) continue;
 
       const sx = offsetX + (sourceNode.x + sourceNode.width / 2 - minX) * scale;
@@ -183,7 +183,7 @@ export class CanvasMinimap extends HTMLElement {
     }
 
     // Draw nodes as filled rectangles
-    for (const node of this.#state.nodes.values()) {
+    for (const node of state.nodes.values()) {
       const nx = offsetX + (node.x - minX) * scale;
       const ny = offsetY + (node.y - minY) * scale;
       const nw = Math.max(node.width * scale, 4);
@@ -203,25 +203,23 @@ export class CanvasMinimap extends HTMLElement {
       ctx.fillRect(nx, ny, nw, nh);
     }
 
-    // Draw viewport indicator
     this.#drawViewportRect(ctx, w, h);
   }
 
-  #drawViewportRect(ctx, w, h) {
-    if (!this.#state) return;
+  #drawViewportRect(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+    const state = this.#state;
+    if (!state) return;
 
-    const { panX, panY, zoom } = this.#state.viewport;
+    const { panX, panY, zoom } = state.viewport;
 
-    if (this.#state.nodes.size === 0) {
+    if (state.nodes.size === 0) {
       // No nodes — draw viewport as full minimap
       ctx.fillStyle = VIEWPORT_COLOR;
       ctx.fillRect(0, 0, w, h);
       return;
     }
 
-    // Viewport bounds in canvas coords:
-    // visible area: x = -panX/zoom, y = -panY/zoom
-    // We need to know the workspace pixel size — approximate as a standard size
+    // Approximate the workspace pixel size
     const wsWidth = 1200;
     const wsHeight = 800;
     const vpX = -panX / zoom;
@@ -229,7 +227,6 @@ export class CanvasMinimap extends HTMLElement {
     const vpW = wsWidth / zoom;
     const vpH = wsHeight / zoom;
 
-    // Convert viewport bounds to minimap coordinates
     const scale = this.#scale;
     const offsetX = this.#offsetX;
     const offsetY = this.#offsetY;
@@ -248,13 +245,13 @@ export class CanvasMinimap extends HTMLElement {
     ctx.strokeRect(rx, ry, rw, rh);
   }
 
-  #minimapToCanvas(mx, my) {
+  #minimapToCanvas(mx: number, my: number): { cx: number; cy: number } {
     const cx = (mx - this.#offsetX) / this.#scale + this.#bbMinX;
     const cy = (my - this.#offsetY) / this.#scale + this.#bbMinY;
     return { cx, cy };
   }
 
-  #handlePointerDown(e) {
+  #handlePointerDown(e: PointerEvent): void {
     e.preventDefault();
     this.#isDragging = true;
     this.#canvas.setPointerCapture(e.pointerId);
@@ -263,37 +260,36 @@ export class CanvasMinimap extends HTMLElement {
     this.#panToMinimapPos(e);
   }
 
-  #handlePointerMove(e) {
+  #handlePointerMove(e: PointerEvent): void {
     if (!this.#isDragging) return;
     this.#panToMinimapPos(e);
   }
 
-  #handlePointerUp(e) {
+  #handlePointerUp(e: PointerEvent): void {
     this.#isDragging = false;
     this.#canvas.releasePointerCapture(e.pointerId);
     this.#canvas.removeEventListener('pointermove', this.#onPointerMove);
     this.#canvas.removeEventListener('pointerup', this.#onPointerUp);
   }
 
-  #panToMinimapPos(e) {
-    if (!this.#state) return;
+  #panToMinimapPos(e: PointerEvent): void {
+    const state = this.#state;
+    if (!state) return;
 
     const rect = this.#canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
     const { cx, cy } = this.#minimapToCanvas(mx, my);
-    const { zoom } = this.#state.viewport;
+    const { zoom } = state.viewport;
 
-    // Approximate workspace size
     const wsWidth = 1200;
     const wsHeight = 800;
 
-    // Set viewport so the clicked point is in the center
     const panX = -(cx - wsWidth / (2 * zoom)) * zoom;
     const panY = -(cy - wsHeight / (2 * zoom)) * zoom;
 
-    this.#state.setViewport(panX, panY, zoom);
+    state.setViewport(panX, panY, zoom);
   }
 }
 
