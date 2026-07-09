@@ -10,3 +10,11 @@ export { RuleEvaluator } from './core/rule-evaluator.js';
 export type { Rule } from './core/rule-evaluator.js';
 export { ViewportCulling } from './core/viewport-culling.js';
 export type { ViewportBounds } from './core/viewport-culling.js';
+export {
+  getStraightPath,
+  getBezierPath,
+  getStepPath,
+  getSmoothStepPath,
+  buildEdgePath,
+} from './core/edge-paths.js';
+export type { Point, EdgePathOptions } from './core/edge-paths.js';
