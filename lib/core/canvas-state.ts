@@ -2,7 +2,7 @@ import { CommandHistory } from './command-history.js';
 import type { Command } from './command-history.js';
 import { Node, Port, Edge } from './graph.js';
 import type { NodeJSON, EdgeJSON } from './graph.js';
-import type { CanvasStateOptions, Viewport } from '../types.js';
+import type { CanvasStateOptions, Viewport, NodeGeometry } from '../types.js';
 
 export type { Viewport };
 
@@ -120,6 +120,36 @@ class MoveNodeCommand implements Command {
     node.y = this.#oldY;
     this.#state.dispatchEvent(new CustomEvent('node-moved', {
       detail: { nodeId: this.#nodeId, x: this.#oldX, y: this.#oldY },
+    }));
+  }
+}
+
+class ResizeNodeCommand implements Command {
+  readonly #state: CanvasState;
+  readonly #nodeId: string;
+  readonly #newGeom: NodeGeometry;
+  readonly #oldGeom: NodeGeometry;
+
+  constructor(canvasState: CanvasState, nodeId: string, geom: NodeGeometry) {
+    this.#state = canvasState;
+    this.#nodeId = nodeId;
+    this.#newGeom = { ...geom };
+    const node = canvasState.nodes.get(nodeId);
+    if (!node) throw new Error(`Node "${nodeId}" not found.`);
+    this.#oldGeom = { x: node.x, y: node.y, width: node.width, height: node.height };
+  }
+
+  execute(): void { this.#apply(this.#newGeom); }
+  undo(): void { this.#apply(this.#oldGeom); }
+
+  #apply(g: NodeGeometry): void {
+    const node = this.#state.nodes.get(this.#nodeId)!;
+    node.x = g.x;
+    node.y = g.y;
+    node.width = g.width;
+    node.height = g.height;
+    this.#state.dispatchEvent(new CustomEvent('node-resized', {
+      detail: { nodeId: this.#nodeId, x: g.x, y: g.y, width: g.width, height: g.height },
     }));
   }
 }
@@ -301,8 +331,9 @@ class PasteCommand implements Command {
  * Central state manager for the pipeline canvas.
  * Extends EventTarget — all mutations go through CommandHistory.
  *
- * Events: node-added, node-removed, node-moved, edge-added, edge-removed,
- *         node-config-updated, viewport-changed, selection-changed, state-reset.
+ * Events: node-added, node-removed, node-moved, node-resized, edge-added,
+ *         edge-removed, node-config-updated, viewport-changed,
+ *         selection-changed, state-reset.
  */
 export class CanvasState extends EventTarget {
   readonly nodes: Map<string, Node> = new Map();
@@ -368,6 +399,11 @@ export class CanvasState extends EventTarget {
     }
   }
 
+  /** Resize (and optionally reposition) a node. Undoable. */
+  resizeNode(nodeId: string, geom: NodeGeometry): void {
+    this.#commandHistory.execute(new ResizeNodeCommand(this, nodeId, geom));
+  }
+
   // ─── Edge mutations ───────────────────────────────────────────────────────
 
   addEdge(edge: Edge): void {
@@ -392,6 +428,19 @@ export class CanvasState extends EventTarget {
     node.x = x;
     node.y = y;
     this.dispatchEvent(new CustomEvent('node-moved', { detail: { nodeId, x, y } }));
+  }
+
+  /** Live resize preview (non-undoable). Commit with resizeNode(). */
+  resizeNodeDirect(nodeId: string, x: number, y: number, width: number, height: number): void {
+    const node = this.nodes.get(nodeId);
+    if (!node) return;
+    node.x = x;
+    node.y = y;
+    node.width = width;
+    node.height = height;
+    this.dispatchEvent(new CustomEvent('node-resized', {
+      detail: { nodeId, x, y, width, height },
+    }));
   }
 
   setViewport(panX: number, panY: number, zoom: number): void {

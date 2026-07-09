@@ -12,6 +12,7 @@ import {
   SelectionController,
   EdgeRoutingController,
   KeyboardController,
+  ResizeController,
 } from '../../dist/index.js';
 
 import { registerStarterNodes } from '../starter-nodes.js';
@@ -268,6 +269,7 @@ export class AppShell extends HTMLElement {
       selection: new SelectionController(workspace, this.#state, SELECTORS),
       edgeRouting: new EdgeRoutingController(workspace, this.#state, edgeLayer, SELECTORS),
       keyboard: new KeyboardController(workspace, this.#state, SELECTORS),
+      resize: new ResizeController(workspace, this.#state, SELECTORS),
     };
     for (const c of Object.values(this.#controllers)) c.attach();
   }

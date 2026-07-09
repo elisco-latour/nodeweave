@@ -51,6 +51,7 @@ export class CanvasMinimap extends HTMLElement {
   readonly #onNodeAdded: () => void;
   readonly #onNodeRemoved: () => void;
   readonly #onNodeMoved: () => void;
+  readonly #onNodeResized: () => void;
   readonly #onViewportChanged: () => void;
   readonly #onStateReset: () => void;
 
@@ -68,6 +69,7 @@ export class CanvasMinimap extends HTMLElement {
     this.#onNodeAdded = () => this.render();
     this.#onNodeRemoved = () => this.render();
     this.#onNodeMoved = () => this.render();
+    this.#onNodeResized = () => this.render();
     this.#onViewportChanged = () => this.render();
     this.#onStateReset = () => this.render();
 
@@ -94,6 +96,7 @@ export class CanvasMinimap extends HTMLElement {
       this.#state.addEventListener('node-added', this.#onNodeAdded);
       this.#state.addEventListener('node-removed', this.#onNodeRemoved);
       this.#state.addEventListener('node-moved', this.#onNodeMoved);
+      this.#state.addEventListener('node-resized', this.#onNodeResized);
       this.#state.addEventListener('viewport-changed', this.#onViewportChanged);
       this.#state.addEventListener('state-reset', this.#onStateReset);
       this.render();
@@ -114,6 +117,7 @@ export class CanvasMinimap extends HTMLElement {
       this.#state.removeEventListener('node-added', this.#onNodeAdded);
       this.#state.removeEventListener('node-removed', this.#onNodeRemoved);
       this.#state.removeEventListener('node-moved', this.#onNodeMoved);
+      this.#state.removeEventListener('node-resized', this.#onNodeResized);
       this.#state.removeEventListener('viewport-changed', this.#onViewportChanged);
       this.#state.removeEventListener('state-reset', this.#onStateReset);
     }

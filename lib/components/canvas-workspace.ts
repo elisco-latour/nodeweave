@@ -45,6 +45,7 @@ export class CanvasWorkspace extends HTMLElement {
   readonly #onNodeAdded: (e: Event) => void;
   readonly #onNodeRemoved: (e: Event) => void;
   readonly #onNodeMoved: (e: Event) => void;
+  readonly #onNodeResized: (e: Event) => void;
   readonly #onStateReset: (e: Event) => void;
 
   constructor() {
@@ -81,6 +82,10 @@ export class CanvasWorkspace extends HTMLElement {
       this.#updateCulling();
     };
 
+    this.#onNodeResized = () => {
+      this.#updateCulling();
+    };
+
     this.#onStateReset = () => {
       this.#rebuild();
     };
@@ -98,6 +103,7 @@ export class CanvasWorkspace extends HTMLElement {
       this.#state.removeEventListener('node-added', this.#onNodeAdded);
       this.#state.removeEventListener('node-removed', this.#onNodeRemoved);
       this.#state.removeEventListener('node-moved', this.#onNodeMoved);
+      this.#state.removeEventListener('node-resized', this.#onNodeResized);
       this.#state.removeEventListener('state-reset', this.#onStateReset);
     }
   }
@@ -109,6 +115,7 @@ export class CanvasWorkspace extends HTMLElement {
       this.#state.removeEventListener('node-added', this.#onNodeAdded);
       this.#state.removeEventListener('node-removed', this.#onNodeRemoved);
       this.#state.removeEventListener('node-moved', this.#onNodeMoved);
+      this.#state.removeEventListener('node-resized', this.#onNodeResized);
       this.#state.removeEventListener('state-reset', this.#onStateReset);
     }
 
@@ -126,6 +133,7 @@ export class CanvasWorkspace extends HTMLElement {
       this.#state.addEventListener('node-added', this.#onNodeAdded);
       this.#state.addEventListener('node-removed', this.#onNodeRemoved);
       this.#state.addEventListener('node-moved', this.#onNodeMoved);
+      this.#state.addEventListener('node-resized', this.#onNodeResized);
       this.#state.addEventListener('state-reset', this.#onStateReset);
 
       const { panX, panY, zoom } = this.#state.viewport;
