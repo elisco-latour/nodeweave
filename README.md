@@ -1,120 +1,138 @@
-# Visual Canvas — Node Editor
+# nodeweave
 
-A zero-dependency, browser-native visual node editor for building directed acyclic graph (DAG) pipelines. Everything is vanilla JavaScript, Web Components, and ES modules — no bundler, no transpiler, no runtime libraries.
-
-## What it does
-
-Visual Canvas lets users design automation pipelines by dragging nodes onto an infinite canvas, connecting them via ports, and configuring each node through a schema-driven form. The result is a portable JSON graph that can be saved, loaded, exported, and evaluated.
-
-**Starter node types:**
-
-| Type | Purpose | Ports |
-|------|---------|-------|
-| **Trigger** | Entry point — starts on event, schedule, or webhook | 1 output |
-| **Action** | Runs an HTTP call, script, or email | 1 input, 1 output |
-| **Logic Gate** | Branches on a condition | 1 input, 2 outputs (true / false) |
-| **Data Transform** | Maps, filters, or reshapes data | 1 input, 1 output |
-
-New node types are added declaratively through three split registries (visual, topology, schema) — no component code required.
-
-## Architecture
+A framework-agnostic **node / graph canvas** engine — build node editors,
+flow builders, pipelines and diagrams. A small, zero-runtime-dependency core
+of Web Components + interaction controllers, with first-class framework
+bindings on top (Angular today; the core is renderer-agnostic by design).
 
 ```
-lib/            ← reusable library (never imports from app/)
-  core/         ← pure-logic domain: graph, state, commands, rule evaluator
-  components/   ← Web Components: workspace, node, port, edge layer, minimap, drawer
-  controllers/  ← interaction: drag, pan/zoom, selection, edge routing, keyboard
-  registries/   ← node type definitions (visual, topology, schema)
-  index.js      ← public API surface
-
-app/            ← application shell that consumes lib/
-  components/   ← app-shell, toolbar, component-palette, process-list
-  services/     ← storage (localStorage), export (JSON download)
-  styles/       ← CSS custom-property theme (light + dark)
+   ┌── engine (framework-agnostic) ──────────────┐
+   │  state · commands/undo · DAG validation      │
+   │  controllers (drag/pan/zoom/connect/resize)  │
+   └──────────────────────────────────────────────┘
+        ▲                     ▲                ▲
+   canvas-* (default)    Angular renderer   (React / Svelte / …)
+   Web Components        @nodeweave/angular      future
 ```
-
-### Key design rules
-
-- **All state in one place.** `CanvasState` extends `EventTarget` and is the single source of truth. Components observe events — they never write state directly.
-- **Every mutation is a Command.** `CommandHistory` gives full undo / redo. Move, add, remove, paste — all go through `execute` / `undo`.
-- **Library boundary is sacred.** `lib/` knows nothing about `app/`. The app imports from `lib/index.js`.
-- **No build step.** Vanilla JS shipped as `<script type="module">`. All imports use `.js` extensions.
-- **Zero runtime dependencies.** Dev-only: Playwright and axe-core.
 
 ## Features
 
-- **Infinite canvas** — pan (middle-click drag / two-finger), zoom (scroll wheel), clamped 0.1×–3×
-- **Drag-and-drop** — sidebar palette → canvas, or move existing nodes with pointer capture + `requestAnimationFrame`
-- **Edge routing** — drag from an output port to an input port; SVG cubic Bézier paths update live
-- **Snap-to-grid** — toggle via `DragController.snapToGrid` or hold Shift mid-drag (20 px default)
-- **Viewport virtualization** — nodes and edges outside the viewport are hidden (`display: none`), tested at 1 000 nodes
-- **Minimap** — 200 × 140 px canvas overlay; click or drag to navigate
-- **Config drawer** — schema-driven form with conditional `showIf` rules (recursive `$and` / `$or`)
-- **Copy / paste / duplicate** — Ctrl+C, Ctrl+V, Ctrl+D; preserves internal edges, remaps IDs
-- **Select all** — Ctrl+A
-- **Undo / redo** — Ctrl+Z, Ctrl+Shift+Z
-- **Delete** — Delete / Backspace removes selected nodes + connected edges
-- **Save / load** — `localStorage`-backed, named pipelines
-- **Export** — JSON download of the full graph
-- **Dark / light theme** — CSS custom properties, `prefers-color-scheme` auto-detect, toolbar toggle
-- **Accessibility** — ARIA roles, keyboard navigation, focus indicators, axe-core CI audits
+- **Nodes & edges** with typed ports and DAG (cycle) validation
+- **Edge types** — bezier, straight, step, smoothstep — plus arrowhead markers, midpoint labels and animated (flowing) edges
+- **Interactions** — drag, multi-select + rubber-band, pan/zoom, connect-by-drag, 8-handle resize, keyboard (nudge / delete / undo-redo / copy-paste)
+- **Undo/redo** via a command history
+- **Viewport culling** for large graphs, plus a minimap
+- **Registries** describing node types (appearance, ports, config schema)
+- **Theming** through `--vc-*` CSS custom properties
+- **Signal-first Angular 22 binding** with custom node components (`nodeTypes`)
 
-## Getting started
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| [`@nodeweave/core`](packages/core) | Framework-agnostic engine + default `<canvas-*>` Web Components |
+| [`@nodeweave/angular`](packages/angular) | Angular 22 binding (signal-first) |
+
+Examples live in [`examples/`](examples): `vanilla` and `wireframe` (plain Web
+Components) and `angular` (Angular 22).
+
+## Install
 
 ```bash
-# Install dev dependencies (Playwright only)
+# vanilla / Web Components
+pnpm add @nodeweave/core
+
+# Angular
+pnpm add @nodeweave/angular @nodeweave/core
+```
+
+## Quick start — vanilla
+
+```html
+<canvas-workspace id="ws" style="width:100%;height:100%"></canvas-workspace>
+```
+
+```js
+import {
+  CanvasState, Node, Port,
+  DragController, PanZoomController, SelectionController,
+  EdgeRoutingController, KeyboardController, ResizeController,
+} from '@nodeweave/core'; // importing from the root also registers <canvas-*>
+
+const state = new CanvasState();
+const ws = document.getElementById('ws');
+ws.state = state;
+
+const options = { nodeSelector: 'canvas-node', portSelector: 'canvas-port' };
+const edgeLayer = ws.shadowRoot.querySelector('canvas-edge-layer');
+for (const c of [
+  new DragController(ws, state, options),
+  new PanZoomController(ws, state),
+  new SelectionController(ws, state, options),
+  new EdgeRoutingController(ws, state, edgeLayer, options),
+  new KeyboardController(ws, state, options),
+  new ResizeController(ws, state, options),
+]) c.attach();
+
+const a = new Node({ id: 'a', type: 'task', x: 80, y: 80 });
+a.addPort(new Port({ id: 'a:out', direction: 'out', nodeId: 'a' }));
+state.addNode(a);
+```
+
+See [docs/getting-started.md](docs/getting-started.md).
+
+## Quick start — Angular
+
+```ts
+import { Component } from '@angular/core';
+import { VisualCanvasComponent, Node, Port } from '@nodeweave/angular';
+
+@Component({
+  selector: 'app-editor',
+  standalone: true,
+  imports: [VisualCanvasComponent],
+  template: `<visual-canvas #cv [snapToGrid]="true"></visual-canvas>
+             <button (click)="add(cv)">Add</button>`,
+  styles: `visual-canvas { display:block; height:100vh; }`,
+})
+export class EditorComponent {
+  add(cv: VisualCanvasComponent) {
+    const n = new Node({ id: crypto.randomUUID(), type: 'task', x: 120, y: 80 });
+    n.addPort(new Port({ id: `${n.id}:out`, direction: 'out', nodeId: n.id }));
+    cv.service.addNode(n);        // signals update the view
+  }
+}
+```
+
+See [docs/angular.md](docs/angular.md) — including custom Angular node components.
+
+## Documentation
+
+- [Getting started (vanilla)](docs/getting-started.md)
+- [Angular guide](docs/angular.md)
+- [`@nodeweave/core` API reference](docs/core-api.md)
+- [Theming (`--vc-*` variables)](docs/theming.md)
+
+## Concepts
+
+- **One source of truth.** `CanvasState` (an `EventTarget`) holds nodes, edges,
+  selection and viewport. Everything else observes its events.
+- **Every mutation is a command.** Add / remove / move / resize / paste go
+  through a `CommandHistory`, so undo/redo is free.
+- **The engine is renderer-agnostic.** Controllers find nodes/ports by CSS
+  selector, so any view layer works — the `<canvas-*>` Web Components are the
+  default; `@nodeweave/angular` renders with Angular; other frameworks can too.
+
+## Development
+
+pnpm workspace — Node 24, TypeScript ~6.0, Angular 22.
+
+```bash
 pnpm install
-
-# Serve the project root (lib + app + tests)
-npx serve . -l 3100
-
-# Open the app
-open http://localhost:3100/app/index.html
+pnpm build     # build @nodeweave/core then @nodeweave/angular
+pnpm test      # @nodeweave/core unit tests (node:test)
+pnpm --filter @nodeweave/example-angular start   # run the Angular example
 ```
-
-No build. No compile. Just serve and open.
-
-## Running tests
-
-```bash
-# Unit tests (node:test, no browser needed)
-node --test tests/unit/*.test.js
-
-# Component tests (Playwright + Chromium)
-pnpm exec playwright test --project=component
-
-# End-to-end tests
-pnpm exec playwright test --project=e2e
-
-# Performance benchmarks (200 / 500 / 1 000 nodes)
-pnpm exec playwright test --project=perf
-
-# Everything
-pnpm exec playwright test
-```
-
-Playwright auto-starts local servers on ports 3100 and 3000.
-
-## Test coverage
-
-| Suite | Tests |
-|-------|------:|
-| Unit (graph, state, commands, rules, culling, copy/paste, storage) | 113 |
-| Component (node, edge layer, config drawer) | 19 |
-| E2E (drag, pan/zoom, edge routing, undo/redo, save/load, a11y) | 24 |
-| Performance (200 / 500 / 1 000 nodes) | 9 |
-| **Total** | **165** |
-
-## Project status
-
-The project is built in phases:
-
-1. **Domain model** — `Node`, `Port`, `Edge`, `CanvasState`, `CommandHistory`, `PipelineBuilder`
-2. **Web Components** — `<canvas-workspace>`, `<canvas-node>`, `<canvas-port>`, `<canvas-edge-layer>`, `<config-drawer>`
-3. **Interaction controllers** — drag, pan/zoom, selection, edge routing, keyboard
-4. **Application shell** — sidebar palette, toolbar, process list, storage, export
-5. **Registries & schema forms** — visual / topology / schema registries, conditional `showIf` rules
-6. **Polish & performance** — minimap, viewport virtualization, snap-to-grid, copy/paste, theming, benchmarks, accessibility audit
 
 ## License
 
