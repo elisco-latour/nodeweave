@@ -23,7 +23,7 @@ bindings on top (Angular today; the core is renderer-agnostic by design).
 - **Undo/redo** via a command history
 - **Viewport culling** for large graphs, plus a minimap
 - **Registries** describing node types (appearance, ports, config schema)
-- **Theming** through `--vc-*` CSS custom properties
+- **Theming** through `--nw-*` CSS custom properties
 - **Signal-first Angular 22 binding** with custom node components (`nodeTypes`)
 
 ## Packages
@@ -91,9 +91,9 @@ import { VisualCanvasComponent, Node, Port } from '@nodeweave/angular';
   selector: 'app-editor',
   standalone: true,
   imports: [VisualCanvasComponent],
-  template: `<visual-canvas #cv [snapToGrid]="true"></visual-canvas>
+  template: `<nodeweave #cv [snapToGrid]="true"></nodeweave>
              <button (click)="add(cv)">Add</button>`,
-  styles: `visual-canvas { display:block; height:100vh; }`,
+  styles: `nodeweave { display:block; height:100vh; }`,
 })
 export class EditorComponent {
   add(cv: VisualCanvasComponent) {
@@ -114,7 +114,7 @@ See [docs/angular.md](docs/angular.md) — including custom Angular node compone
 - [Custom edges](docs/custom-edges.md)
 - [Layout](docs/layout.md)
 - [Export & persistence](docs/export.md)
-- [Theming (`--vc-*` variables)](docs/theming.md)
+- [Theming (`--nw-*` variables)](docs/theming.md)
 - [Accessibility](docs/accessibility.md)
 - [Coming from React Flow](docs/migration.md)
 

@@ -5,10 +5,10 @@ template.innerHTML = `
     display: flex;
     gap: 4px;
     padding: 6px;
-    background: var(--vc-toolbar-bg, #16213e);
-    border: 1px solid var(--vc-toolbar-border, #2a3a5e);
+    background: var(--nw-toolbar-bg, #16213e);
+    border: 1px solid var(--nw-toolbar-border, #2a3a5e);
     border-radius: var(--radius-md, 8px);
-    font-family: var(--vc-font-family, system-ui, -apple-system, sans-serif);
+    font-family: var(--nw-font-family, system-ui, -apple-system, sans-serif);
   }
   button {
     display: flex;
@@ -17,22 +17,22 @@ template.innerHTML = `
     width: 32px;
     height: 32px;
     padding: 0;
-    background: var(--vc-btn-bg, transparent);
+    background: var(--nw-btn-bg, transparent);
     border: 1px solid transparent;
     border-radius: var(--radius-sm, 4px);
-    color: var(--vc-text-color, #e0e0e0);
+    color: var(--nw-text-color, #e0e0e0);
     cursor: pointer;
     transition: background 0.15s;
   }
   button:hover:not(:disabled) {
-    background: var(--vc-btn-hover-bg, rgba(255,255,255,0.1));
+    background: var(--nw-btn-hover-bg, rgba(255,255,255,0.1));
   }
   button:focus-visible {
-    outline: 2px solid var(--vc-focus-ring-color, #4dabf7);
+    outline: 2px solid var(--nw-focus-ring-color, #4dabf7);
     outline-offset: 2px;
   }
   button:disabled {
-    opacity: var(--vc-btn-disabled-opacity, 0.4);
+    opacity: var(--nw-btn-disabled-opacity, 0.4);
     cursor: not-allowed;
   }
   button svg {
@@ -42,7 +42,7 @@ template.innerHTML = `
   }
   .separator {
     width: 1px;
-    background: var(--vc-toolbar-border, #2a3a5e);
+    background: var(--nw-toolbar-border, #2a3a5e);
     margin: 2px 4px;
   }
 </style>

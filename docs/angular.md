@@ -35,12 +35,12 @@ import { VisualCanvasComponent, Node, Port } from '@nodeweave/angular';
   standalone: true,
   imports: [VisualCanvasComponent],
   template: `
-    <visual-canvas #cv background="dots" [snapToGrid]="true" (connect)="onConnect($event)">
-    </visual-canvas>
+    <nodeweave #cv background="dots" [snapToGrid]="true" (connect)="onConnect($event)">
+    </nodeweave>
     <button (click)="add(cv)">Add</button>
     <span>{{ cv.service.nodes().length }} nodes</span>
   `,
-  styles: `visual-canvas { display: block; height: 100vh; }`,
+  styles: `nodeweave { display: block; height: 100vh; }`,
 })
 export class EditorComponent {
   add(cv: VisualCanvasComponent) {
@@ -71,7 +71,7 @@ The component **provides** a `VisualCanvasService` and exposes it as `.service`.
 
 ## The service (signal-first)
 
-Inject it (inside `<visual-canvas>`'s injector) or reach it via `cv.service`.
+Inject it (inside `<nodeweave>`'s injector) or reach it via `cv.service`.
 
 ```ts
 service.nodes();          // Signal<readonly Node[]>
@@ -122,7 +122,7 @@ export class TaskNodeComponent {
 ```ts
 @Component({
   // …
-  template: `<visual-canvas [nodeTypes]="nodeTypes"></visual-canvas>`,
+  template: `<nodeweave [nodeTypes]="nodeTypes"></nodeweave>`,
 })
 export class EditorComponent {
   readonly nodeTypes = { task: TaskNodeComponent };
@@ -143,5 +143,5 @@ const nodes$ = toObservable(cv.service.nodes);
 
 ## Theming
 
-The Angular component renders through the same `--vc-*` CSS variables as the
+The Angular component renders through the same `--nw-*` CSS variables as the
 core. See [theming.md](theming.md).

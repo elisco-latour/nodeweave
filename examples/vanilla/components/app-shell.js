@@ -33,14 +33,14 @@ template.innerHTML = `
     height: 100vh;
     overflow: hidden;
     background: var(--color-bg, #1a1a2e);
-    font-family: var(--vc-font-family, system-ui, -apple-system, sans-serif);
-    color: var(--vc-text-color, #e0e0e0);
+    font-family: var(--nw-font-family, system-ui, -apple-system, sans-serif);
+    color: var(--nw-text-color, #e0e0e0);
   }
   .sidebar {
     display: flex;
     flex-direction: column;
-    background: var(--vc-sidebar-bg, #16213e);
-    border-right: 1px solid var(--vc-toolbar-border, #2a3a5e);
+    background: var(--nw-sidebar-bg, #16213e);
+    border-right: 1px solid var(--nw-toolbar-border, #2a3a5e);
     overflow-y: auto;
   }
   .sidebar component-palette {
@@ -48,7 +48,7 @@ template.innerHTML = `
   }
   .sidebar .divider {
     height: 1px;
-    background: var(--vc-toolbar-border, #2a3a5e);
+    background: var(--nw-toolbar-border, #2a3a5e);
     margin: 4px 8px;
   }
   .sidebar process-list {

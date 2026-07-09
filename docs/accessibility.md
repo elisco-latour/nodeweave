@@ -31,7 +31,7 @@ With the `KeyboardController` attached (see
 
 ## Focus & motion
 
-- Focus rings use `--vc-focus-ring-color` (see [theming.md](theming.md)); keep
+- Focus rings use `--nw-focus-ring-color` (see [theming.md](theming.md)); keep
   it visible against your background.
 - Animated edges honour `@media (prefers-reduced-motion: reduce)` — the flow
   animation is disabled automatically.

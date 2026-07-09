@@ -4,12 +4,12 @@ template.innerHTML = `
   :host {
     display: block;
     padding: var(--space-sm, 8px);
-    font-family: var(--vc-font-family, system-ui, -apple-system, sans-serif);
-    font-size: var(--vc-font-size, 0.875rem);
-    color: var(--vc-text-color, #e0e0e0);
+    font-family: var(--nw-font-family, system-ui, -apple-system, sans-serif);
+    font-size: var(--nw-font-size, 0.875rem);
+    color: var(--nw-text-color, #e0e0e0);
   }
   :host(:focus-visible) {
-    outline: 2px solid var(--vc-focus-ring-color, #4dabf7);
+    outline: 2px solid var(--nw-focus-ring-color, #4dabf7);
     outline-offset: 2px;
   }
   h2 {
@@ -17,7 +17,7 @@ template.innerHTML = `
     font-size: 0.8125rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--vc-label-color, #aab);
+    color: var(--nw-label-color, #aab);
   }
   .palette-item {
     display: flex;
@@ -33,10 +33,10 @@ template.innerHTML = `
     transition: background 0.15s;
   }
   .palette-item:hover {
-    background: var(--vc-btn-hover-bg, rgba(255,255,255,0.1));
+    background: var(--nw-btn-hover-bg, rgba(255,255,255,0.1));
   }
   .palette-item:focus-visible {
-    outline: 2px solid var(--vc-focus-ring-color, #4dabf7);
+    outline: 2px solid var(--nw-focus-ring-color, #4dabf7);
     outline-offset: 2px;
   }
   .palette-item:active {

@@ -3,7 +3,7 @@ import { Node } from '@nodeweave/angular';
 
 /**
  * A custom Angular node component. Receives the node via a `node` input and
- * is rendered by <visual-canvas> for every node whose type maps to it.
+ * is rendered by <nodeweave> for every node whose type maps to it.
  */
 @Component({
   selector: 'app-fancy-node',

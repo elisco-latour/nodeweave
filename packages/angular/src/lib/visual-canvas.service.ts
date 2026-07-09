@@ -13,7 +13,7 @@ type CanvasJSON = ReturnType<CanvasState['toJSON']>;
  * All mutations delegate to the underlying CanvasState so there is a single
  * source of truth; the signals are kept in sync from its events.
  *
- * Provide it at the component that hosts <visual-canvas> (the component does
+ * Provide it at the component that hosts <nodeweave> (the component does
  * this for you) and inject it wherever you need to read or mutate the graph.
  */
 @Injectable()

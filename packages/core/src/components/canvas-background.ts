@@ -10,7 +10,7 @@ template.innerHTML = `
     inset: 0;
     pointer-events: none;
     z-index: 0;
-    background-color: var(--vc-bg-color, transparent);
+    background-color: var(--nw-bg-color, transparent);
   }
 </style>
 `;
@@ -87,7 +87,7 @@ export class CanvasBackground extends HTMLElement {
 
   #patternImage(): string {
     if (this.#type === 'lines') {
-      const color = this.#color || 'var(--vc-bg-pattern, #cbd5e1)';
+      const color = this.#color || 'var(--nw-bg-pattern, #cbd5e1)';
       const w = this.#size || 1;
       return (
         `linear-gradient(to right, ${color} ${w}px, transparent ${w}px),` +
@@ -109,7 +109,7 @@ export class CanvasBackground extends HTMLElement {
     }
 
     // dots (default)
-    const color = this.#color || 'var(--vc-bg-pattern, #cbd5e1)';
+    const color = this.#color || 'var(--nw-bg-pattern, #cbd5e1)';
     const r = this.#size || 1;
     return `radial-gradient(circle, ${color} ${r}px, transparent ${r}px)`;
   }

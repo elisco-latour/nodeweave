@@ -4,16 +4,16 @@ template.innerHTML = `
   :host {
     display: block;
     padding: var(--space-sm, 8px);
-    font-family: var(--vc-font-family, system-ui, -apple-system, sans-serif);
-    font-size: var(--vc-font-size, 0.875rem);
-    color: var(--vc-text-color, #e0e0e0);
+    font-family: var(--nw-font-family, system-ui, -apple-system, sans-serif);
+    font-size: var(--nw-font-size, 0.875rem);
+    color: var(--nw-text-color, #e0e0e0);
   }
   h2 {
     margin: 0 0 8px 0;
     font-size: 0.8125rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--vc-label-color, #aab);
+    color: var(--nw-label-color, #aab);
   }
   .actions {
     display: flex;
@@ -23,20 +23,20 @@ template.innerHTML = `
   .actions button {
     flex: 1;
     padding: 6px 8px;
-    background: var(--vc-btn-bg, transparent);
-    border: 1px solid var(--vc-toolbar-border, #2a3a5e);
+    background: var(--nw-btn-bg, transparent);
+    border: 1px solid var(--nw-toolbar-border, #2a3a5e);
     border-radius: var(--radius-sm, 4px);
-    color: var(--vc-text-color, #e0e0e0);
+    color: var(--nw-text-color, #e0e0e0);
     cursor: pointer;
     font-family: inherit;
     font-size: 0.8125rem;
     transition: background 0.15s;
   }
   .actions button:hover {
-    background: var(--vc-btn-hover-bg, rgba(255,255,255,0.1));
+    background: var(--nw-btn-hover-bg, rgba(255,255,255,0.1));
   }
   .actions button:focus-visible {
-    outline: 2px solid var(--vc-focus-ring-color, #4dabf7);
+    outline: 2px solid var(--nw-focus-ring-color, #4dabf7);
     outline-offset: 2px;
   }
   .pipeline-item {
@@ -46,8 +46,8 @@ template.innerHTML = `
     padding: 6px 8px;
     margin-bottom: 4px;
     border-radius: var(--radius-sm, 4px);
-    background: var(--vc-input-bg, #1a1a2e);
-    border: 1px solid var(--vc-input-border, #2a3a5e);
+    background: var(--nw-input-bg, #1a1a2e);
+    border: 1px solid var(--nw-input-border, #2a3a5e);
   }
   .pipeline-info {
     flex: 1;
@@ -60,7 +60,7 @@ template.innerHTML = `
   }
   .pipeline-date {
     font-size: 0.75rem;
-    color: var(--vc-label-color, #aab);
+    color: var(--nw-label-color, #aab);
   }
   .pipeline-actions {
     display: flex;
@@ -69,27 +69,27 @@ template.innerHTML = `
   }
   .pipeline-actions button {
     padding: 2px 6px;
-    background: var(--vc-btn-bg, transparent);
-    border: 1px solid var(--vc-toolbar-border, #2a3a5e);
+    background: var(--nw-btn-bg, transparent);
+    border: 1px solid var(--nw-toolbar-border, #2a3a5e);
     border-radius: var(--radius-sm, 4px);
-    color: var(--vc-text-color, #e0e0e0);
+    color: var(--nw-text-color, #e0e0e0);
     cursor: pointer;
     font-size: 0.75rem;
     font-family: inherit;
     transition: background 0.15s;
   }
   .pipeline-actions button:hover {
-    background: var(--vc-btn-hover-bg, rgba(255,255,255,0.1));
+    background: var(--nw-btn-hover-bg, rgba(255,255,255,0.1));
   }
   .pipeline-actions button:focus-visible {
-    outline: 2px solid var(--vc-focus-ring-color, #4dabf7);
+    outline: 2px solid var(--nw-focus-ring-color, #4dabf7);
     outline-offset: 2px;
   }
   .pipeline-actions .btn-delete:hover {
     background: rgba(244,67,54,0.2);
   }
   .empty {
-    color: var(--vc-label-color, #aab);
+    color: var(--nw-label-color, #aab);
     font-style: italic;
     padding: 8px 0;
   }

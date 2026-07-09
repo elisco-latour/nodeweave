@@ -35,7 +35,7 @@ export default function Home() {
         <div className="row">
           <Feature title="Nodes & edges" desc="Typed ports and DAG validation. Bezier / straight / step / smoothstep edges, arrowheads, labels and animation." />
           <Feature title="Interactions" desc="Drag, multi-select, pan/zoom, connect-by-drag, 8-handle resize, keyboard shortcuts, undo/redo." />
-          <Feature title="Signal-first Angular" desc="A standalone <visual-canvas> with custom Angular node components via nodeTypes, on a signal-first service." />
+          <Feature title="Signal-first Angular" desc="A standalone <nodeweave> with custom Angular node components via nodeTypes, on a signal-first service." />
         </div>
       </main>
     </Layout>

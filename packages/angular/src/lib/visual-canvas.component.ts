@@ -39,7 +39,7 @@ interface BackgroundElement extends StatefulElement { type: BackgroundVariant; g
 interface Detachable { attach(): void; detach(): void; }
 
 /**
- * <visual-canvas> — Angular host that renders the graph with Angular.
+ * <nodeweave> — Angular host that renders the graph with Angular.
  *
  * Nodes are rendered by Angular: pass `nodeTypes` to map a node's `type` to a
  * standalone component (which receives the node via a `node` input); otherwise
@@ -51,7 +51,7 @@ interface Detachable { attach(): void; detach(): void; }
  * as `.service`).
  */
 @Component({
-  selector: 'visual-canvas',
+  selector: 'nodeweave',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -128,16 +128,16 @@ interface Detachable { attach(): void; detach(): void; }
       top: 0;
       left: 0;
       box-sizing: border-box;
-      background: var(--vc-node-bg, #16213e);
-      border: 1px solid var(--vc-node-border, #2a3a5e);
-      border-radius: var(--vc-node-radius, 8px);
-      color: var(--vc-text-color, #e2e8f0);
+      background: var(--nw-node-bg, #16213e);
+      border: 1px solid var(--nw-node-border, #2a3a5e);
+      border-radius: var(--nw-node-radius, 8px);
+      color: var(--nw-text-color, #e2e8f0);
       font-family: system-ui, -apple-system, sans-serif;
       font-size: 0.875rem;
       user-select: none;
     }
     .vc-node.vc-selected {
-      outline: 2px solid var(--vc-selection-border, #4dabf7);
+      outline: 2px solid var(--nw-selection-border, #4dabf7);
       outline-offset: 1px;
     }
     .vc-node-content {
@@ -153,7 +153,7 @@ interface Detachable { attach(): void; detach(): void; }
     }
     .vc-default-header {
       height: 6px;
-      background: var(--vc-node-accent, #4dabf7);
+      background: var(--nw-node-accent, #4dabf7);
       border-radius: inherit inherit 0 0;
     }
     .vc-default-label {
@@ -165,14 +165,14 @@ interface Detachable { attach(): void; detach(): void; }
       width: 11px;
       height: 11px;
       border-radius: 50%;
-      background: var(--vc-port-color, #64748b);
-      border: 2px solid var(--vc-port-border-color, #94a3b8);
+      background: var(--nw-port-color, #64748b);
+      border: 2px solid var(--nw-port-border-color, #94a3b8);
       box-sizing: border-box;
       transform: translate(-50%, -50%);
       cursor: crosshair;
     }
     .vc-port[data-valid-target] {
-      background: var(--vc-port-hover-color, #4dabf7);
+      background: var(--nw-port-hover-color, #4dabf7);
     }
   `,
 })

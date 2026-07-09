@@ -47,9 +47,9 @@ Edges are plain SVG `<path>`s themed with CSS variables — see
 
 ```css
 :root {
-  --vc-edge-color: #64748b;
-  --vc-edge-color-phantom: #94a3b8;   /* the in-progress connection */
-  --vc-edge-label-color: #e2e8f0;
+  --nw-edge-color: #64748b;
+  --nw-edge-color-phantom: #94a3b8;   /* the in-progress connection */
+  --nw-edge-label-color: #e2e8f0;
 }
 ```
 

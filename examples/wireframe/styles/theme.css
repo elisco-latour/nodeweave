@@ -22,9 +22,9 @@
   --wf-danger-border: #fca5a5;
   --wf-danger-text: #dc2626;
 
-  /* Map to --vc-* for lib components */
-  --vc-toolbar-border: var(--wf-border);
-  --vc-node-bg: var(--wf-bg-surface);
+  /* Map to --nw-* for lib components */
+  --nw-toolbar-border: var(--wf-border);
+  --nw-node-bg: var(--wf-bg-surface);
 }
 
 /* ─── Explicit light theme ───────────────────────────────────────────────── */

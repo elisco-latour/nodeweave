@@ -207,4 +207,4 @@ interface ControllerOptions {
 | `<canvas-background>` | attrs/props `type` (`dots`\|`lines`\|`cross`), `gap`, `size`, `color`; `.state` to follow the viewport |
 | `<canvas-controls>` | `.state`, `.workspace`; `zoomIn()`, `zoomOut()`, `fitView()`, `undo()`, `redo()`; `<slot>` for custom buttons |
 
-All are themed via [`--vc-*` CSS variables](theming.md).
+All are themed via [`--nw-*` CSS variables](theming.md).

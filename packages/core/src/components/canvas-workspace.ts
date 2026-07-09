@@ -17,7 +17,7 @@ template.innerHTML = `
     height: 100%;
   }
   :host(:focus-visible) {
-    outline: 2px solid var(--vc-focus-ring-color, #4dabf7);
+    outline: 2px solid var(--nw-focus-ring-color, #4dabf7);
     outline-offset: 2px;
   }
   .viewport {

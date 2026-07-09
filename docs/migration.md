@@ -9,8 +9,8 @@ via a command history.
 
 | React Flow | nodeweave |
 |------------|-----------|
-| `<ReactFlow nodes edges>` | `CanvasState` + `<canvas-workspace>` (vanilla) or `<visual-canvas>` (Angular) |
-| `nodeTypes` | `nodeTypes` input on `<visual-canvas>` (Angular components) |
+| `<ReactFlow nodes edges>` | `CanvasState` + `<canvas-workspace>` (vanilla) or `<nodeweave>` (Angular) |
+| `nodeTypes` | `nodeTypes` input on `<nodeweave>` (Angular components) |
 | `<Handle>` | `Port` (rendered as `canvas-port` / `[data-vc-port]`) |
 | `onConnect` | `CanvasState({ onConnect })`, the `connect` output, or `EdgeRoutingController`'s `onConnect` |
 | `isValidConnection` | `CanvasState({ isValidConnection })` / `ControllerOptions.isValidConnection` |
@@ -51,7 +51,7 @@ via a command history.
 // nodeweave + Angular
 @Component({
   imports: [VisualCanvasComponent],
-  template: `<visual-canvas #cv [nodeTypes]="nodeTypes" (connect)="onConnect($event)"></visual-canvas>`,
+  template: `<nodeweave #cv [nodeTypes]="nodeTypes" (connect)="onConnect($event)"></nodeweave>`,
 })
 export class Flow {
   nodeTypes = { task: TaskNodeComponent };

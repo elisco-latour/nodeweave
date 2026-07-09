@@ -71,7 +71,7 @@ interface EdgeView {
     }
     vc-edge-layer path.vc-edge {
       fill: none;
-      stroke: var(--vc-edge-color, #64748b);
+      stroke: var(--nw-edge-color, #64748b);
       stroke-width: 2;
     }
     @keyframes vc-ng-edge-flow { to { stroke-dashoffset: -10; } }
@@ -84,12 +84,12 @@ interface EdgeView {
     }
     vc-edge-layer path.phantom {
       fill: none;
-      stroke: var(--vc-edge-color-phantom, #94a3b8);
+      stroke: var(--nw-edge-color-phantom, #94a3b8);
       stroke-width: 2;
       stroke-dasharray: 6 4;
     }
     vc-edge-layer text.vc-edge-label {
-      fill: var(--vc-edge-label-color, #e2e8f0);
+      fill: var(--nw-edge-label-color, #e2e8f0);
       font-size: 11px;
       font-family: system-ui, sans-serif;
     }

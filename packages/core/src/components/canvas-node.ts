@@ -11,17 +11,17 @@ template.innerHTML = `
     position: absolute;
     transform: translate(calc(var(--x, 0) * 1px), calc(var(--y, 0) * 1px));
     min-width: 160px;
-    background: var(--vc-node-bg, #16213e);
-    border: 1px solid var(--vc-node-border, #2a3a5e);
-    border-radius: var(--vc-node-radius, 8px);
+    background: var(--nw-node-bg, #16213e);
+    border: 1px solid var(--nw-node-border, #2a3a5e);
+    border-radius: var(--nw-node-radius, 8px);
     overflow: hidden;
     user-select: none;
-    color: var(--vc-text-color, #e0e0e0);
-    font-family: var(--vc-font-family, system-ui, -apple-system, sans-serif);
-    font-size: var(--vc-font-size, 0.875rem);
+    color: var(--nw-text-color, #e0e0e0);
+    font-family: var(--nw-font-family, system-ui, -apple-system, sans-serif);
+    font-size: var(--nw-font-size, 0.875rem);
   }
   :host(:focus-visible) {
-    outline: 2px solid var(--vc-focus-ring-color, #4dabf7);
+    outline: 2px solid var(--nw-focus-ring-color, #4dabf7);
     outline-offset: 2px;
   }
   .header {

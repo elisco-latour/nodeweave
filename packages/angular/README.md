@@ -22,12 +22,12 @@ import { VisualCanvasComponent, Node, Port } from '@nodeweave/angular';
   standalone: true,
   imports: [VisualCanvasComponent],
   template: `
-    <visual-canvas #canvas background="dots" [snapToGrid]="true"
-                   (connect)="onConnect($event)"></visual-canvas>
+    <nodeweave #canvas background="dots" [snapToGrid]="true"
+                   (connect)="onConnect($event)"></nodeweave>
     <button (click)="add()">Add node</button>
     <p>{{ canvas.service.nodes().length }} nodes</p>
   `,
-  styles: `visual-canvas { height: 100vh; display: block; }`,
+  styles: `nodeweave { height: 100vh; display: block; }`,
 })
 export class EditorComponent {
   readonly canvas = viewChild.required(VisualCanvasComponent);
@@ -66,14 +66,14 @@ export class TaskNodeComponent {
 
 // in the host component:
 //   readonly nodeTypes = { task: TaskNodeComponent };
-//   <visual-canvas [nodeTypes]="nodeTypes"></visual-canvas>
+//   <nodeweave [nodeTypes]="nodeTypes"></nodeweave>
 ```
 
 Nodes whose type has no mapping fall back to a default node.
 
 ## API
 
-### `VisualCanvasComponent` (`<visual-canvas>`)
+### `VisualCanvasComponent` (`<nodeweave>`)
 
 Inputs: `nodeTypes` (`Record<string, Type>`), `background`
 (`'dots'|'lines'|'cross'`), `backgroundGap`, `showControls`, `snapToGrid`.
