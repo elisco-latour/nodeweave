@@ -7,11 +7,11 @@ const config = {
   tagline: 'A framework-agnostic node / graph canvas',
   favicon: 'img/favicon.svg',
 
-  url: 'https://nodeweave.dev',
+  url: 'https://arasuite.github.io',
   baseUrl: '/',
 
-  organizationName: 'nodeweave',
-  projectName: 'nodeweave',
+  organizationName: 'arasuite',
+  projectName: 'visual-canvas',
 
   onBrokenLinks: 'warn',
   onBrokenAnchors: 'warn',
@@ -54,7 +54,7 @@ const config = {
           { type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs' },
           { to: '/docs/getting-started', label: 'Getting started', position: 'left' },
           { to: '/docs/angular', label: 'Angular', position: 'left' },
-          { href: 'https://github.com/nodeweave/nodeweave', label: 'GitHub', position: 'right' },
+          { href: 'https://github.com/arasuite/visual-canvas', label: 'GitHub', position: 'right' },
         ],
       },
       footer: {

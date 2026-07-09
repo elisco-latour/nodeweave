@@ -3,8 +3,6 @@
   "version": "0.1.0",
   "description": "Angular 22 integration for nodeweave — a signal-first node/graph canvas.",
   "type": "module",
-  "module": "./dist/fesm2022/nodeweave-angular.mjs",
-  "types": "./dist/types/nodeweave-angular.d.ts",
   "exports": {
     ".": {
       "types": "./dist/types/nodeweave-angular.d.ts",
@@ -18,7 +16,7 @@
     "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
     "rxjs": "^7.4.0",
-    "@nodeweave/core": "workspace:*"
+    "@nodeweave/core": "^1.0.0"
   },
   "dependencies": {
     "tslib": "^2.8.0"
@@ -34,5 +32,18 @@
     "@nodeweave/core": "workspace:*"
   },
   "sideEffects": false,
-  "license": "ISC"
+  "author": "Koffi Eli Kponblanou",
+  "license": "ISC",
+  "homepage": "https://github.com/arasuite/visual-canvas/tree/main/packages/angular#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arasuite/visual-canvas.git",
+    "directory": "packages/angular"
+  },
+  "bugs": {
+    "url": "https://github.com/arasuite/visual-canvas/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }
