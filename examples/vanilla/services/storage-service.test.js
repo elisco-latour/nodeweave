@@ -17,7 +17,7 @@ function createLocalStorageMock() {
 // We need to set up globalThis.localStorage before importing
 globalThis.localStorage = createLocalStorageMock();
 
-const { StorageService } = await import('../../app/services/storage-service.js');
+const { StorageService } = await import('./storage-service.js');
 
 describe('StorageService', () => {
   let svc;

@@ -16,7 +16,7 @@
     {
       "name": "angular-example",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@visual-canvas/angular-example", "exec", "ng", "serve", "example", "--port", "4200"],
+      "runtimeArgs": ["--filter", "@nodeweave/example-angular", "exec", "ng", "serve", "example", "--port", "4200"],
       "port": 4200
     }
   ]

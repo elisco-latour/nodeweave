@@ -12,17 +12,17 @@
 <body>
   <canvas-workspace id="workspace" tabindex="0"></canvas-workspace>
   <script type="module">
-    import { CanvasState } from '/lib/core/canvas-state.js';
-    import { Node, Port, Edge } from '/lib/core/graph.js';
-    import { DragController } from '/lib/controllers/drag-controller.js';
-    import { PanZoomController } from '/lib/controllers/pan-zoom-controller.js';
-    import { SelectionController } from '/lib/controllers/selection-controller.js';
-    import { EdgeRoutingController } from '/lib/controllers/edge-routing-controller.js';
-    import { KeyboardController } from '/lib/controllers/keyboard-controller.js';
-    import '/lib/components/canvas-workspace.js';
-    import '/lib/components/canvas-node.js';
-    import '/lib/components/canvas-port.js';
-    import '/lib/components/canvas-edge-layer.js';
+    import { CanvasState } from '/packages/core/dist/core/canvas-state.js';
+    import { Node, Port, Edge } from '/packages/core/dist/core/graph.js';
+    import { DragController } from '/packages/core/dist/controllers/drag-controller.js';
+    import { PanZoomController } from '/packages/core/dist/controllers/pan-zoom-controller.js';
+    import { SelectionController } from '/packages/core/dist/controllers/selection-controller.js';
+    import { EdgeRoutingController } from '/packages/core/dist/controllers/edge-routing-controller.js';
+    import { KeyboardController } from '/packages/core/dist/controllers/keyboard-controller.js';
+    import '/packages/core/dist/components/canvas-workspace.js';
+    import '/packages/core/dist/components/canvas-node.js';
+    import '/packages/core/dist/components/canvas-port.js';
+    import '/packages/core/dist/components/canvas-edge-layer.js';
 
     const state = new CanvasState();
     const ws = document.getElementById('workspace');

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { CommandHistory } from '../../dist/core/command-history.js';
+import { CommandHistory } from '../dist/core/command-history.js';
 
 function createMockCommand() {
   const calls = { execute: 0, undo: 0 };

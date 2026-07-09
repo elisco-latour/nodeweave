@@ -1,4 +1,4 @@
-// Shared public types for visual-canvas
+// Shared public types for nodeweave
 
 export type PortDirection = 'in' | 'out';
 export type PositionHint = 'top' | 'bottom' | 'left' | 'right';

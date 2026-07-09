@@ -10,7 +10,7 @@ test.describe('wf-process-list', () => {
 
   test('renders empty state when no pipelines saved', async ({ page }) => {
     await page.evaluate(async () => {
-      const { StorageService } = await import('/wireframe/services/storage-service.js');
+      const { StorageService } = await import('/examples/wireframe/services/storage-service.js');
       const processList = document.createElement('wf-process-list');
       document.body.appendChild(processList);
       processList.storageService = new StorageService();
@@ -37,7 +37,7 @@ test.describe('wf-process-list', () => {
 
   test('renders pipeline names after save', async ({ page }) => {
     await page.evaluate(async () => {
-      const { StorageService } = await import('/wireframe/services/storage-service.js');
+      const { StorageService } = await import('/examples/wireframe/services/storage-service.js');
       const storage = new StorageService();
       storage.save('My Pipeline', { nodes: [], edges: [] });
       storage.save('Test Flow', { nodes: [], edges: [] });
@@ -59,7 +59,7 @@ test.describe('wf-process-list', () => {
 
   test('delete removes pipeline from list', async ({ page }) => {
     await page.evaluate(async () => {
-      const { StorageService } = await import('/wireframe/services/storage-service.js');
+      const { StorageService } = await import('/examples/wireframe/services/storage-service.js');
       const storage = new StorageService();
       storage.save('ToDelete', { nodes: [], edges: [] });
 
@@ -92,8 +92,8 @@ test.describe('wf-process-list', () => {
 
   test('load button triggers state loadFromJSON', async ({ page }) => {
     const loaded = await page.evaluate(async () => {
-      const { StorageService } = await import('/wireframe/services/storage-service.js');
-      const { CanvasState } = await import('/lib/core.js');
+      const { StorageService } = await import('/examples/wireframe/services/storage-service.js');
+      const { CanvasState } = await import('/packages/core/dist/core.js');
       const storage = new StorageService();
       const state = new CanvasState();
 

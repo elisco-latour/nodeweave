@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-const APP_URL = '/app/index.html';
+const APP_URL = '/examples/vanilla/index.html';
 
 async function waitForApp(page) {
   await page.goto(APP_URL);

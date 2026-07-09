@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { CanvasState } from '../../dist/core/canvas-state.js';
-import { Node } from '../../dist/core/graph.js';
+import { CanvasState } from '../dist/core/canvas-state.js';
+import { Node } from '../dist/core/graph.js';
 
 function makeState() {
   const state = new CanvasState();

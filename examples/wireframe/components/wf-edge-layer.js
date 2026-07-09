@@ -1,4 +1,4 @@
-import { buildEdgePath, getEdgeCenter } from '../../dist/core/edge-paths.js';
+import { buildEdgePath, getEdgeCenter } from '/packages/core/dist/core/edge-paths.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 

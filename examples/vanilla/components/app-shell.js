@@ -13,7 +13,7 @@ import {
   EdgeRoutingController,
   KeyboardController,
   ResizeController,
-} from '../../dist/index.js';
+} from '/packages/core/dist/index.js';
 
 import { registerStarterNodes } from '../starter-nodes.js';
 import { StorageService } from '../services/storage-service.js';
