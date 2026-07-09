@@ -60,10 +60,15 @@ template.innerHTML = `
     position: relative;
     overflow: hidden;
   }
+  .main canvas-background {
+    z-index: 0;
+  }
   .main canvas-workspace {
     width: 100%;
     height: 100%;
     display: block;
+    position: relative;
+    z-index: 1;
   }
   .toolbar-overlay {
     position: absolute;
@@ -93,6 +98,7 @@ template.innerHTML = `
   <process-list id="process-list"></process-list>
 </nav>
 <main class="main">
+  <canvas-background id="background" type="dots" gap="24"></canvas-background>
   <canvas-workspace id="workspace" tabindex="0"></canvas-workspace>
   <div class="toolbar-overlay">
     <app-toolbar id="toolbar"></app-toolbar>
@@ -166,6 +172,7 @@ export class AppShell extends HTMLElement {
     this.setAttribute('aria-label', 'Visual Canvas Node Editor');
 
     const workspace = this.shadowRoot.getElementById('workspace');
+    const background = this.shadowRoot.getElementById('background');
     const palette = this.shadowRoot.getElementById('palette');
     const toolbar = this.shadowRoot.getElementById('toolbar');
     const processList = this.shadowRoot.getElementById('process-list');
@@ -173,6 +180,7 @@ export class AppShell extends HTMLElement {
 
     // Pass shared instances to children
     workspace.state = this.#state;
+    background.state = this.#state;
     palette.visualRegistry = this.#visualRegistry;
     palette.topologyRegistry = this.#topologyRegistry;
     toolbar.state = this.#state;
