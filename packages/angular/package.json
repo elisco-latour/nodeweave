@@ -1,0 +1,30 @@
+{
+  "name": "@visual-canvas/angular",
+  "version": "0.1.0",
+  "description": "Angular 22 integration for visual-canvas — a signal-first node/graph canvas.",
+  "type": "module",
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json"
+  },
+  "peerDependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "rxjs": "^7.4.0",
+    "visual-canvas": "workspace:*"
+  },
+  "dependencies": {
+    "tslib": "^2.8.0"
+  },
+  "devDependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/compiler": "^22.0.0",
+    "@angular/compiler-cli": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "ng-packagr": "^22.0.0",
+    "rxjs": "^7.8.0",
+    "typescript": "~6.0.2",
+    "visual-canvas": "workspace:*"
+  },
+  "sideEffects": false,
+  "license": "ISC"
+}
