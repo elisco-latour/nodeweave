@@ -1,0 +1,58 @@
+name: Release
+
+# Publishes @nodeweave/* to npm when a version tag is pushed (e.g. v1.0.0),
+# or on manual dispatch. Requires an NPM_TOKEN repository secret (a granular
+# or automation token with publish rights to the @nodeweave scope).
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # npm provenance
+
+jobs:
+  publish:
+    name: Build & publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: pnpm install --frozen-lockfile
+      - name: Build packages
+        run: pnpm build
+      - name: Unit tests
+        run: pnpm test
+
+      # Each step skips if that exact version is already on npm, so re-running
+      # the workflow or bumping only one package is safe.
+      - name: Publish @nodeweave/core
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./packages/core/package.json').version")
+          if npm view "@nodeweave/core@$VERSION" version >/dev/null 2>&1; then
+            echo "@nodeweave/core@$VERSION already published — skipping."
+          else
+            pnpm --filter @nodeweave/core publish --no-git-checks --provenance
+          fi
+
+      - name: Publish @nodeweave/angular
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./packages/angular/dist/package.json').version")
+          if npm view "@nodeweave/angular@$VERSION" version >/dev/null 2>&1; then
+            echo "@nodeweave/angular@$VERSION already published — skipping."
+          else
+            # The Angular package is published from its ng-packagr output.
+            npm publish --provenance --access public
+          fi
+        working-directory: packages/angular/dist
