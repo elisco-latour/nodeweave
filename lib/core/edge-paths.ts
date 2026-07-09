@@ -34,6 +34,11 @@ export function getStraightPath(source: Point, target: Point): string {
   return `M ${source.x},${source.y} L ${target.x},${target.y}`;
 }
 
+/** Geometric midpoint between two points — a reasonable label anchor for any edge type. */
+export function getEdgeCenter(source: Point, target: Point): Point {
+  return { x: (source.x + target.x) / 2, y: (source.y + target.y) / 2 };
+}
+
 /** Cubic Bézier with horizontal control points (the default edge shape). */
 export function getBezierPath(source: Point, target: Point, options: EdgePathOptions = {}): string {
   const { minBow = 0, maxBow = Infinity } = options;
