@@ -1,6 +1,10 @@
 import './canvas-node.js';
 import './canvas-edge-layer.js';
 import { ViewportCulling } from '../core/viewport-culling.js';
+import type { CanvasNode } from './canvas-node.js';
+import type { CanvasEdgeLayer } from './canvas-edge-layer.js';
+import type { CanvasState } from '../core/canvas-state.js';
+import type { Node } from '../core/graph.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -30,39 +34,40 @@ template.innerHTML = `
 `;
 
 export class CanvasWorkspace extends HTMLElement {
-  #state = null;
-  #viewportEl;
-  #edgeLayer = null;
-  #nodeEls = new Map(); // nodeId → <canvas-node>
-  #visibleNodeIds = new Set();
-  #onViewportChanged;
-  #onNodeAdded;
-  #onNodeRemoved;
-  #onNodeMoved;
-  #onStateReset;
+  readonly #root: ShadowRoot;
+  #state: CanvasState | null = null;
+  readonly #viewportEl: HTMLElement;
+  #edgeLayer: CanvasEdgeLayer | null = null;
+  readonly #nodeEls: Map<string, CanvasNode> = new Map(); // nodeId → <canvas-node>
+  #visibleNodeIds: Set<string> = new Set();
+
+  readonly #onViewportChanged: (e: Event) => void;
+  readonly #onNodeAdded: (e: Event) => void;
+  readonly #onNodeRemoved: (e: Event) => void;
+  readonly #onNodeMoved: (e: Event) => void;
+  readonly #onStateReset: (e: Event) => void;
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
-    this.#viewportEl = this.shadowRoot.querySelector('.viewport');
+    this.#root = this.attachShadow({ mode: 'open' });
+    this.#root.appendChild(template.content.cloneNode(true));
+    this.#viewportEl = this.#root.querySelector('.viewport')!;
 
-    this.#onViewportChanged = (e) => {
-      const { panX, panY, zoom } = e.detail;
+    this.#onViewportChanged = (e: Event) => {
+      const { panX, panY, zoom } = (e as CustomEvent).detail;
       this.#viewportEl.style.setProperty('--pan-x', `${panX}px`);
       this.#viewportEl.style.setProperty('--pan-y', `${panY}px`);
-      this.#viewportEl.style.setProperty('--zoom', zoom);
+      this.#viewportEl.style.setProperty('--zoom', String(zoom));
       this.#updateCulling();
     };
 
-    this.#onNodeAdded = (e) => {
-      const node = e.detail.node;
-      this.#createNodeElement(node);
+    this.#onNodeAdded = (e: Event) => {
+      this.#createNodeElement((e as CustomEvent).detail.node);
       this.#updateCulling();
     };
 
-    this.#onNodeRemoved = (e) => {
-      const nodeId = e.detail.nodeId;
+    this.#onNodeRemoved = (e: Event) => {
+      const nodeId = (e as CustomEvent).detail.nodeId;
       const el = this.#nodeEls.get(nodeId);
       if (el) {
         el.remove();
@@ -81,13 +86,13 @@ export class CanvasWorkspace extends HTMLElement {
     };
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.setAttribute('role', 'application');
     this.setAttribute('aria-label', 'Pipeline canvas');
     this.setAttribute('aria-roledescription', 'canvas');
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     if (this.#state) {
       this.#state.removeEventListener('viewport-changed', this.#onViewportChanged);
       this.#state.removeEventListener('node-added', this.#onNodeAdded);
@@ -97,11 +102,8 @@ export class CanvasWorkspace extends HTMLElement {
     }
   }
 
-  get state() {
-    return this.#state;
-  }
-
-  set state(canvasState) {
+  get state(): CanvasState | null { return this.#state; }
+  set state(canvasState: CanvasState | null) {
     if (this.#state) {
       this.#state.removeEventListener('viewport-changed', this.#onViewportChanged);
       this.#state.removeEventListener('node-added', this.#onNodeAdded);
@@ -111,9 +113,7 @@ export class CanvasWorkspace extends HTMLElement {
     }
 
     // Clear existing nodes
-    for (const el of this.#nodeEls.values()) {
-      el.remove();
-    }
+    for (const el of this.#nodeEls.values()) el.remove();
     this.#nodeEls.clear();
     if (this.#edgeLayer) {
       this.#edgeLayer.remove();
@@ -128,61 +128,58 @@ export class CanvasWorkspace extends HTMLElement {
       this.#state.addEventListener('node-moved', this.#onNodeMoved);
       this.#state.addEventListener('state-reset', this.#onStateReset);
 
-      // Apply current viewport
       const { panX, panY, zoom } = this.#state.viewport;
       this.#viewportEl.style.setProperty('--pan-x', `${panX}px`);
       this.#viewportEl.style.setProperty('--pan-y', `${panY}px`);
-      this.#viewportEl.style.setProperty('--zoom', zoom);
+      this.#viewportEl.style.setProperty('--zoom', String(zoom));
 
-      // Create edge layer
-      this.#edgeLayer = document.createElement('canvas-edge-layer');
+      this.#edgeLayer = document.createElement('canvas-edge-layer') as CanvasEdgeLayer;
       this.#edgeLayer.state = this.#state;
       this.#viewportEl.appendChild(this.#edgeLayer);
 
-      // Create node elements for existing nodes
       for (const node of this.#state.nodes.values()) {
         this.#createNodeElement(node);
       }
     }
   }
 
-  #rebuild() {
+  #rebuild(): void {
+    const state = this.#state;
+    if (!state) return;
+
     for (const el of this.#nodeEls.values()) el.remove();
     this.#nodeEls.clear();
     if (this.#edgeLayer) this.#edgeLayer.remove();
 
-    this.#edgeLayer = document.createElement('canvas-edge-layer');
-    this.#edgeLayer.state = this.#state;
+    this.#edgeLayer = document.createElement('canvas-edge-layer') as CanvasEdgeLayer;
+    this.#edgeLayer.state = state;
     this.#viewportEl.appendChild(this.#edgeLayer);
 
-    for (const node of this.#state.nodes.values()) {
+    for (const node of state.nodes.values()) {
       this.#createNodeElement(node);
     }
 
-    const { panX, panY, zoom } = this.#state.viewport;
+    const { panX, panY, zoom } = state.viewport;
     this.#viewportEl.style.setProperty('--pan-x', `${panX}px`);
     this.#viewportEl.style.setProperty('--pan-y', `${panY}px`);
-    this.#viewportEl.style.setProperty('--zoom', zoom);
+    this.#viewportEl.style.setProperty('--zoom', String(zoom));
   }
 
-  #createNodeElement(node) {
-    const el = document.createElement('canvas-node');
+  #createNodeElement(node: Node): void {
+    const el = document.createElement('canvas-node') as CanvasNode;
     el.nodeId = node.id;
-    el.nodeType = node.type;
+    el.nodeKind = node.type;
     el.label = node.type;
     el.setPosition(node.x, node.y);
     el.state = this.#state;
-
-    // Set ports from the node's port map
-    const portArray = Array.from(node.ports.values());
-    el.ports = portArray;
+    el.ports = Array.from(node.ports.values());
 
     this.#viewportEl.appendChild(el);
     this.#nodeEls.set(node.id, el);
   }
 
-  #getViewportBounds() {
-    const { panX, panY, zoom } = this.#state.viewport;
+  #getViewportBounds(): { x: number; y: number; width: number; height: number } {
+    const { panX, panY, zoom } = this.#state!.viewport;
     const rect = this.getBoundingClientRect();
     const w = rect.width || 1200;
     const h = rect.height || 800;
@@ -194,7 +191,7 @@ export class CanvasWorkspace extends HTMLElement {
     };
   }
 
-  #updateCulling() {
+  #updateCulling(): void {
     if (!this.#state) return;
     const bounds = this.#getViewportBounds();
     const visibleIds = new Set(ViewportCulling.getVisibleNodes(this.#state, bounds));
@@ -209,8 +206,7 @@ export class CanvasWorkspace extends HTMLElement {
 
     this.#visibleNodeIds = visibleIds;
 
-    // Update edge layer to only render edges connected to visible nodes
-    if (this.#edgeLayer && this.#edgeLayer.setVisibleNodes) {
+    if (this.#edgeLayer) {
       this.#edgeLayer.setVisibleNodes(visibleIds);
     }
   }

@@ -45,6 +45,16 @@ template.innerHTML = `
     stroke-dasharray: 8 4;
     opacity: 0.5;
   }
+  @keyframes wf-edge-flow {
+    to { stroke-dashoffset: -10; }
+  }
+  svg > path.animated {
+    stroke-dasharray: 6 4;
+    animation: wf-edge-flow 0.5s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    svg > path.animated { animation: none; }
+  }
   .edge-label-bg {
     fill: var(--wf-bg-surface, #ffffff);
     stroke: var(--wf-border, #e2e8f0);
@@ -136,6 +146,7 @@ export class WfEdgeLayer extends HTMLElement {
     this.#svg.appendChild(path);
     this.#paths.set(edge.id, path);
     this.#applyMarker(path, edge);
+    path.classList.toggle('animated', !!edge.animated);
     this.#updatePath(edge, path);
     if (!this.#isEdgeVisible(edge)) {
       path.style.display = 'none';

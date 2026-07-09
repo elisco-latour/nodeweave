@@ -1,3 +1,5 @@
+import type { PortDirection } from '../types.js';
+
 const template = document.createElement('template');
 template.innerHTML = `
 <style>
@@ -24,37 +26,37 @@ template.innerHTML = `
 
 export class CanvasPort extends HTMLElement {
   #portId = '';
-  #direction = 'in';
+  #direction: PortDirection = 'in';
   #nodeId = '';
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    const root = this.attachShadow({ mode: 'open' });
+    root.appendChild(template.content.cloneNode(true));
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.setAttribute('role', 'button');
     this.setAttribute('tabindex', '0');
     this.#updateAriaLabel();
   }
 
-  get portId() { return this.#portId; }
-  set portId(value) {
+  get portId(): string { return this.#portId; }
+  set portId(value: string) {
     this.#portId = value;
     this.#updateAriaLabel();
   }
 
-  get direction() { return this.#direction; }
-  set direction(value) {
+  get direction(): PortDirection { return this.#direction; }
+  set direction(value: PortDirection) {
     this.#direction = value;
     this.#updateAriaLabel();
   }
 
-  get nodeId() { return this.#nodeId; }
-  set nodeId(value) { this.#nodeId = value; }
+  get nodeId(): string { return this.#nodeId; }
+  set nodeId(value: string) { this.#nodeId = value; }
 
-  #updateAriaLabel() {
+  #updateAriaLabel(): void {
     if (this.#direction === 'in') {
       this.setAttribute('aria-label', `Connect to ${this.#portId} input`);
     } else {

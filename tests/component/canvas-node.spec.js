@@ -10,7 +10,7 @@ test.describe('canvas-node', () => {
     await page.evaluate(() => {
       const node = document.createElement('canvas-node');
       node.nodeId = 'n1';
-      node.nodeType = 'action';
+      node.nodeKind = 'action';
       node.label = 'My Action';
       document.body.appendChild(node);
     });
@@ -34,7 +34,7 @@ test.describe('canvas-node', () => {
     await page.evaluate(() => {
       const node = document.createElement('canvas-node');
       node.nodeId = 'n1';
-      node.nodeType = 'action';
+      node.nodeKind = 'action';
       node.label = 'My Action';
       document.body.appendChild(node);
     });
@@ -51,7 +51,7 @@ test.describe('canvas-node', () => {
     await page.evaluate(() => {
       const node = document.createElement('canvas-node');
       node.nodeId = 'n1';
-      node.nodeType = 'action';
+      node.nodeKind = 'action';
       node.label = 'Test Node';
       document.body.appendChild(node);
     });
@@ -67,7 +67,7 @@ test.describe('canvas-node', () => {
     await page.evaluate(() => {
       const node = document.createElement('canvas-node');
       node.nodeId = 'n1';
-      node.nodeType = 'action';
+      node.nodeKind = 'action';
       node.label = 'Test';
       document.body.appendChild(node);
       node.setPosition(150, 250);
@@ -89,7 +89,7 @@ test.describe('canvas-node', () => {
       const { Node, Port } = window;
       const domNode = document.createElement('canvas-node');
       domNode.nodeId = 'n1';
-      domNode.nodeType = 'action';
+      domNode.nodeKind = 'action';
       domNode.label = 'Action';
 
       const ports = [
@@ -124,7 +124,7 @@ test.describe('canvas-node', () => {
 
       const domNode = document.createElement('canvas-node');
       domNode.nodeId = 'n1';
-      domNode.nodeType = 'action';
+      domNode.nodeKind = 'action';
       domNode.label = 'Action';
       domNode.state = state;
       document.body.appendChild(domNode);

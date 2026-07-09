@@ -1,4 +1,9 @@
 import { RuleEvaluator } from '../core/rule-evaluator.js';
+import type { SchemaDefinition, SchemaField } from '../types.js';
+
+interface DrawerConfig extends Record<string, unknown> {
+  _schema?: SchemaDefinition;
+}
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -154,53 +159,56 @@ template.innerHTML = `
 `;
 
 export class ConfigDrawer extends HTMLElement {
-  #nodeId = null;
-  #nodeType = null;
-  #schema = null;
-  #localState = {};
-  #fieldElements = new Map();
+  readonly #root: ShadowRoot;
+  #nodeId: string | null = null;
+  #nodeType: string | null = null;
+  #schema: SchemaDefinition | null = null;
+  #localState: Record<string, any> = {};
+  readonly #fieldElements: Map<string, HTMLElement> = new Map();
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
-    this.shadowRoot.getElementById('close-btn').addEventListener('click', () => this.close());
+    this.#root = this.attachShadow({ mode: 'open' });
+    this.#root.appendChild(template.content.cloneNode(true));
+    this.#root.getElementById('close-btn')!.addEventListener('click', () => this.close());
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.setAttribute('role', 'complementary');
     this.setAttribute('aria-label', 'Node configuration');
   }
 
-  open(nodeId, nodeType, config) {
+  open(nodeId: string, nodeType: string, config?: DrawerConfig | null): void {
     this.#nodeId = nodeId;
     this.#nodeType = nodeType;
-    this.shadowRoot.getElementById('type-label').textContent = nodeType;
+    this.#root.getElementById('type-label')!.textContent = nodeType;
     this.setAttribute('open', '');
     if (config && config._schema) {
       this.renderForm(config._schema, config);
     }
   }
 
-  close() {
+  close(): void {
     this.removeAttribute('open');
     this.#nodeId = null;
     this.#nodeType = null;
     this.#schema = null;
   }
 
-  renderForm(schema, currentConfig = {}) {
+  renderForm(schema: SchemaDefinition, currentConfig: Record<string, unknown> = {}): void {
     this.#schema = schema;
     this.#localState = {};
     this.#fieldElements.clear();
-    const container = this.shadowRoot.getElementById('form-container');
+    const container = this.#root.getElementById('form-container')!;
     container.textContent = '';
 
     const fragment = document.createDocumentFragment();
 
     for (const [key, fieldDef] of Object.entries(schema.fields)) {
       const value = currentConfig[key] !== undefined ? currentConfig[key] : fieldDef.default;
-      this.#localState[key] = value !== undefined ? value : (fieldDef.type === 'boolean' ? false : (fieldDef.type === 'list' ? [] : ''));
+      this.#localState[key] = value !== undefined
+        ? value
+        : (fieldDef.type === 'boolean' ? false : (fieldDef.type === 'list' ? [] : ''));
       const group = this.#createField(key, fieldDef, this.#localState[key]);
       this.#fieldElements.set(key, group);
       fragment.appendChild(group);
@@ -210,7 +218,7 @@ export class ConfigDrawer extends HTMLElement {
     this.#evaluateConditions();
   }
 
-  #createField(fieldKey, fieldDef, currentValue) {
+  #createField(fieldKey: string, fieldDef: SchemaField, currentValue: unknown): HTMLElement {
     const group = document.createElement('div');
     group.classList.add('form-group');
     group.dataset.fieldKey = fieldKey;
@@ -243,7 +251,7 @@ export class ConfigDrawer extends HTMLElement {
     return group;
   }
 
-  #createStringField(group, key, def, value) {
+  #createStringField(group: HTMLElement, key: string, def: SchemaField, value: unknown): void {
     const label = document.createElement('label');
     label.setAttribute('for', `field-${key}`);
     label.textContent = def.label || key;
@@ -251,14 +259,14 @@ export class ConfigDrawer extends HTMLElement {
     input.type = 'text';
     input.id = `field-${key}`;
     input.name = key;
-    input.value = value ?? '';
+    input.value = String(value ?? '');
     if (def.placeholder) input.placeholder = def.placeholder;
     input.addEventListener('input', () => this.#onFieldChange(key, input.value));
     group.appendChild(label);
     group.appendChild(input);
   }
 
-  #createNumberField(group, key, def, value) {
+  #createNumberField(group: HTMLElement, key: string, def: SchemaField, value: unknown): void {
     const label = document.createElement('label');
     label.setAttribute('for', `field-${key}`);
     label.textContent = def.label || key;
@@ -266,24 +274,24 @@ export class ConfigDrawer extends HTMLElement {
     input.type = 'number';
     input.id = `field-${key}`;
     input.name = key;
-    input.value = value ?? '';
-    if (def.min !== undefined) input.min = def.min;
-    if (def.max !== undefined) input.max = def.max;
-    if (def.step !== undefined) input.step = def.step;
+    input.value = value != null ? String(value) : '';
+    if (def.min !== undefined) input.min = String(def.min);
+    if (def.max !== undefined) input.max = String(def.max);
+    if (def.step !== undefined) input.step = String(def.step);
     if (def.placeholder) input.placeholder = def.placeholder;
     input.addEventListener('input', () => this.#onFieldChange(key, input.valueAsNumber));
     group.appendChild(label);
     group.appendChild(input);
   }
 
-  #createSelectField(group, key, def, value) {
+  #createSelectField(group: HTMLElement, key: string, def: SchemaField, value: unknown): void {
     const label = document.createElement('label');
     label.setAttribute('for', `field-${key}`);
     label.textContent = def.label || key;
     const select = document.createElement('select');
     select.id = `field-${key}`;
     select.name = key;
-    for (const opt of def.options) {
+    for (const opt of def.options ?? []) {
       const option = document.createElement('option');
       option.value = opt;
       option.textContent = opt;
@@ -295,14 +303,14 @@ export class ConfigDrawer extends HTMLElement {
     group.appendChild(select);
   }
 
-  #createTextareaField(group, key, def, value) {
+  #createTextareaField(group: HTMLElement, key: string, def: SchemaField, value: unknown): void {
     const label = document.createElement('label');
     label.setAttribute('for', `field-${key}`);
     label.textContent = def.label || key;
     const textarea = document.createElement('textarea');
     textarea.id = `field-${key}`;
     textarea.name = key;
-    textarea.value = value ?? '';
+    textarea.value = String(value ?? '');
     if (def.rows) textarea.rows = def.rows;
     if (def.placeholder) textarea.placeholder = def.placeholder;
     textarea.addEventListener('input', () => this.#onFieldChange(key, textarea.value));
@@ -310,7 +318,7 @@ export class ConfigDrawer extends HTMLElement {
     group.appendChild(textarea);
   }
 
-  #createBooleanField(group, key, def, value) {
+  #createBooleanField(group: HTMLElement, key: string, def: SchemaField, value: unknown): void {
     const wrapper = document.createElement('div');
     wrapper.classList.add('checkbox-group');
     const input = document.createElement('input');
@@ -327,7 +335,7 @@ export class ConfigDrawer extends HTMLElement {
     group.appendChild(wrapper);
   }
 
-  #createListField(group, key, def, value) {
+  #createListField(group: HTMLElement, key: string, def: SchemaField, value: unknown): void {
     const label = document.createElement('label');
     label.textContent = def.label || key;
     group.appendChild(label);
@@ -336,11 +344,12 @@ export class ConfigDrawer extends HTMLElement {
     listContainer.classList.add('list-container');
     listContainer.dataset.listKey = key;
 
-    const items = Array.isArray(value) ? value : [];
+    const itemSchema = def.itemSchema ?? {};
+    const items: Record<string, unknown>[] = Array.isArray(value) ? value : [];
     this.#localState[key] = items;
 
     for (let i = 0; i < items.length; i++) {
-      listContainer.appendChild(this.#createListItem(key, def.itemSchema, items[i], i));
+      listContainer.appendChild(this.#createListItem(key, itemSchema, items[i], i));
     }
 
     const addBtn = document.createElement('button');
@@ -348,12 +357,12 @@ export class ConfigDrawer extends HTMLElement {
     addBtn.classList.add('btn-add');
     addBtn.textContent = '+ Add';
     addBtn.addEventListener('click', () => {
-      const newItem = {};
-      for (const subKey of Object.keys(def.itemSchema)) {
-        newItem[subKey] = def.itemSchema[subKey].default ?? '';
+      const newItem: Record<string, unknown> = {};
+      for (const subKey of Object.keys(itemSchema)) {
+        newItem[subKey] = itemSchema[subKey].default ?? '';
       }
       this.#localState[key].push(newItem);
-      const itemEl = this.#createListItem(key, def.itemSchema, newItem, this.#localState[key].length - 1);
+      const itemEl = this.#createListItem(key, itemSchema, newItem, this.#localState[key].length - 1);
       listContainer.appendChild(itemEl);
       this.#dispatchConfigEvent();
     });
@@ -362,10 +371,15 @@ export class ConfigDrawer extends HTMLElement {
     group.appendChild(addBtn);
   }
 
-  #createListItem(listKey, itemSchema, itemData, index) {
+  #createListItem(
+    listKey: string,
+    itemSchema: Record<string, SchemaField>,
+    itemData: Record<string, unknown>,
+    index: number,
+  ): HTMLElement {
     const itemEl = document.createElement('div');
     itemEl.classList.add('list-item');
-    itemEl.dataset.index = index;
+    itemEl.dataset.index = String(index);
 
     const fieldsContainer = document.createElement('div');
     fieldsContainer.classList.add('item-fields');
@@ -377,7 +391,7 @@ export class ConfigDrawer extends HTMLElement {
       label.textContent = subDef.label || subKey;
       const input = document.createElement('input');
       input.type = subDef.type === 'number' ? 'number' : 'text';
-      input.value = itemData[subKey] ?? '';
+      input.value = String(itemData[subKey] ?? '');
       input.addEventListener('input', () => {
         itemData[subKey] = input.value;
         this.#dispatchConfigEvent();
@@ -392,7 +406,7 @@ export class ConfigDrawer extends HTMLElement {
     removeBtn.classList.add('btn-remove');
     removeBtn.textContent = 'Remove';
     removeBtn.addEventListener('click', () => {
-      const arr = this.#localState[listKey];
+      const arr = this.#localState[listKey] as unknown[];
       const idx = arr.indexOf(itemData);
       if (idx !== -1) arr.splice(idx, 1);
       itemEl.remove();
@@ -404,13 +418,13 @@ export class ConfigDrawer extends HTMLElement {
     return itemEl;
   }
 
-  #onFieldChange(key, value) {
+  #onFieldChange(key: string, value: unknown): void {
     this.#localState[key] = value;
     this.#evaluateConditions();
     this.#dispatchConfigEvent();
   }
 
-  #evaluateConditions() {
+  #evaluateConditions(): void {
     if (!this.#schema) return;
     for (const [key, fieldDef] of Object.entries(this.#schema.fields)) {
       if (!fieldDef.showIf) continue;
@@ -421,7 +435,7 @@ export class ConfigDrawer extends HTMLElement {
     }
   }
 
-  #dispatchConfigEvent() {
+  #dispatchConfigEvent(): void {
     this.dispatchEvent(new CustomEvent('node-config-updated', {
       detail: { nodeId: this.#nodeId, config: { ...this.#localState } },
       bubbles: true,
