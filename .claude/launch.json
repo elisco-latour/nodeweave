@@ -20,6 +20,12 @@
       "port": 4200
     },
     {
+      "name": "app",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "app", "exec", "ng", "serve", "app", "--port", "4300"],
+      "port": 4300
+    },
+    {
       "name": "docs",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@nodeweave/website", "exec", "docusaurus", "start", "--port", "3200", "--no-open"],
