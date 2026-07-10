@@ -6,7 +6,7 @@
  * palette, a schema inspector, and drag-to-create for free.
  */
 export { NodeCatalog } from './lib/node-catalog';
-export type { NodeTypeDefinition, PortDir, CatalogGroup } from './lib/node-catalog';
+export type { NodeTypeDefinition, PortDir, PortSpec, CatalogGroup } from './lib/node-catalog';
 export { NwPaletteComponent } from './lib/palette.component';
 export { NwInspectorComponent } from './lib/inspector.component';
 export { NW_DND_TYPE, nodeFromDrop, allowNodeDrop } from './lib/dnd';

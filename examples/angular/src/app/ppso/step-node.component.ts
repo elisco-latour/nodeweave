@@ -28,10 +28,11 @@ const FALLBACK = { color: '#64748b', icon: '▪', label: 'Step' };
     <div class="step" [style.--accent]="cat().color"
          [class.pp-added]="proposed() === 'added'"
          [class.pp-updated]="proposed() === 'updated'"
-         [class.pp-removed]="proposed() === 'removed'">
-      @if (proposed(); as p) {
-        <span class="pp-badge">{{ p === 'added' ? '＋ new' : p === 'removed' ? '－ remove' : '✎ edit' }}</span>
-      }
+         [class.pp-removed]="proposed() === 'removed'"
+         [class.rn-running]="run() === 'running'"
+         [class.rn-done]="run() === 'done'"
+         [class.rn-waiting]="run() === 'waiting'"
+         [class.rn-skipped]="run() === 'skipped'">
       <span class="rail"></span>
       <div class="body">
         <div class="head">
@@ -43,6 +44,19 @@ const FALLBACK = { color: '#64748b', icon: '▪', label: 'Step' };
             (change)="setTitle($any($event.target).value)"
             aria-label="Step title"
           />
+          @if (run() === 'running' || run() === 'done' || run() === 'waiting') {
+            <span class="status"
+                  [class.st-running]="run() === 'running'"
+                  [class.st-done]="run() === 'done'"
+                  [class.st-waiting]="run() === 'waiting'"
+            >{{ run() === 'done' ? '✓' : run() === 'waiting' ? '⏳' : '●' }}</span>
+          } @else if (proposed(); as p) {
+            <span class="status"
+                  [class.st-add]="p === 'added'"
+                  [class.st-edit]="p === 'updated'"
+                  [class.st-remove]="p === 'removed'"
+            >{{ p === 'added' ? '＋' : p === 'removed' ? '－' : '✎' }}</span>
+          }
         </div>
         <div class="kind">{{ cat().label }}@if (subtype()) {<span class="sub"> · {{ subtype() }}</span>}</div>
         @for (row of preview(); track row.k) {
@@ -78,18 +92,29 @@ const FALLBACK = { color: '#64748b', icon: '▪', label: 'Step' };
     .param .k { color: #94a3b8; flex: none; }
     .param .v { color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* Copilot proposal preview states */
-    .pp-badge {
-      position: absolute; top: -9px; right: 8px; z-index: 2;
-      font-size: 0.6rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; color: #fff;
+    /* Status chip (run / proposal state) — inside the header, never clipped */
+    .status {
+      flex: none; width: 16px; height: 16px; border-radius: 50%;
+      display: grid; place-items: center; font-size: 0.6rem; font-weight: 700; color: #fff; background: #64748b;
     }
-    .step.pp-added { outline: 2px dashed #4f46e5; outline-offset: 1px; }
-    .step.pp-added .pp-badge { background: #4f46e5; }
-    .step.pp-updated { outline: 2px dashed #d97706; outline-offset: 1px; }
-    .step.pp-updated .pp-badge { background: #d97706; }
-    .step.pp-removed { outline: 2px dashed #dc2626; outline-offset: 1px; opacity: 0.55; }
-    .step.pp-removed .pp-badge { background: #dc2626; }
+    .status.st-running { background: #4f46e5; }
+    .status.st-done { background: #16a34a; }
+    .status.st-waiting { background: #d97706; }
+    .status.st-add { background: #4f46e5; }
+    .status.st-edit { background: #d97706; }
+    .status.st-remove { background: #dc2626; }
+
+    /* Copilot proposal states — inset ring so it isn't clipped by node overflow */
+    .step.pp-added { box-shadow: inset 0 0 0 2px #4f46e5; }
+    .step.pp-updated { box-shadow: inset 0 0 0 2px #d97706; }
+    .step.pp-removed { box-shadow: inset 0 0 0 2px #dc2626; opacity: 0.6; }
     .step.pp-removed .title { text-decoration: line-through; }
+
+    /* Run simulation states — inset ring */
+    .step.rn-running { box-shadow: inset 0 0 0 2px #4f46e5; }
+    .step.rn-done { box-shadow: inset 0 0 0 2px #16a34a; }
+    .step.rn-waiting { box-shadow: inset 0 0 0 2px #d97706; }
+    .step.rn-skipped { opacity: 0.4; }
   `,
 })
 export class StepNodeComponent {
@@ -105,6 +130,7 @@ export class StepNodeComponent {
   readonly subtype = computed(() => this.node().type.split('.')[1] ?? '');
   readonly title = computed(() => (this.cfg()['title'] as string) || this.node().type);
   readonly proposed = computed(() => this.cfg()['__proposed'] as string | undefined);
+  readonly run = computed(() => this.cfg()['__run'] as string | undefined);
 
   readonly preview = computed(() =>
     Object.entries(this.cfg())

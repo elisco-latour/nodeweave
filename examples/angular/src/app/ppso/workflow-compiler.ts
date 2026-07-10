@@ -5,7 +5,10 @@ export interface WorkflowNodeSpec {
   type: string;
   name?: string;
   with?: Record<string, unknown>;
-  next: string[];
+  /** Unconditional successors. */
+  next?: string[];
+  /** Branch outcomes → successors (from labeled out-ports, e.g. a gate). */
+  on?: Record<string, string[]>;
 }
 
 export interface WorkflowSpec {
@@ -27,17 +30,19 @@ export function compileToWorkflow(
   const state = service.state;
   const nodes = [...state.nodes.values()];
 
-  const outgoing = new Map<string, string[]>();
+  const outgoing = new Map<string, { to: string; branch: string | null }[]>();
   const indegree = new Map<string, number>();
   for (const n of nodes) {
     outgoing.set(n.id, []);
     indegree.set(n.id, 0);
   }
   for (const edge of state.edges.values()) {
-    const s = state.getPort(edge.sourcePortId)?.nodeId;
-    const t = state.getPort(edge.targetPortId)?.nodeId;
+    const sp = state.getPort(edge.sourcePortId);
+    const tp = state.getPort(edge.targetPortId);
+    const s = sp?.nodeId;
+    const t = tp?.nodeId;
     if (!s || !t || !outgoing.has(s) || !indegree.has(t)) continue;
-    outgoing.get(s)!.push(t);
+    outgoing.get(s)!.push({ to: t, branch: sp?.label ?? null });
     indegree.set(t, (indegree.get(t) ?? 0) + 1);
   }
 
@@ -50,7 +55,7 @@ export function compileToWorkflow(
   while (queue.length) {
     const n = queue.shift()!;
     order.push(n);
-    for (const m of outgoing.get(n.id) ?? []) {
+    for (const { to: m } of outgoing.get(n.id) ?? []) {
       deg.set(m, (deg.get(m) ?? 0) - 1);
       if ((deg.get(m) ?? 0) === 0 && !queued.has(m)) {
         const node = state.nodes.get(m);
@@ -75,7 +80,14 @@ export function compileToWorkflow(
     const spec: Record<string, unknown> = { id: n.id, type: n.type };
     if (name) spec['name'] = name;
     if (Object.keys(cfg).length) spec['with'] = cfg;
-    spec['next'] = [...(outgoing.get(n.id) ?? [])];
+    const edges = outgoing.get(n.id) ?? [];
+    if (edges.some((x) => x.branch)) {
+      const on: Record<string, string[]> = {};
+      for (const x of edges) (on[x.branch ?? 'next'] ??= []).push(x.to);
+      spec['on'] = on;
+    } else {
+      spec['next'] = edges.map((x) => x.to);
+    }
     return spec as unknown as WorkflowNodeSpec;
   };
 

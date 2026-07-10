@@ -1,6 +1,6 @@
 import { Edge } from '@nodeweave/angular';
 import type { SchemaField, VisualCanvasService } from '@nodeweave/angular';
-import { NodeCatalog, type NodeTypeDefinition } from '@nodeweave/angular-authoring';
+import { NodeCatalog, type NodeTypeDefinition, type PortSpec } from '@nodeweave/angular-authoring';
 import { StepNodeComponent } from './step-node.component';
 
 // ── Schema field shorthands ──────────────────────────────────────────────────
@@ -13,6 +13,7 @@ const area = (label: string, extra: Partial<SchemaField> = {}): SchemaField => (
 const CHIP: Record<string, { color: string; icon: string }> = {
   trigger: { color: '#16a34a', icon: '▶' },
   gate: { color: '#d97706', icon: '◈' },
+  wait: { color: '#64748b', icon: '⏳' },
   action: { color: '#4f46e5', icon: '⚙' },
   task: { color: '#7c3aed', icon: '☑' },
   monitor: { color: '#e11d48', icon: '⟳' },
@@ -27,7 +28,7 @@ function step(
   hint: string,
   fields: Record<string, SchemaField>,
   defaults: Record<string, unknown>,
-  ports: Array<'in' | 'out'> = ['in', 'out'],
+  ports: Array<'in' | 'out' | PortSpec> = ['in', 'out'],
 ): NodeTypeDefinition {
   const chip = CHIP[type.split('.')[0]] ?? { color: '#64748b', icon: '▪' };
   return {
@@ -63,19 +64,25 @@ const definitions: NodeTypeDefinition[] = [
 
   // Validation & gates
   step('gate.validateEID', 'Validation & gates', 'Validate EID & fields',
-    'Gate before automation',
-    {
-      mandatoryFields: area('Mandatory fields'),
-      onMissing: str('On missing EID'),
-      onInvalid: str('On invalid EID'),
-      resumeOn: str('Resume on'),
-    },
+    'Branches on EID outcome',
+    { mandatoryFields: area('Mandatory fields'), resumeOn: str('Resume on') },
     {
       mandatoryFields: 'EID, career level, start/end date, location, project code (WBS), delivery type, FTE charge, project name, team, lead, capability, role ID',
-      onMissing: 'Set Pending EID + Teams DM to lead',
-      onInvalid: 'Reject + notify Project Manager/Lead',
       resumeOn: 'EID added',
-    }),
+    },
+    ['in',
+      { id: 'valid', direction: 'out', label: 'valid' },
+      { id: 'missing', direction: 'out', label: 'missing' },
+      { id: 'invalid', direction: 'out', label: 'invalid' }]),
+  step('wait.pendingEID', 'Validation & gates', 'Wait for EID',
+    'Suspend until data arrives',
+    { resumeOn: str('Resume on'), escalateTo: str('Escalate to') },
+    { resumeOn: 'EID added to record', escalateTo: '{{config.project_lead_email}}' }),
+  step('notify.reject', 'Validation & gates', 'Reject & notify',
+    'Invalid EID — stop',
+    { to: str('Notify'), reason: str('Reason') },
+    { to: '{{config.project_lead_email}}', reason: 'Invalid EID — cannot onboard' },
+    ['in']),
   step('gate.allComplete', 'Validation & gates', 'All tasks complete?',
     'Completion join',
     { condition: str('Condition') },
@@ -143,10 +150,12 @@ export function buildOnboardingTemplate(service: VisualCanvasService): void {
   const add = (type: string, id: string, x: number, y: number) =>
     service.addNode(processCatalog.createNode(type, x, y, {}, id));
 
-  // Main flow (record submitted)
-  add('trigger.recordSubmitted', 'onSubmit', 40, 120);
-  add('gate.validateEID', 'validate', 330, 120);
-  add('action.createPlan', 'plan', 620, 120);
+  // Main flow (record submitted) — the gate branches on EID outcome.
+  add('trigger.recordSubmitted', 'onSubmit', 40, 110);
+  add('gate.validateEID', 'validate', 340, 110);
+  add('notify.reject', 'reject', 340, 300);
+  add('wait.pendingEID', 'waitEid', 340, 450);
+  add('action.createPlan', 'plan', 660, 110);
 
   // Parallel work fanned out from the Planner plan
   const fanout: Array<[string, string]> = [
@@ -159,27 +168,30 @@ export function buildOnboardingTemplate(service: VisualCanvasService): void {
     ['task.orgChart', 'orgchart'],
     ['action.teamsDM', 'notify'],
   ];
-  fanout.forEach(([type, id], i) => add(type, id, 910, 20 + i * 116));
+  fanout.forEach(([type, id], i) => add(type, id, 960, 20 + i * 116));
 
-  add('gate.allComplete', 'allDone', 1240, 400);
-  add('notify.confirm', 'confirm', 1530, 400);
+  add('gate.allComplete', 'allDone', 1290, 400);
+  add('notify.confirm', 'confirm', 1580, 400);
 
   // Monitoring sub-flow (daily schedule) — deliberately separate.
-  add('trigger.schedule', 'onSchedule', 40, 620);
-  add('monitor.sla', 'monitor', 330, 620);
+  add('trigger.schedule', 'onSchedule', 40, 660);
+  add('monitor.sla', 'monitor', 340, 660);
 
   let e = 0;
-  const link = (from: string, to: string) =>
+  const link = (from: string, to: string, src = 'out') =>
     service.addEdge(new Edge({
       id: `e${++e}`,
-      sourcePortId: `${from}:out`,
+      sourcePortId: `${from}:${src}`,
       targetPortId: `${to}:in`,
       type: 'smoothstep',
       markerEnd: 'arrowclosed',
     }));
 
   link('onSubmit', 'validate');
-  link('validate', 'plan');
+  link('validate', 'plan', 'valid');
+  link('validate', 'waitEid', 'missing');
+  link('validate', 'reject', 'invalid');
+  link('waitEid', 'plan'); // resume once the EID arrives
   for (const [, id] of fanout) link('plan', id);
   for (const [, id] of fanout) link(id, 'allDone');
   link('allDone', 'confirm');

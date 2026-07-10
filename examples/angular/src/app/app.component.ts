@@ -45,7 +45,7 @@ type View = 'ppso' | 'metrics' | 'basic';
       border-radius: 999px; font: inherit; font-size: 0.82rem; cursor: pointer;
     }
     .appnav button.active { background: #6366f1; border-color: #6366f1; color: #fff; }
-    .viewport { min-height: 0; }
+    .viewport { min-height: 0; height: 100%; overflow: hidden;}
   `,
 })
 export class AppComponent {

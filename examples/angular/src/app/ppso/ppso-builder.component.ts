@@ -12,6 +12,7 @@ import { VisualCanvasComponent, NodeweavePanelComponent } from '@nodeweave/angul
 import { NwPaletteComponent, NwInspectorComponent, nodeFromDrop, allowNodeDrop } from '@nodeweave/angular-authoring';
 import { processCatalog, buildOnboardingTemplate } from './process-catalog';
 import { compileToWorkflow, toYaml } from './workflow-compiler';
+import { runSimulation, clearRunStates, type Scenario } from './simulator';
 import { CopilotPanelComponent } from './copilot-panel.component';
 import {
   RuleBasedPlanner,
@@ -45,6 +46,13 @@ import {
           <button type="button" (click)="cv.service.undo()" [disabled]="!cv.service.canUndo()">Undo</button>
           <button type="button" (click)="cv.service.redo()" [disabled]="!cv.service.canRedo()">Redo</button>
           <button type="button" (click)="reset()">Reset</button>
+          <select class="scenario" [value]="scenario()" (change)="scenario.set($any($event.target).value)"
+                  [disabled]="running()" title="EID outcome to simulate">
+            <option value="valid">EID valid</option>
+            <option value="missing">EID missing</option>
+            <option value="invalid">EID invalid</option>
+          </select>
+          <button type="button" class="run" (click)="running() ? stopRun() : run()">{{ running() ? '■ Stop' : '▶ Run' }}</button>
           <button type="button" [class.active]="copilotOpen()" (click)="toggleCopilot()">Copilot</button>
           <button type="button" class="primary" (click)="compile()">Compile YAML</button>
         </header>
@@ -90,6 +98,20 @@ import {
               ></app-copilot-panel>
             </aside>
           }
+
+          @if (runLog().length) {
+            <aside class="runlog">
+              <header>
+                <span class="live" [class.on]="running()"></span>
+                <strong>Dry-run</strong>
+                <span class="grow"></span>
+                <button type="button" class="x" (click)="clearRun()" aria-label="Clear run">&times;</button>
+              </header>
+              <div class="lines">
+                @for (line of runLog(); track $index) { <div class="line">{{ line }}</div> }
+              </div>
+            </aside>
+          }
         </div>
       </div>
     </div>
@@ -99,6 +121,12 @@ import {
 
     .ppso { display: grid; grid-template-columns: auto 1fr; height: 100%; background: #f1f4f8; }
     .ppso .stage { display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+    
+    .ppso nw-palette {
+      height: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
 
     .ppso .topbar {
       display: flex; align-items: center; gap: 10px;
@@ -120,6 +148,9 @@ import {
     .ppso .topbar button.primary { background: #4f46e5; border-color: #4f46e5; color: #fff; font-weight: 600; }
     .ppso .topbar button.primary:hover { background: #4338ca; }
     .ppso .topbar button.active { background: #eef2ff; border-color: #4f46e5; color: #4f46e5; font-weight: 600; }
+    .ppso .topbar .scenario { padding: 5px 8px; border: 1px solid #e5e7eb; border-radius: 7px; font: inherit; font-size: 0.76rem; background: #fff; color: #0f172a; }
+    .ppso .topbar button.run { background: #0f172a; border-color: #0f172a; color: #fff; font-weight: 600; }
+    .ppso .topbar button.run:hover { background: #1e293b; }
 
     .ppso .canvas-wrap { position: relative; min-width: 0; overflow: hidden; }
 
@@ -141,6 +172,9 @@ import {
     .ppso .vc-node { box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08); transition: box-shadow 0.15s; }
     .ppso .vc-node.vc-selected { box-shadow: 0 8px 22px rgba(79, 70, 229, 0.28); }
     .ppso path.vc-edge { stroke-width: 1.8; }
+    /* Run-simulation edge highlights (dash animation comes from .animated). */
+    .ppso path.vc-edge.run-ok { stroke: #16a34a; stroke-width: 2.5; }
+    .ppso path.vc-edge.run-fail { stroke: #dc2626; stroke-width: 2.5; }
 
     .ppso .yaml {
       position: absolute; top: 0; right: 0; bottom: 0; width: min(460px, 60%);
@@ -170,6 +204,20 @@ import {
       position: absolute; top: 0; right: 0; bottom: 0; width: min(360px, 55%); z-index: 70;
       box-shadow: -12px 0 32px rgba(15, 23, 42, 0.18);
     }
+
+    .ppso .runlog {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 148px; z-index: 60;
+      background: #0f172a; color: #e2e8f0; display: flex; flex-direction: column;
+      box-shadow: 0 -10px 28px rgba(15, 23, 42, 0.22);
+    }
+    .ppso .runlog header { display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: #111827; border-bottom: 1px solid #1f2937; font-family: system-ui, sans-serif; font-size: 0.78rem; }
+    .ppso .runlog header .grow { flex: 1; }
+    .ppso .runlog header .live { width: 8px; height: 8px; border-radius: 50%; background: #475569; }
+    .ppso .runlog header .live.on { background: #22c55e; animation: rl-pulse 1s ease-in-out infinite; }
+    @keyframes rl-pulse { 50% { opacity: 0.35; } }
+    .ppso .runlog header .x { border: none; background: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer; padding: 0 6px; }
+    .ppso .runlog .lines { flex: 1; overflow-y: auto; padding: 8px 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.74rem; line-height: 1.5; }
+    .ppso .runlog .line { white-space: pre; }
   `,
 })
 export class PpsoBuilderComponent {
@@ -181,6 +229,12 @@ export class PpsoBuilderComponent {
 
   readonly yaml = signal<string | null>(null);
   readonly copied = signal(false);
+
+  // ── Run simulation state ────────────────────────────────────────────────────
+  readonly scenario = signal<Scenario>('valid');
+  readonly running = signal(false);
+  readonly runLog = signal<string[]>([]);
+  #cancel = false;
 
   // ── Copilot state ──────────────────────────────────────────────────────────
   readonly copilotOpen = signal(false);
@@ -217,10 +271,43 @@ export class PpsoBuilderComponent {
 
   reset(): void {
     const cv = this.cvRef();
+    this.#cancel = true;
+    this.running.set(false);
+    this.runLog.set([]);
     if (cv) buildOnboardingTemplate(cv.service);
     this.yaml.set(null);
     this.#applied.set(null);
     this.messages.set([]);
+  }
+
+  // ── Run simulation ──────────────────────────────────────────────────────────
+  async run(): Promise<void> {
+    const cv = this.cvRef();
+    if (!cv || this.running()) return;
+    this.copilotOpen.set(false);
+    this.yaml.set(null);
+    this.#cancel = false;
+    this.running.set(true);
+    this.runLog.set([]);
+    try {
+      await runSimulation(cv.service, {
+        scenario: this.scenario(),
+        onLog: (line) => this.runLog.update((l) => [...l, line]),
+        isCancelled: () => this.#cancel,
+      });
+    } finally {
+      this.running.set(false);
+    }
+  }
+
+  stopRun(): void {
+    this.#cancel = true;
+  }
+
+  clearRun(): void {
+    const cv = this.cvRef();
+    if (cv) clearRunStates(cv.service);
+    this.runLog.set([]);
   }
 
   compile(): void {

@@ -92,6 +92,14 @@ interface Detachable { attach(): void; detach(): void; }
                 [style.left.px]="pv.x"
                 [style.top.px]="pv.y"
               ></span>
+              @if (pv.port.label) {
+                <span
+                  class="vc-port-label"
+                  [class.vc-port-label-in]="pv.port.direction === 'in'"
+                  [style.left.px]="pv.x"
+                  [style.top.px]="pv.y"
+                >{{ pv.port.label }}</span>
+              }
             }
           </div>
         }
@@ -176,6 +184,19 @@ interface Detachable { attach(): void; detach(): void; }
     }
     .vc-port[data-valid-target] {
       background: var(--nw-port-hover-color, #4dabf7);
+    }
+    .vc-port-label {
+      position: absolute;
+      transform: translate(9px, -50%);
+      font-size: 9px;
+      line-height: 1;
+      color: var(--nw-port-label-color, #94a3b8);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+    }
+    .vc-port-label.vc-port-label-in {
+      transform: translate(calc(-100% - 9px), -50%);
     }
   `,
 })
