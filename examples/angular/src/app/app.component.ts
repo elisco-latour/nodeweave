@@ -1,83 +1,48 @@
-import { Component, ChangeDetectionStrategy, Type } from '@angular/core';
-import { VisualCanvasComponent, Node, Port } from '@nodeweave/angular';
-import { FancyNodeComponent } from './fancy-node.component';
+import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import { MetricsCanvasComponent } from './metrics/metrics-canvas.component';
+import { BasicDemoComponent } from './basic-demo.component';
+
+type View = 'metrics' | 'basic';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [VisualCanvasComponent],
+  imports: [MetricsCanvasComponent, BasicDemoComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <header class="toolbar">
-      <strong>nodeweave &times; Angular</strong>
-      <button type="button" (click)="addNode(cv, 'task')">Add node</button>
-      <button type="button" (click)="addNode(cv, 'fancy')">Add fancy node</button>
-      <button type="button" (click)="cv.service.undo()" [disabled]="!cv.service.canUndo()">Undo</button>
-      <button type="button" (click)="cv.service.redo()" [disabled]="!cv.service.canRedo()">Redo</button>
-      <button type="button" (click)="cv.service.clear()">Clear</button>
-      <span class="stat">{{ cv.service.nodes().length }} nodes</span>
-      <span class="stat">{{ cv.service.edges().length }} edges</span>
-      <span class="stat">{{ cv.service.selectedIds().size }} selected</span>
-    </header>
-    <nodeweave
-      #cv
-      background="dots"
-      [backgroundGap]="24"
-      [snapToGrid]="true"
-      [nodeTypes]="nodeTypes"
-      (connect)="onConnect($event)"
-    ></nodeweave>
+    <nav class="appnav">
+      <strong class="brand">nodeweave</strong>
+      <button type="button" [class.active]="view() === 'metrics'" (click)="view.set('metrics')">
+        Metrics canvas
+      </button>
+      <button type="button" [class.active]="view() === 'basic'" (click)="view.set('basic')">
+        Basic demo
+      </button>
+    </nav>
+
+    <div class="viewport">
+      @switch (view()) {
+        @case ('metrics') { <app-metrics-canvas></app-metrics-canvas> }
+        @case ('basic') { <app-basic-demo></app-basic-demo> }
+      }
+    </div>
   `,
   styles: `
-    :host {
-      display: grid;
-      grid-template-rows: auto 1fr;
-      height: 100vh;
-      background: #0b1220;
+    :host { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+    .appnav {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; background: #0f172a; color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
     }
-    .toolbar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 14px;
-      background: #16213e;
-      color: #e2e8f0;
-      border-bottom: 1px solid #2a3a5e;
+    .appnav .brand { margin-right: 8px; letter-spacing: -0.01em; }
+    .appnav button {
+      padding: 5px 12px; border: 1px solid #334155; background: transparent; color: #cbd5e1;
+      border-radius: 999px; font: inherit; font-size: 0.82rem; cursor: pointer;
     }
-    .toolbar button {
-      padding: 4px 10px;
-      background: #1f2f52;
-      color: #e2e8f0;
-      border: 1px solid #2a3a5e;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .toolbar button:disabled { opacity: 0.4; cursor: default; }
-    .stat { font-size: 0.85rem; opacity: 0.8; margin-left: 4px; }
-    nodeweave { display: block; }
+    .appnav button.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+    .viewport { min-height: 0; }
   `,
 })
 export class AppComponent {
-  #counter = 0;
-
-  readonly nodeTypes: Record<string, Type<unknown>> = {
-    fancy: FancyNodeComponent,
-  };
-
-  addNode(cv: VisualCanvasComponent, type: string): void {
-    const id = `n${++this.#counter}`;
-    const node = new Node({
-      id,
-      type,
-      x: 80 + (this.#counter % 5) * 60,
-      y: 80 + (this.#counter % 5) * 50,
-    });
-    node.addPort(new Port({ id: `${id}:in`, direction: 'in', nodeId: id }));
-    node.addPort(new Port({ id: `${id}:out`, direction: 'out', nodeId: id }));
-    cv.service.addNode(node);
-  }
-
-  onConnect(e: { source: string; target: string }): void {
-    console.log('[example] connected', e.source, '->', e.target);
-  }
+  readonly view = signal<View>('metrics');
 }

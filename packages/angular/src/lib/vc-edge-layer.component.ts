@@ -16,9 +16,11 @@ interface EdgeView {
   d: string;
   markerEnd: string | null;
   animated: boolean;
+  className: string | null;
   label?: string;
   labelX: number;
   labelY: number;
+  labelW: number;
 }
 
 /**
@@ -47,11 +49,16 @@ interface EdgeView {
         </marker>
       </defs>
       @for (e of edgeViews(); track e.id) {
-        <path class="vc-edge" [class.animated]="e.animated" [attr.d]="e.d"
-              [attr.marker-end]="e.markerEnd"></path>
+        <path class="vc-edge" [class.animated]="e.animated" [class]="e.className"
+              [attr.d]="e.d" [attr.marker-end]="e.markerEnd"></path>
         @if (e.label) {
-          <text class="vc-edge-label" [attr.x]="e.labelX" [attr.y]="e.labelY"
-                text-anchor="middle" dominant-baseline="central">{{ e.label }}</text>
+          <g class="vc-edge-label-group" [class]="e.className">
+            <rect class="vc-edge-label-pill"
+                  [attr.x]="e.labelX - e.labelW / 2" [attr.y]="e.labelY - 9"
+                  [attr.width]="e.labelW" height="18" rx="9" ry="9"></rect>
+            <text class="vc-edge-label" [attr.x]="e.labelX" [attr.y]="e.labelY"
+                  text-anchor="middle" dominant-baseline="central">{{ e.label }}</text>
+          </g>
         }
       }
     </svg>
@@ -88,9 +95,15 @@ interface EdgeView {
       stroke-width: 2;
       stroke-dasharray: 6 4;
     }
+    vc-edge-layer rect.vc-edge-label-pill {
+      fill: var(--nw-edge-label-bg, #334155);
+      stroke: var(--nw-edge-label-border, transparent);
+      stroke-width: 1;
+    }
     vc-edge-layer text.vc-edge-label {
       fill: var(--nw-edge-label-color, #e2e8f0);
       font-size: 11px;
+      font-weight: 600;
       font-family: system-ui, sans-serif;
     }
   `,
@@ -109,14 +122,17 @@ export class VcEdgeLayerComponent {
       const t = portCanvas(state, edge.targetPortId);
       if (!s || !t) continue;
       const center = getEdgeCenter(s, t);
+      const cls = edge.data?.['className'];
       views.push({
         id: edge.id,
         d: buildEdgePath(edge.type ?? 'bezier', s, t),
         markerEnd: edge.markerEnd ? `url(#vc-a-${edge.markerEnd})` : null,
         animated: edge.animated,
+        className: typeof cls === 'string' ? cls : null,
         label: edge.label,
         labelX: center.x,
         labelY: center.y,
+        labelW: edge.label ? edge.label.length * 7 + 14 : 0,
       });
     }
     return views;

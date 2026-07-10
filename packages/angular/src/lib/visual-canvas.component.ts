@@ -101,6 +101,9 @@ interface Detachable { attach(): void; detach(): void; }
     @if (showControls()) {
       <canvas-controls></canvas-controls>
     }
+
+    <!-- Overlay slot: project <nodeweave-panel>, palettes, toolbars, inspectors. -->
+    <ng-content></ng-content>
   `,
   styles: `
     :host {
@@ -187,6 +190,11 @@ export class VisualCanvasComponent {
   readonly backgroundGap = input(20);
   readonly showControls = input(true);
   readonly snapToGrid = input(false);
+  /**
+   * Whether nodes show resize handles when selected. Global default; a node can
+   * opt out (or in) individually with `metadata.resizable` (true/false).
+   */
+  readonly nodesResizable = input(true);
 
   /** Emitted when an edge connection is made by dragging between ports. */
   readonly connect = output<{ source: string; target: string }>();
@@ -197,6 +205,7 @@ export class VisualCanvasComponent {
   });
 
   #controllers: Detachable[] = [];
+  #resize: ResizeController | null = null;
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.#teardown());
@@ -207,6 +216,13 @@ export class VisualCanvasComponent {
         el.type = this.background();
         el.gap = this.backgroundGap();
       }
+    });
+
+    // Re-evaluate resize handles when the global flag flips (a selected node's
+    // handles should appear/disappear immediately, without another interaction).
+    effect(() => {
+      this.nodesResizable();
+      this.#resize?.refresh();
     });
 
     afterNextRender(() => this.#setup());
@@ -224,6 +240,7 @@ export class VisualCanvasComponent {
     const state = this.service.state;
     const host = this.#hostRef.nativeElement;
     const surface = host.querySelector('.vc-surface') as HTMLElement;
+    this.service.registerSurface(surface);
 
     const bg = host.querySelector('canvas-background') as BackgroundElement | null;
     if (bg) bg.state = state;
@@ -241,14 +258,19 @@ export class VisualCanvasComponent {
       portSelector: '[data-vc-port]',
       snapGrid: this.snapToGrid() ? [20, 20] : undefined,
       onConnect: (source, target) => this.connect.emit({ source, target }),
+      // Per-node `metadata.resizable` wins; otherwise fall back to the global input.
+      isResizable: (node: Node) =>
+        (node.metadata['resizable'] as boolean | undefined) ?? this.nodesResizable(),
     };
 
+    const resize = new ResizeController(surface, state, options);
+    this.#resize = resize;
     this.#controllers = [
       new DragController(surface, state, options),
       new PanZoomController(surface, state),
       new SelectionController(surface, state, options),
       new KeyboardController(surface, state, options),
-      new ResizeController(surface, state, options),
+      resize,
     ];
     if (edgeLayer) {
       this.#controllers.push(new EdgeRoutingController(surface, state, edgeLayer, options));
@@ -259,5 +281,6 @@ export class VisualCanvasComponent {
   #teardown(): void {
     for (const c of this.#controllers) c.detach();
     this.#controllers = [];
+    this.#resize = null;
   }
 }

@@ -1,5 +1,12 @@
 import { Injectable, signal, computed, type Signal, type OnDestroy } from '@angular/core';
-import { CanvasState, Node, Edge } from '@nodeweave/core/core';
+import {
+  CanvasState,
+  Node,
+  Edge,
+  screenToFlowPosition,
+  flowToScreenPosition,
+  type Point,
+} from '@nodeweave/core/core';
 import { VisualRegistry, TopologyRegistry, SchemaRegistry } from '@nodeweave/core/registries';
 
 type Viewport = CanvasState['viewport'];
@@ -45,6 +52,17 @@ export class VisualCanvasService implements OnDestroy {
   readonly canUndo: Signal<boolean> = this.#canUndo.asReadonly();
   readonly canRedo: Signal<boolean> = this.#canRedo.asReadonly();
 
+  /**
+   * Bumped whenever a node's config changes. Node components mutate in place,
+   * so read this in a computed to re-derive config-dependent view state:
+   * `computed(() => (svc.configTick(), node().metadata.config))`.
+   */
+  readonly #configTick = signal(0);
+  readonly configTick: Signal<number> = this.#configTick.asReadonly();
+
+  /** The untransformed surface element, registered by the host component. */
+  #surface: HTMLElement | null = null;
+
   readonly #teardown: Array<() => void> = [];
 
   constructor() {
@@ -65,15 +83,27 @@ export class VisualCanvasService implements OnDestroy {
       this.#syncHistory();
     };
 
+    const onConfig = () => {
+      this.#syncNodes();
+      this.#configTick.update((v) => v + 1);
+      this.#syncHistory();
+    };
+
     this.#on('node-added', onNodes);
     this.#on('node-removed', onNodes);
     this.#on('node-moved', onNodes);
     this.#on('node-resized', onNodes);
+    this.#on('node-config-updated', onConfig);
     this.#on('edge-added', onEdges);
     this.#on('edge-removed', onEdges);
     this.#on('selection-changed', onSelection);
     this.#on('viewport-changed', onViewport);
     this.#on('state-reset', onReset);
+  }
+
+  /** @internal — wired up by VisualCanvasComponent so coordinate helpers work. */
+  registerSurface(el: HTMLElement | null): void {
+    this.#surface = el;
   }
 
   #on(type: string, listener: EventListener): void {
@@ -96,6 +126,31 @@ export class VisualCanvasService implements OnDestroy {
 
   selectNode(nodeId: string): void { this.state.selectNode(nodeId); }
   clearSelection(): void { this.state.clearSelection(); }
+
+  /**
+   * Merge a partial config patch into a node's `metadata.config` (undoable).
+   * Emits `node-config-updated`, which bumps {@link configTick}.
+   */
+  updateNodeConfig(nodeId: string, patch: Record<string, unknown>): void {
+    const current = this.state.nodes.get(nodeId)?.metadata.config ?? {};
+    this.state.updateNodeConfig(nodeId, { ...current, ...patch });
+  }
+
+  // ── Coordinate helpers ────────────────────────────────────────────────────
+  /** Screen/client point → flow (canvas) coordinates. For palette drops. */
+  screenToFlowPosition(point: Point): Point {
+    return screenToFlowPosition(point, this.state.viewport, this.#rect());
+  }
+
+  /** Flow (canvas) point → screen coordinates. For anchoring overlays to nodes. */
+  flowToScreenPosition(point: Point): Point {
+    return flowToScreenPosition(point, this.state.viewport, this.#rect());
+  }
+
+  #rect(): { left: number; top: number } {
+    const r = this.#surface?.getBoundingClientRect();
+    return { left: r?.left ?? 0, top: r?.top ?? 0 };
+  }
 
   undo(): void { this.state.commandHistory.undo(); this.#refresh(); }
   redo(): void { this.state.commandHistory.redo(); this.#refresh(); }

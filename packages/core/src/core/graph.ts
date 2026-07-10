@@ -130,6 +130,8 @@ export interface EdgeJSON {
   label?: string;
   animated: boolean;
   markerEnd: MarkerType;
+  /** Free-form, renderer-agnostic bag (e.g. a CSS class, weight, colour). */
+  data?: Record<string, unknown>;
 }
 
 export class Edge {
@@ -140,8 +142,9 @@ export class Edge {
   readonly #label: string | undefined;
   readonly #animated: boolean;
   readonly #markerEnd: MarkerType;
+  readonly #data: Record<string, unknown> | undefined;
 
-  constructor({ id, sourcePortId, targetPortId, type = 'bezier', label, animated = false, markerEnd = null }: {
+  constructor({ id, sourcePortId, targetPortId, type = 'bezier', label, animated = false, markerEnd = null, data }: {
     id: string;
     sourcePortId: string;
     targetPortId: string;
@@ -149,6 +152,7 @@ export class Edge {
     label?: string;
     animated?: boolean;
     markerEnd?: MarkerType;
+    data?: Record<string, unknown>;
   }) {
     this.#id = id;
     this.#sourcePortId = sourcePortId;
@@ -157,6 +161,7 @@ export class Edge {
     this.#label = label;
     this.#animated = animated;
     this.#markerEnd = markerEnd;
+    this.#data = data;
     Object.freeze(this);
   }
 
@@ -167,6 +172,8 @@ export class Edge {
   get label(): string | undefined { return this.#label; }
   get animated(): boolean { return this.#animated; }
   get markerEnd(): MarkerType { return this.#markerEnd; }
+  /** Free-form, renderer-agnostic bag carried through JSON round-trips. */
+  get data(): Record<string, unknown> | undefined { return this.#data; }
 
   toJSON(): EdgeJSON {
     return {
@@ -177,6 +184,7 @@ export class Edge {
       label: this.#label,
       animated: this.#animated,
       markerEnd: this.#markerEnd,
+      ...(this.#data !== undefined ? { data: this.#data } : {}),
     };
   }
 }
