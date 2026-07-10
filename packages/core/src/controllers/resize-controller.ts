@@ -41,6 +41,8 @@ export class ResizeController {
   minHeight = DEFAULT_MIN_HEIGHT;
   snapGrid: [number, number] | null = null;
 
+  readonly #isResizable: ((node: Node) => boolean) | null;
+
   readonly #onRefresh: () => void;
   readonly #onHandlePointerDown: (e: PointerEvent) => void;
   readonly #onPointerMove: (e: PointerEvent) => void;
@@ -50,6 +52,7 @@ export class ResizeController {
     this.#workspace = workspace;
     this.#state = canvasState;
     if (options?.snapGrid) this.snapGrid = options.snapGrid;
+    this.#isResizable = options?.isResizable ?? null;
 
     this.#onRefresh = () => this.#reposition();
     this.#onHandlePointerDown = (e) => this.#handlePointerDown(e);
@@ -130,6 +133,11 @@ export class ResizeController {
     this.#overlay = overlay;
   }
 
+  /** Re-evaluate handle visibility/position (e.g. after a resizable toggle). */
+  refresh(): void {
+    this.#reposition();
+  }
+
   #selectedNode(): Node | null {
     const ids = this.#state.selectedNodeIds;
     if (ids.size !== 1) return null;
@@ -137,11 +145,15 @@ export class ResizeController {
     return this.#state.nodes.get(id) ?? null;
   }
 
+  #nodeResizable(node: Node): boolean {
+    return this.#isResizable ? this.#isResizable(node) : true;
+  }
+
   #reposition(): void {
     if (!this.#overlay || !this.#outline) return;
 
     const node = this.#selectedNode();
-    if (!node) {
+    if (!node || !this.#nodeResizable(node)) {
       this.#overlay.style.display = 'none';
       return;
     }
@@ -184,7 +196,7 @@ export class ResizeController {
     const handle = target?.dataset?.handle as HandlePos | undefined;
     if (!handle) return;
     const node = this.#selectedNode();
-    if (!node) return;
+    if (!node || !this.#nodeResizable(node)) return;
 
     e.preventDefault();
     e.stopPropagation();

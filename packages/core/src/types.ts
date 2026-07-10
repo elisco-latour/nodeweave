@@ -1,5 +1,7 @@
 // Shared public types for nodeweave
 
+import type { Node } from './core/graph.js';
+
 export type PortDirection = 'in' | 'out';
 export type PositionHint = 'top' | 'bottom' | 'left' | 'right';
 
@@ -107,4 +109,10 @@ export interface ControllerOptions {
   onNodeDrag?: (nodeId: string, x: number, y: number) => void;
   /** Called once when a node drag is committed (pointer up). */
   onNodeDragStop?: (nodeId: string, x: number, y: number) => void;
+  /**
+   * Decides whether a node may be resized (used by the ResizeController to
+   * show/suppress handles). Return false to make a node non-resizable.
+   * When omitted, every node is resizable.
+   */
+  isResizable?: (node: Node) => boolean;
 }

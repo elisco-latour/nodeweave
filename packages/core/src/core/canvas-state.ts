@@ -572,6 +572,7 @@ export class CanvasState extends EventTarget {
           label: edgeData.label,
           animated: edgeData.animated,
           markerEnd: edgeData.markerEnd,
+          data: edgeData.data,
         }));
       }
     }

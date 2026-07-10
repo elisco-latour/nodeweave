@@ -19,3 +19,5 @@ export {
   buildEdgePath,
 } from './core/edge-paths.js';
 export type { Point, EdgePathOptions } from './core/edge-paths.js';
+export { screenToFlowPosition, flowToScreenPosition } from './core/coords.js';
+export type { Offset } from './core/coords.js';
