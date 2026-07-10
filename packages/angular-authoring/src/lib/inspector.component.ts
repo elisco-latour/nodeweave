@@ -11,18 +11,21 @@ interface FieldEntry {
 }
 
 /**
- * A contextual inspector that renders a config form from a SchemaDefinition and
- * writes edits back through the canvas service. Drop it inside a
- * <nodeweave-panel> to anchor it to the selected node.
+ * <nw-inspector> — renders a config form from a SchemaDefinition and writes
+ * edits back through the canvas service (honouring `showIf` conditions).
+ *
+ * `service` is an input (not injected) because this typically renders as
+ * projected content, whose injector is the host app — not the canvas. Drop it
+ * in a <nodeweave-panel> to anchor it to the selected node.
  */
 @Component({
-  selector: 'app-node-inspector',
+  selector: 'nw-inspector',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="inspector" (pointerdown)="$event.stopPropagation()">
       <header>
-        <span class="type">{{ typeLabel() }}</span>
+        <span class="type">{{ heading() || node().type }}</span>
         <button type="button" class="x" (click)="close()" aria-label="Close inspector">&times;</button>
       </header>
 
@@ -48,6 +51,11 @@ interface FieldEntry {
                          [attr.min]="f.def.min" [attr.max]="f.def.max" [attr.step]="f.def.step"
                          (change)="update(f.key, f.def, $event)" />
                 }
+                @case ('textarea') {
+                  <textarea [value]="$any(f.value) ?? ''" [attr.rows]="f.def.rows || 3"
+                            [attr.placeholder]="f.def.placeholder"
+                            (change)="update(f.key, f.def, $event)"></textarea>
+                }
                 @default {
                   <input type="text" [value]="f.value ?? ''" [attr.placeholder]="f.def.placeholder"
                          (change)="update(f.key, f.def, $event)" />
@@ -58,21 +66,19 @@ interface FieldEntry {
         }
       </div>
 
-      <footer>
-        <button type="button" class="del" (click)="remove()">Delete node</button>
-      </footer>
+      @if (showDelete()) {
+        <footer>
+          <button type="button" class="del" (click)="remove()">Delete node</button>
+        </footer>
+      }
     </div>
   `,
   styles: `
     .inspector {
-      width: 260px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
+      width: var(--nw-insp-width, 260px);
+      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
       box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
-      font-family: system-ui, -apple-system, sans-serif;
-      color: #0f172a;
-      overflow: hidden;
+      font-family: system-ui, -apple-system, sans-serif; color: #0f172a; overflow: hidden;
     }
     header {
       display: flex; align-items: center; justify-content: space-between;
@@ -84,11 +90,12 @@ interface FieldEntry {
     .body { padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 340px; overflow-y: auto; }
     .field { display: flex; flex-direction: column; gap: 4px; }
     .field .lbl { font-size: 0.72rem; font-weight: 600; color: #64748b; }
-    .field input[type="text"], .field input[type="number"], .field select {
+    .field input[type="text"], .field input[type="number"], .field select, .field textarea {
       width: 100%; box-sizing: border-box; padding: 6px 8px;
       border: 1px solid #e2e8f0; border-radius: 7px; font: inherit; font-size: 0.82rem; background: #fff; color: #0f172a;
     }
-    .field input:focus, .field select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .field textarea { resize: vertical; font-family: inherit; }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
     .field input[type="checkbox"] { width: 16px; height: 16px; align-self: flex-start; }
     footer { padding: 10px 12px; border-top: 1px solid #eef2f7; }
     footer .del {
@@ -98,16 +105,16 @@ interface FieldEntry {
     footer .del:hover { background: #fee2e2; }
   `,
 })
-export class NodeInspectorComponent {
+export class NwInspectorComponent {
   readonly node = input.required<Node>();
   readonly schema = input.required<SchemaDefinition>();
-  /** Passed in (rather than injected) because this renders as projected content. */
-  readonly svc = input.required<VisualCanvasService>();
-
-  readonly typeLabel = computed(() => this.node().type.replace('metric-', '').replace('-', ' '));
+  readonly service = input.required<VisualCanvasService>();
+  /** Header text; defaults to the node type. */
+  readonly heading = input<string | null>(null);
+  readonly showDelete = input(true);
 
   readonly entries = computed<FieldEntry[]>(() => {
-    this.svc().configTick();
+    this.service().configTick();
     const cfg = (this.node().metadata.config ?? {}) as Record<string, unknown>;
     return Object.entries(this.schema().fields).map(([key, def]) => {
       const value = cfg[key] ?? def.default ?? (def.type === 'boolean' ? false : '');
@@ -117,20 +124,20 @@ export class NodeInspectorComponent {
   });
 
   update(key: string, def: SchemaField, ev: Event): void {
-    const el = ev.target as HTMLInputElement | HTMLSelectElement;
+    const el = ev.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
     let value: unknown;
     if (def.type === 'boolean') value = (el as HTMLInputElement).checked;
     else if (def.type === 'number') value = el.value === '' ? null : Number(el.value);
     else value = el.value;
-    this.svc().updateNodeConfig(this.node().id, { [key]: value });
+    this.service().updateNodeConfig(this.node().id, { [key]: value });
   }
 
   close(): void {
-    this.svc().clearSelection();
+    this.service().clearSelection();
   }
 
   remove(): void {
-    this.svc().removeNode(this.node().id);
-    this.svc().clearSelection();
+    this.service().removeNode(this.node().id);
+    this.service().clearSelection();
   }
 }

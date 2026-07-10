@@ -6,7 +6,7 @@
   "type": "module",
   "packageManager": "pnpm@10.26.2",
   "scripts": {
-    "build": "pnpm --filter @nodeweave/core --filter @nodeweave/angular build",
+    "build": "pnpm --filter @nodeweave/core --filter @nodeweave/angular --filter @nodeweave/angular-authoring build",
     "test": "pnpm --filter @nodeweave/core test",
     "test:e2e": "playwright test",
     "typecheck": "pnpm --filter @nodeweave/core exec tsc --noEmit"
