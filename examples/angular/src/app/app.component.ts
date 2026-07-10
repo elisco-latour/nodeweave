@@ -1,17 +1,21 @@
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { MetricsCanvasComponent } from './metrics/metrics-canvas.component';
 import { BasicDemoComponent } from './basic-demo.component';
+import { PpsoBuilderComponent } from './ppso/ppso-builder.component';
 
-type View = 'metrics' | 'basic';
+type View = 'ppso' | 'metrics' | 'basic';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [MetricsCanvasComponent, BasicDemoComponent],
+  imports: [MetricsCanvasComponent, BasicDemoComponent, PpsoBuilderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <nav class="appnav">
       <strong class="brand">nodeweave</strong>
+      <button type="button" [class.active]="view() === 'ppso'" (click)="view.set('ppso')">
+        PPSO builder
+      </button>
       <button type="button" [class.active]="view() === 'metrics'" (click)="view.set('metrics')">
         Metrics canvas
       </button>
@@ -22,6 +26,7 @@ type View = 'metrics' | 'basic';
 
     <div class="viewport">
       @switch (view()) {
+        @case ('ppso') { <app-ppso-builder></app-ppso-builder> }
         @case ('metrics') { <app-metrics-canvas></app-metrics-canvas> }
         @case ('basic') { <app-basic-demo></app-basic-demo> }
       }
@@ -44,5 +49,5 @@ type View = 'metrics' | 'basic';
   `,
 })
 export class AppComponent {
-  readonly view = signal<View>('metrics');
+  readonly view = signal<View>('ppso');
 }
