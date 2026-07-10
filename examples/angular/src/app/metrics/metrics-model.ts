@@ -1,80 +1,11 @@
-import { Node, Port, Edge } from '@nodeweave/angular';
-import type { SchemaDefinition, SchemaField } from '@nodeweave/angular';
-import type { VisualCanvasService } from '@nodeweave/angular';
+import { Edge } from '@nodeweave/angular';
+import type { SchemaDefinition, SchemaField, VisualCanvasService } from '@nodeweave/angular';
+import { NodeCatalog, type NodeTypeDefinition } from '@nodeweave/angular-authoring';
+import { ProjectNodeComponent } from './project-node.component';
+import { MetricNodeComponent } from './metric-node.component';
 
 /** The node archetypes offered in the palette. */
 export type MetricNodeType = 'project' | 'metric-input' | 'metric-northstar' | 'metric-kpi';
-
-export interface PaletteItem {
-  type: MetricNodeType;
-  label: string;
-  hint: string;
-  icon: string;
-  group: 'Sources' | 'Metrics';
-  width: number;
-  height: number;
-  ports: Array<'in' | 'out'>;
-  /** Per-node resize override; omit to inherit the canvas-wide `[nodesResizable]`. */
-  resizable?: boolean;
-  defaults: Record<string, unknown>;
-}
-
-/** The catalog rendered by the palette and used to construct nodes. */
-export const PALETTE: PaletteItem[] = [
-  {
-    type: 'project',
-    label: 'Project / Epic',
-    hint: 'A tracked initiative (Asana, Jira…)',
-    icon: '▦',
-    group: 'Sources',
-    width: 260,
-    height: 116,
-    ports: ['out'],
-    defaults: {
-      title: 'New initiative',
-      source: 'Jira (Epic)',
-      issues: 4,
-      percent: 25,
-      status: 'In progress',
-    },
-  },
-  {
-    type: 'metric-input',
-    label: 'Input metric',
-    hint: 'A leading indicator you can move',
-    icon: '⌾',
-    group: 'Metrics',
-    width: 260,
-    height: 170,
-    ports: ['in', 'out'],
-    resizable: false,
-    defaults: metricDefaults('Input metric', 'Input', 'Average'),
-  },
-  {
-    type: 'metric-northstar',
-    label: 'North-star metric',
-    hint: 'The one metric that matters most',
-    icon: '★',
-    group: 'Metrics',
-    width: 300,
-    height: 172,
-    ports: ['in', 'out'],
-    resizable: false,
-    defaults: metricDefaults('North-star metric', 'North Star', 'Sum'),
-  },
-  {
-    type: 'metric-kpi',
-    label: 'KPI metric',
-    hint: 'A business outcome',
-    icon: '◆',
-    group: 'Metrics',
-    width: 260,
-    height: 150,
-    ports: ['in'],
-    resizable: false,
-    defaults: metricDefaults('New KPI', 'KPI', 'Sum'),
-  },
-];
 
 function metricDefaults(title: string, kind: string, aggregation: string): Record<string, unknown> {
   return {
@@ -92,41 +23,6 @@ function metricDefaults(title: string, kind: string, aggregation: string): Recor
     goal: '',
     goalPercent: 0,
   };
-}
-
-const byType = new Map<MetricNodeType, PaletteItem>(PALETTE.map((p) => [p.type, p]));
-
-export function paletteItem(type: MetricNodeType): PaletteItem {
-  const item = byType.get(type);
-  if (!item) throw new Error(`Unknown node type: ${type}`);
-  return item;
-}
-
-/** Build a fully-formed node (ports + default config) for the given type. */
-export function createNode(
-  type: MetricNodeType,
-  x: number,
-  y: number,
-  overrides: Record<string, unknown> = {},
-  id = `${type}-${Math.random().toString(36).slice(2, 8)}`,
-): Node {
-  const spec = paletteItem(type);
-  const node = new Node({
-    id,
-    type,
-    x,
-    y,
-    metadata: {
-      config: { ...spec.defaults, ...overrides },
-      ...(spec.resizable !== undefined ? { resizable: spec.resizable } : {}),
-    },
-  });
-  node.width = spec.width;
-  node.height = spec.height;
-  for (const dir of spec.ports) {
-    node.addPort(new Port({ id: `${id}:${dir}`, direction: dir, nodeId: id }));
-  }
-  return node;
 }
 
 // ── Config schemas (drive the inspector form + defaults) ─────────────────────
@@ -160,9 +56,71 @@ const projectSchema: SchemaDefinition = {
   },
 };
 
-export function schemaFor(type: string): SchemaDefinition {
-  return type === 'project' ? projectSchema : metricSchema;
-}
+// ── The catalog: one source of truth for palette, inspector, and factory ─────
+
+const definitions: NodeTypeDefinition[] = [
+  {
+    type: 'project',
+    label: 'Project / Epic',
+    hint: 'A tracked initiative (Asana, Jira…)',
+    icon: '▦',
+    color: '#0ea5e9',
+    category: 'Sources',
+    width: 260,
+    height: 116,
+    ports: ['out'],
+    defaults: { title: 'New initiative', source: 'Jira (Epic)', issues: 4, percent: 25, status: 'In progress' },
+    configSchema: projectSchema,
+    component: ProjectNodeComponent,
+  },
+  {
+    type: 'metric-input',
+    label: 'Input metric',
+    hint: 'A leading indicator you can move',
+    icon: '⌾',
+    color: '#6366f1',
+    category: 'Metrics',
+    width: 260,
+    height: 170,
+    ports: ['in', 'out'],
+    resizable: false,
+    defaults: metricDefaults('Input metric', 'Input', 'Average'),
+    configSchema: metricSchema,
+    component: MetricNodeComponent,
+  },
+  {
+    type: 'metric-northstar',
+    label: 'North-star metric',
+    hint: 'The one metric that matters most',
+    icon: '★',
+    color: '#f59e0b',
+    category: 'Metrics',
+    width: 300,
+    height: 172,
+    ports: ['in', 'out'],
+    resizable: false,
+    defaults: metricDefaults('North-star metric', 'North Star', 'Sum'),
+    configSchema: metricSchema,
+    component: MetricNodeComponent,
+  },
+  {
+    type: 'metric-kpi',
+    label: 'KPI metric',
+    hint: 'A business outcome',
+    icon: '◆',
+    color: '#8b5cf6',
+    category: 'Metrics',
+    width: 260,
+    height: 150,
+    ports: ['in'],
+    resizable: false,
+    defaults: metricDefaults('New KPI', 'KPI', 'Sum'),
+    configSchema: metricSchema,
+    component: MetricNodeComponent,
+  },
+];
+
+export const metricsCatalog = new NodeCatalog(definitions);
 
 // ── Seed graph reproducing the mockup ────────────────────────────────────────
 
@@ -170,9 +128,7 @@ export function buildMockup(service: VisualCanvasService): void {
   service.clear();
 
   const n = (type: MetricNodeType, id: string, x: number, y: number, cfg: Record<string, unknown>) => {
-    const node = createNode(type, x, y, cfg, id);
-    service.addNode(node);
-    return node;
+    service.addNode(metricsCatalog.createNode(type, x, y, cfg, id));
   };
 
   // Column A — projects / epics

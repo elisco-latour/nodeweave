@@ -3,18 +3,19 @@ import {
   ChangeDetectionStrategy,
   ViewEncapsulation,
   ElementRef,
-  Type,
   afterNextRender,
   computed,
   signal,
   viewChild,
 } from '@angular/core';
 import { VisualCanvasComponent, NodeweavePanelComponent } from '@nodeweave/angular';
-import { NodePaletteComponent, DND_TYPE } from './node-palette.component';
-import { NodeInspectorComponent } from './node-inspector.component';
-import { ProjectNodeComponent } from './project-node.component';
-import { MetricNodeComponent } from './metric-node.component';
-import { buildMockup, createNode, paletteItem, schemaFor, type MetricNodeType } from './metrics-model';
+import {
+  NwPaletteComponent,
+  NwInspectorComponent,
+  nodeFromDrop,
+  allowNodeDrop,
+} from '@nodeweave/angular-authoring';
+import { buildMockup, metricsCatalog } from './metrics-model';
 
 @Component({
   selector: 'app-metrics-canvas',
@@ -24,12 +25,12 @@ import { buildMockup, createNode, paletteItem, schemaFor, type MetricNodeType } 
   imports: [
     VisualCanvasComponent,
     NodeweavePanelComponent,
-    NodePaletteComponent,
-    NodeInspectorComponent,
+    NwPaletteComponent,
+    NwInspectorComponent,
   ],
   template: `
     <div class="mc">
-      <app-node-palette (add)="onPaletteAdd($event)"></app-node-palette>
+      <nw-palette [catalog]="catalog" (add)="onPaletteAdd($event)"></nw-palette>
 
       <div class="stage">
         <header class="topbar">
@@ -60,7 +61,7 @@ import { buildMockup, createNode, paletteItem, schemaFor, type MetricNodeType } 
           >
             @if (inspector(); as ins) {
               <nodeweave-panel [x]="ins.x" [y]="ins.y">
-                <app-node-inspector [node]="ins.node" [schema]="ins.schema" [svc]="cv.service"></app-node-inspector>
+                <nw-inspector [node]="ins.node" [schema]="ins.schema" [service]="cv.service"></nw-inspector>
               </nodeweave-panel>
             }
 
@@ -145,17 +146,14 @@ export class MetricsCanvasComponent {
   readonly cvRef = viewChild(VisualCanvasComponent);
   readonly wrap = viewChild<ElementRef<HTMLElement>>('wrap');
 
+  /** The node catalog powers the palette, inspector schemas, and node factory. */
+  readonly catalog = metricsCatalog;
+  readonly nodeTypes = metricsCatalog.nodeTypes();
+
   /** Canvas-wide resize default. Metric cards opt out via metadata.resizable. */
   readonly resizable = signal(true);
 
   #addCounter = 0;
-
-  readonly nodeTypes: Record<string, Type<unknown>> = {
-    project: ProjectNodeComponent,
-    'metric-input': MetricNodeComponent,
-    'metric-northstar': MetricNodeComponent,
-    'metric-kpi': MetricNodeComponent,
-  };
 
   /** The single-selection inspector: node, its schema, and where to anchor it. */
   readonly inspector = computed(() => {
@@ -164,10 +162,12 @@ export class MetricsCanvasComponent {
     const selected = cv.service.selectedNodes();
     if (selected.length !== 1) return null;
     const node = selected[0];
+    const schema = this.catalog.schemaFor(node.type);
+    if (!schema) return null;
     const v = cv.service.viewport();
     return {
       node,
-      schema: schemaFor(node.type),
+      schema,
       x: (node.x + node.width) * v.zoom + v.panX + 14,
       y: node.y * v.zoom + v.panY,
     };
@@ -186,32 +186,28 @@ export class MetricsCanvasComponent {
   }
 
   onDragOver(ev: DragEvent): void {
-    ev.preventDefault();
-    if (ev.dataTransfer) ev.dataTransfer.dropEffect = 'copy';
+    allowNodeDrop(ev);
   }
 
   onDrop(ev: DragEvent): void {
-    ev.preventDefault();
     const cv = this.cvRef();
-    const type = ev.dataTransfer?.getData(DND_TYPE) as MetricNodeType | undefined;
-    if (!cv || !type) return;
-    const spec = paletteItem(type);
-    const p = cv.service.screenToFlowPosition({ x: ev.clientX, y: ev.clientY });
-    const node = createNode(type, p.x - spec.width / 2, p.y - spec.height / 2);
-    cv.service.addNode(node);
-    cv.service.selectNode(node.id);
+    if (cv) nodeFromDrop(this.catalog, cv.service, ev);
   }
 
-  onPaletteAdd(type: MetricNodeType): void {
+  onPaletteAdd(type: string): void {
     const cv = this.cvRef();
     if (!cv) return;
-    const spec = paletteItem(type);
+    const def = this.catalog.get(type);
     const rect = this.wrap()?.nativeElement.getBoundingClientRect();
     const cx = rect ? rect.left + rect.width / 2 : 480;
     const cy = rect ? rect.top + rect.height / 2 : 320;
     const p = cv.service.screenToFlowPosition({ x: cx, y: cy });
     const jitter = (this.#addCounter++ % 5) * 26;
-    const node = createNode(type, p.x - spec.width / 2 + jitter, p.y - spec.height / 2 + jitter);
+    const node = this.catalog.createNode(
+      type,
+      p.x - (def?.width ?? 200) / 2 + jitter,
+      p.y - (def?.height ?? 90) / 2 + jitter,
+    );
     cv.service.addNode(node);
     cv.service.selectNode(node.id);
   }
