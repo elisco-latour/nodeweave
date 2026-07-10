@@ -553,6 +553,7 @@ export class CanvasState extends EventTarget {
           direction: portData.direction,
           nodeId: newId,
           positionHint: portData.positionHint ?? undefined,
+          label: portData.label,
         }));
       }
 

@@ -10,6 +10,7 @@ export interface PortJSON {
   direction: PortDirection;
   nodeId: string;
   positionHint: PositionHint | null;
+  label?: string;
 }
 
 export class Port {
@@ -17,12 +18,14 @@ export class Port {
   readonly #direction: PortDirection;
   readonly #nodeId: string;
   readonly #positionHint: PositionHint | null;
+  readonly #label: string | undefined;
 
-  constructor({ id, direction, nodeId, positionHint }: {
+  constructor({ id, direction, nodeId, positionHint, label }: {
     id: string;
     direction: PortDirection;
     nodeId: string;
     positionHint?: PositionHint;
+    label?: string;
   }) {
     if (!VALID_DIRECTIONS.has(direction)) {
       throw new Error(`Invalid port direction: "${direction}". Must be "in" or "out".`);
@@ -34,6 +37,7 @@ export class Port {
     this.#direction = direction;
     this.#nodeId = nodeId;
     this.#positionHint = positionHint ?? null;
+    this.#label = label;
     Object.freeze(this);
   }
 
@@ -41,6 +45,8 @@ export class Port {
   get direction(): PortDirection { return this.#direction; }
   get nodeId(): string { return this.#nodeId; }
   get positionHint(): PositionHint | null { return this.#positionHint; }
+  /** Optional human-readable label (e.g. a branch outcome like "valid"). */
+  get label(): string | undefined { return this.#label; }
 
   toJSON(): PortJSON {
     return {
@@ -48,6 +54,7 @@ export class Port {
       direction: this.#direction,
       nodeId: this.#nodeId,
       positionHint: this.#positionHint,
+      ...(this.#label !== undefined ? { label: this.#label } : {}),
     };
   }
 }

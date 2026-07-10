@@ -4,6 +4,14 @@ import type { SchemaDefinition } from '@nodeweave/angular';
 
 export type PortDir = 'in' | 'out';
 
+/** A named, optionally-labeled port (e.g. a branch outcome on a gate). */
+export interface PortSpec {
+  /** Suffix for the port id (`${nodeId}:${id}`). */
+  id: string;
+  direction: PortDir;
+  label?: string;
+}
+
 /**
  * Declarative description of one node type: what it looks like in the palette,
  * how big it is, which ports it has, what config it carries, and (optionally)
@@ -23,8 +31,9 @@ export interface NodeTypeDefinition {
   category?: string;
   width?: number;
   height?: number;
-  /** Ports to attach; each direction should appear at most once. */
-  ports?: PortDir[];
+  /** Ports to attach. Use `'in'`/`'out'` shorthand, or a {@link PortSpec} for
+   *  named/labeled ports (e.g. branch outcomes). */
+  ports?: Array<PortDir | PortSpec>;
   /** Per-node resize override (maps to `metadata.resizable`). */
   resizable?: boolean;
   /** Default config values seeded into `metadata.config`. */
@@ -118,8 +127,12 @@ export class NodeCatalog {
     node.width = def.width ?? DEFAULT_WIDTH;
     node.height = def.height ?? DEFAULT_HEIGHT;
 
-    for (const dir of def.ports ?? []) {
-      node.addPort(new Port({ id: `${id}:${dir}`, direction: dir, nodeId: id }));
+    for (const p of def.ports ?? []) {
+      if (typeof p === 'string') {
+        node.addPort(new Port({ id: `${id}:${p}`, direction: p, nodeId: id }));
+      } else {
+        node.addPort(new Port({ id: `${id}:${p.id}`, direction: p.direction, nodeId: id, label: p.label }));
+      }
     }
     return node;
   }
