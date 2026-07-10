@@ -1,252 +1,279 @@
-# PPSO Onboarding — Product Vision & Design
+# Onboarding Readiness Orchestration — Product Vision & Design
 
-**Status:** Draft for discussion · **Owner:** Koffi Eli Kponblanou · **Audience:** PPSO team (Accenture Mauritius), stakeholders, engineering
-**Date:** 2026‑07 · **Related:** requirements — *PPSO_User_Stories_Onboarding_Project_Level_v1.0.docx*; prototype — `examples/angular/src/app/ppso`
+**Status:** Draft **v2** (supersedes v1) · **Owner:** Koffi Eli Kponblanou · **Audience:** PPSO team (Accenture Mauritius), stakeholders, engineering
+**Date:** 2026‑07 · **Informed by:** *Project‑Level Onboarding* user stories + *Centre‑Level — Transformational Onboarding Readiness Agent* BRD · **Prototype:** `examples/angular/src/app/ppso`
 
-> This is a living proposal, not a spec to implement verbatim. It states the intent, the shape of the system, and the reasoning, so we can agree on *what* we're building — and what we're deliberately *not* — before we build more of it.
+> A living proposal, not a spec to build verbatim. **v2** folds in the Centre‑Level BRD, which validated the direction and sharpened it in five ways: readiness is the core object; **structured intake first — never guess intent**; **authoritative systems stay authoritative** (reference, don't duplicate); **governance is a first‑class pillar**; and closure is **outcome‑based**.
 
 ---
 
 ## 0. In one paragraph
 
-Replace the fragmented, manual, SharePoint‑centric project‑onboarding process (~25–30 active projects) with a **serious, agentic system** organised around two human activities — **Compose** (design and evolve the process visually, no code) and **Operate** (run each onboarding as a supervised *Case*). An **agent does the work**; humans **supervise** through a calm, high‑signal *Action Inbox* and a **live process canvas**, not by patrolling lists. The product owns its own data and emits an **immutable event log** that is both the audit trail and the reporting substrate. M365 and specialist tools (Teams, Outlook, CDP, MyTE) become **integrations the agent feeds** — no longer the system's memory. The result eases what used to be hard and handles the complex parts programmatically, rather than porting the old process into software that behaves the same way.
+Build one **onboarding readiness orchestration platform** for Accenture Mauritius that serves multiple onboarding pathways — **project‑level** and **centre‑level** today, others later — each expressed as a versioned, no‑code **process**. Work enters only through **approved structured intake**; the agent turns it into a **canonical readiness record**, validates completeness, determines the required readiness package from business rules, orchestrates actions **across existing authoritative systems** (referencing, not duplicating, their data), surfaces blockers before Day 1, and routes exceptions to humans with context and a recommended action. Humans **compose/evolve** the process visually and **supervise** execution through a calm **Action Inbox** and a **live readiness view** — never a chatbot, never an admin panel. A deterministic engine runs the regulated core; the LLM helps only at the edges under explicit governance. The product owns the readiness/orchestration layer and an **immutable event log** (state + audit + reporting); it is *not* the system of record for people, access, or equipment.
 
 ---
 
-## 1. Context & problem
+## 1. Two onboarding tracks, one problem
 
-Today, project‑level onboarding is coordinated by hand across ~30 projects. A lead emails/chats the PMO; the PMO manually: checks data completeness, builds a per‑project task list, updates SharePoint resource lists, drafts 4–6 access‑request emails, adds people to mailing lists / Viva Engage via WebAdmin, prepares CDP RORO, follows up on MyTE WBS access, adds Teams members, chases overdue tasks daily, and finally confirms completion. It is repetitive, error‑prone, slow, and invisible to everyone until someone asks.
-
-The requirements captured a solid **TO‑BE**: a structured record triggers an agent that validates, reads per‑project config, creates a plan, sends notifications, and updates downstream systems. That is a real step forward. This document pushes it one level further — from *automating the current process* to *transforming it*.
+**Project‑level** (lead‑triggered: tool access, mailing lists, CDP RORO, Teams, WBS — per‑project config) and **centre‑level** (readiness: equipment, access, workspace, orientation, stakeholder assignment) are two onboarding pathways with the *same* underlying pain: people interpret messages, copy data between tools, remember timing rules, raise actions, chase missing info, and hand‑maintain visibility. They are **two processes on one platform** — which is precisely why a visual process composer over a shared engine (plus shared governance and reporting) is the right foundation, not two bespoke automations.
 
 ---
 
 ## 2. The transformation thesis
 
-**Engineering for business transformation is not porting an existing system into software that works the same way.** It is handling the genuinely complex parts programmatically and easing what used to be difficult. Some systems stay; some don't need to.
+Engineering for business transformation is **not** porting the current process into software that behaves the same way. It is handling the genuinely hard parts programmatically and easing what was difficult. Some systems stay; some don't need to.
 
-The clarifying moment: the PPSO team wanted SharePoint in the loop *to share onboarding data with the team and to report on it later*. That is a **crutch**, not a requirement — it recreates their filing cabinet in an automated form. Sharing and reporting are outcomes the product should provide natively; SharePoint is just where they happen to live today.
+The tell was SharePoint "to share data and report later" — a **crutch** recreating the filing cabinet. Sharing and reporting are outcomes the product provides natively.
 
-### The test to apply to every system in the stack
+### The refined test — keep / reference / replace / handle
 
-> *Is this a system of record that other people or tools genuinely depend on — or a crutch the PPSO adopted to hold their own data and coordinate themselves?*
+Apply to every system and every step:
 
-| System | Role today | Verdict | In the transformed system |
-|---|---|---|---|
-| **SharePoint (record list, "go look at the list", reports)** | The PPSO's own data store + UI + report tool | **Replace** | The product is the source of truth; sharing = role‑aware views + push; reporting = queries over the event log |
-| **SharePoint resource list a *downstream tool/team reads*** | System of record others depend on | **Keep as output** | The agent *writes* to it as an integration action (an output, not our memory) |
-| **Teams** | Where people collaborate | **Keep (integration)** | Agent adds membership via Graph; notifications land here |
-| **Outlook / email** | External + onshore comms | **Keep (integration)** | Agent drafts/sends; humans approve where needed |
-| **Planner** | Task tracking | **Revisit** | Onboarding tracking is native (the live Case). Keep Planner only if broader teams genuinely track there; otherwise it's redundant |
-| **CDP, MyTE, MMS** | External systems, some API‑less | **Keep (human‑assisted)** | Agent *prepares* the action (pre‑filled block, direct link); a human executes; the system records completion |
-| **Audit list (SharePoint)** | Manual log | **Replace** | Immutable event log, automatic, per Case |
+| Kind | Verdict | In the transformed system |
+|---|---|---|
+| **Authoritative system others depend on** — HR, IAM, asset/equipment, ticketing, Teams, Outlook, CDP, MyTE, MMS | **Keep & reference** | The agent orchestrates across it and stores only **references + state + outcomes**; it never becomes the system of record, and minimizes data movement |
+| **Crutch for the team's own data / coordination / visibility** — SharePoint lists, manual trackers, "check my mailbox" | **Replace** | The readiness layer + role‑aware views + push + native reporting |
+| **Genuinely hard work** — dependency tracking, timing rules, dedup, blocker detection, follow‑ups, visibility | **Handle programmatically** | The agent + the event log |
+| **A step that exists only because info is fragmented / timing is manual / no visibility** | **Redesign or eliminate** | — |
+| **A step that is control, approval, accountability, or exception judgment** | **Keep, made explicit** | Modelled as a gate/approval with better context |
 
-**The shift in one line:** *SharePoint moves from being the system's brain to being one of its hands.*
-
-This test is a tool, not a verdict — the team should validate each row (especially "who actually reads the resource list?" and "does anyone rely on Planner for onboarding?").
+**In one line:** authoritative systems stay authoritative and are *referenced*; the crutches are *replaced*; the hard parts are *handled*; and the agent is an **orchestration layer after trusted, structured input** — never an interpreter of free‑form email.
 
 ---
 
-## 3. Who it's for (personas & jobs)
+## 3. Product principles (merged)
 
-- **Process owner (PPSO centre / a designer).** Rare, high‑stakes work. Job: *author and evolve the onboarding process without waiting for developers, and trust that a change is safe before it goes live.* → **Compose**.
-- **Project PMO / Project Lead.** Frequent. Job: *start an onboarding, keep my project's config current, and handle only the few things that actually need me — fast.* → **Operate** (as supervisor + human‑in‑the‑loop actor).
-- **New joiner & project team.** Job: *know where the onboarding stands and be set up on day one.* → transparency (read‑only case link, welcome/confirmation).
-- **PPSO Head / leadership.** Job: *see onboarding health across projects and where the bottlenecks are.* → reporting (live, from events).
+From the vision + the BRD's design principles:
 
-**Two‑tier authoring, confirmed:** the *process* is shared across projects; the *variation* is per‑project **configuration** (tools, contacts, channel IDs, comms template). Process owners compose the shared template; PMOs maintain config (via a form or a guided assistant) — they do not each hand‑draw a graph.
+1. **Transform the work, not the screen.** Redesign around outcomes, decisions, dependencies, and exceptions — not the old sequence of clicks; not a tab per table.
+2. **Structured input first; never guess intent.** Work enters only through approved forms/templates/APIs/feeds. Ambiguous or unstructured input is rejected or routed to human triage — the agent must not infer or hallucinate onboarding intent.
+3. **Make readiness measurable.** Every case has explicit readiness items, blockers, owners, dates, and a confidence — not email interpretation.
+4. **Automate the deterministic; escalate the judgment.** Validation, dedup, status, reminders, task initiation, routing → programmatic. Ambiguous/high‑impact/policy‑sensitive → human.
+5. **The AI acts on a visible artifact; the human supervises.** No free‑floating chatbot: AI co‑edits the process and drafts/prepares work — always *propose → show → approve*.
+6. **Keep authoritative systems authoritative; minimize data movement.** Reference source‑system data; persist only the operational fields readiness needs.
+7. **The system tells you what needs you.** An Action Inbox surfaces the few decisions and human‑only steps; nobody patrols a dashboard.
+8. **Everything is legible, reversible, and audited.** If you can't see what the agent did, why, and undo it, it doesn't ship.
+9. **No‑code evolution.** Readiness rules, due dates, escalation thresholds, categories, owner mappings, templates — configurable without touching core code.
+10. **Calm, focused, restrained.** Command bar over nav sprawl; one object in focus; progressive disclosure. The bar is set by the best‑designed apps of this era.
+
+### Explicit anti‑patterns (we will NOT build)
+Admin panel with a sidebar per entity · a chatbot bolted onto a graph editor · SharePoint/any list as the database · a BI dashboard as the operator's home · forms‑everywhere CRUD · an agent that reads unstructured email and guesses intent · an LLM performing regulated actions without a rule or a human.
 
 ---
 
-## 4. Product principles (the design DNA)
+## 4. Who it's for (actors)
 
-1. **Organise around the work, not the tool.** Modes and objects (a Case, a Process), never a CRUD app with a tab per table.
-2. **The system tells you what needs you.** An Action Inbox surfaces the few decisions and human‑only steps; humans never poll a dashboard to find work.
-3. **The AI acts on a visible artifact; the human supervises.** No free‑floating chatbot. AI shows up as a co‑editor of the process and as the executor of the work — always *propose → show → approve*.
-4. **Deterministic where it must be, intelligent where it helps.** A rules engine runs the regulated core (gates, SLAs, audit); the LLM supplies judgment and language at the edges.
-5. **Every agent action is legible, reversible, and audited.** If you can't see what it did and why, and undo it, it doesn't ship.
-6. **One source of truth; integrations are outputs.** The product owns processes, cases, and events. M365/CDP/MyTE are things it writes to.
-7. **No‑code evolution.** Changing a step, a contact, a template, or a rule affects the next onboarding — with no developer in the loop.
-8. **Calm, focused, restrained.** Command bar over nav sprawl; one object in focus; progressive disclosure; generous space. The bar is set by the best‑designed apps of this era, not by internal admin panels.
+- **Onboarding request source** — provides intent/updates/cancellations via approved channels; needn't understand downstream readiness.
+- **Process owner** (PPSO centre / designer) — authors and evolves the process → **Compose**.
+- **Onboarding operations owner** — focuses on exceptions, policy‑sensitive decisions, alignment, improvement; the **Action Inbox** is theirs.
+- **Project PMO / Lead** — starts and supervises project‑track onboardings; performs the human‑only steps (CDP paste, org chart); maintains project config.
+- **Support delivery teams** — receive clean, deduplicated readiness tasks; signal completion back.
+- **Stakeholders / leadership** — consume readiness visibility + blocker alerts + reporting.
+- **New joiner** — read‑only case transparency; day‑1 ready.
 
-### Explicit anti‑patterns (things we will *not* build)
-
-- An admin panel with a left sidebar and a page per entity.
-- A general chatbot bolted onto a graph editor.
-- SharePoint (or any list tool) as the database.
-- A BI dashboard as the operator's home screen.
-- Forms‑everywhere CRUD as the primary interaction.
-- An LLM free‑styling regulated actions (adding people to systems, sending external mail) without a rule or a human approving.
+Two‑tier authoring holds: owners compose the shared process; per‑project/per‑pathway **config** is maintained via a form or guided assistant — not hand‑drawn graphs.
 
 ---
 
 ## 5. The system at a glance
 
-Two human modes over one shared core, with the agent doing the work and integrations as outputs:
-
 ```
-        Compose  ─(publish versions)─▶  One source of truth  ─(instantiate a Case)─▶  Operate
-   (Process Studio,                    (processes · cases ·                        (agent executes ·
-    AI co-editor,                        immutable event log)                       live case canvas ·
-    dry-run)                                   ▲                                     Action Inbox)
-                                               │ every action → event                      │
-                                               └───────────────────────────────────────────┘
-                                                                                            │ acts on / feeds
-                                                                                            ▼
-                                                    Integrations (Teams · Outlook · CDP · MyTE · MMS;
-                                                    SharePoint resource lists = output)  +  Reporting (live, from events)
-```
+  Structured intake ─▶ Canonical readiness record ─▶ Compose (author/version) │ Operate (agent + supervision)
+  (forms · APIs ·        (one per case: state ·          ▲                       │  · agent orchestrates readiness
+   templates · feeds)     items · blockers · owners ·    │ every action → event  │  · live readiness view (canvas)
+   reject/triage if        references — not copies)       └───────────────────────┘  · Action Inbox (exceptions)
+   non-conforming                       │
+                                        ▼
+   Integrations the agent REFERENCES/feeds (HR · IAM · assets · ticketing · Teams · Outlook · CDP · MyTE)
+                                        │
+                        Reporting & observability (live, from the event log)
 
-(See the rendered vision diagram shared alongside this document for the same picture.)
+        ── all of the above wrapped in Governance: classification · least privilege · audit · monitoring ──
+```
 
 ---
 
 ## 6. Core concepts (domain model)
 
-The product is built from a small, precise vocabulary. These are the nouns everything else refers to.
+- **Process / ProcessVersion** — a named onboarding pathway (project‑level, centre‑level…), versioned and immutable once published; cases run a specific version. Readiness packages are rule‑driven, not hard‑coded.
+- **Node / Step** — typed unit: trigger, gate, wait, automated action, agent‑assisted task, iterator, branch, monitor, notify — each with a config schema and **variable bindings** (`{{record.*}}`, `{{config.*}}`).
+- **Canonical readiness record** (the "Case") — **one per onboarding case** (dedup, BR‑02), holding **only** operational readiness fields + references:
+  - case reference · **request type** (New / Update / Cancellation / Exception, explicit) · joiner reference (non‑sensitive) · intake source + schema version · start date + readiness deadline · **required readiness items** (equipment, access, workspace, orientation, stakeholder assignment, …) · **readiness state** · **blockers** · **task references** (links into source systems, no copies) · **accountability** (current / next‑action / escalation owner) · **audit trail**.
+- **Readiness state machine:** `Draft → Waiting for Required Information → Ready for Orchestration → In Progress → Blocked → Ready for Day 1 → Completed | Cancelled | Exception`.
+- **Blocker** — missing info, conflicting info, failed integration, overdue task, cancelled request, or manual‑review‑required.
+- **Event** — immutable, timestamped fact about a case; the single stream behind live state, audit, and reporting.
+- **Action / Exception** — a unit of human supervision (approve, decide, or execute a human‑only step), carrying reason + evidence + impacted items + recommended next action.
 
-- **Process** — a named onboarding orchestration (e.g. *Project onboarding*). Owns many **ProcessVersions**.
-- **ProcessVersion** — an immutable, published snapshot of the flow (nodes, edges, branches, waits, SLAs, config bindings). Cases run against a specific version, so changing the process never disturbs cases already in flight. Draft → dry‑run → **publish** → (optionally) deprecate.
-- **Node / Step** — a typed unit of work in a version: *trigger, gate, wait, automated action, agent‑assisted task, iterator, branch, monitor, notify*. Each carries a config schema and **variable bindings** (`{{record.*}}`, `{{config.*}}`), which is what lets one version serve all 30 projects.
-- **ProjectConfig** — per‑project values (tools to provision, contacts, channel IDs, resource‑list URL, comms template variant). The single knob PMOs maintain.
-- **Case** — one onboarding instance: a specific joiner, on a specific project, running a specific ProcessVersion. Has a **state** (which steps are done / running / waiting / blocked / skipped) derived from its events.
-- **Event** — an immutable, timestamped fact about a Case (`validation.passed`, `plan.created`, `email.sent`, `member.added`, `task.prepared`, `task.completed`, `reminder.sent`, `escalation.raised`, `case.completed`, …). Events are the source of truth for a Case's state, the audit trail, and the reporting substrate — all three from one stream.
-- **Action / Approval** — a unit of human supervision: something the agent prepared that needs a person to approve, decide, or execute (the CDP paste, the org chart, an ambiguous EID). Actions are what populate the Action Inbox.
-
-Design consequence: a Case's live view and its audit trail are **projections of the same event log** — never a separately maintained status field that can drift.
+Design consequence: the record stores **references + orchestration state + outcomes**, never copies of authoritative data; live state and audit are projections of the same event stream.
 
 ---
 
 ## 7. Compose — the Process Studio
 
-The visual authoring surface (built as the prototype's canvas). For process owners.
-
-- **Author** the flow from a catalogue of step types (built): triggers, gates with real **branch ports** (valid/missing/invalid), **wait** states, automated actions, agent‑assisted tasks, monitor, confirm. Each step is configured via a **schema‑driven inspector**; values can be literals or **bindings** to record/config.
-- **AI co‑editor**, done right: you describe a change in plain language ("add an Engage‑group step after Teams; only when the joiner is a lead") and it edits the *artifact you're looking at* — proposing the change as a reviewable **diff on the canvas** that you approve or reject. This is the Claude‑artifacts model, woven into the editor — **not** a chat panel off to the side.
-- **Dry‑run** (built): simulate an end‑to‑end execution for a chosen scenario (EID valid / missing / invalid) — the branch is taken, the wait pauses and resumes, edges animate then settle — so you *see* the behaviour before publishing.
-- **Publish** a version. Cases already running keep their version; new cases pick up the latest.
-- **Compile** to a canonical, human‑readable spec (built: graph → YAML) that the runtime executes and reviewers can diff in version control.
-
----
-
-## 8. Operate — the Case runtime
-
-The heart of the transformation. For PMOs/Leads.
-
-- **Start** an onboarding: an intake (a short guided form, or a natural‑language intake the LLM structures) creates a **Case**. Validation is a gate — missing/invalid EID never produces a half‑baked plan; the case sits in a clear *Pending* state and the right person is nudged.
-- **The agent works.** It performs everything it can autonomously per the published process + project config: writes the resource list, drafts and sends access emails, adds mailing lists / Teams membership via Graph, prepares the human‑assisted tasks, sends personalised notifications, monitors SLAs, and sends the completion confirmation.
-- **The live case canvas.** The same visual process, now **read‑only and lit up** with the case's real state — done, running, waiting, blocked, skipped — with each step's events and outputs inline. This is "read‑only display when being executed", and it makes the agent's behaviour legible at a glance.
-- **The Action Inbox.** The operator's home. A calm queue of *only* what needs a human: an approval ("confirm owner role for this PMO joiner"), a judgment call ("EID looks deactivated — reject or chase?"), or a prepared human‑only step ("CDP RORO block ready — open CDP and paste", "org chart link"). Each item arrives *prepared* for one‑ or two‑click completion. The system chases the human, not the other way around.
-
-Supervision model: the agent is autonomous for anything **reversible or low‑risk**, and **pauses for a human** for anything **sensitive, ambiguous, or human‑only** — a boundary defined per step type in the process, not left to chance.
+For process owners. The visual authoring surface (built).
+- **Author** from a step catalogue (built): triggers, gates with real **branch ports**, **wait** states, automated actions, agent‑assisted tasks, monitor, confirm; each configured via a **schema‑driven inspector**, values as literals or **bindings**. Readiness packages are expressed as rules (by location, role, start date, pathway…).
+- **AI co‑editor** (right way): describe a change → it edits the artifact you're looking at as a reviewable **diff on the canvas** → you approve. Not a side chat.
+- **Dry‑run** (built): simulate a scenario (e.g. valid / missing / invalid) — branch taken, wait pauses/resumes, edges animate then settle — to gain confidence before publishing.
+- **Publish** a version; running cases keep theirs.
+- **Compile** to a canonical, reviewable spec (built: graph → YAML) that the runtime executes.
 
 ---
 
-## 9. The agent boundary (what makes it *agentic* and *safe*)
+## 8. Operate — the readiness runtime
+
+For the operations owner and PMOs. The heart of the transformation.
+
+1. **Structured intake** (BR‑01): create/update/cancel via approved forms/templates/APIs/feeds; **request type is explicit**. Non‑conforming input is **rejected, quarantined, or routed to human triage** — never inferred.
+2. **Canonical record** (BR‑02): one per case; multiple messages/updates converge; duplicates prevented.
+3. **Completeness & quality checks** (BR‑03): validate required fields, flag missing/conflicting; **block downstream orchestration** and set *Waiting for Required Information* / *Exception* with a clear explanation.
+4. **Determine the readiness package** (BR‑04) from configurable rules.
+5. **Orchestrate** (BR‑04): initiate/update/monitor readiness tasks **in the existing systems**, storing only references + state; no duplicate/parallel tasks.
+6. **Live readiness view** (BR‑06): the same visual process, **read‑only and lit up** with the case's real state — items, blockers, owners, dates, completion confidence — with events/outputs inline.
+7. **Proactive intervention** (BR‑07): detect risk **before Day 1** (missing identifiers, stale tasks, unresolved blockers, duplicates, late changes) → reminders / escalation.
+8. **Exception routing** (BR‑05): to the right human via the **Action Inbox**, each item carrying reason, evidence, impacted readiness items, and a recommended next action, prepared for one/two‑click completion.
+9. **Outcome‑based closure** (BR‑08): *Ready for Day 1* / *Completed* only when readiness **outcomes are confirmed** — not because a ticket was created or a message answered.
+
+The agent is autonomous for reversible/low‑risk work and **pauses for a human** for anything sensitive, ambiguous, policy‑touching, or human‑only — a boundary set per step in the process, not left to chance.
+
+---
+
+## 9. The agent boundary (agentic *and* governed)
 
 Two engines, clearly divided:
-
-- **Deterministic orchestration engine** runs the compiled ProcessVersion: sequencing, branches, waits/resumes, SLAs, escalation policy, and audit. This is the regulated core — it must be predictable and explainable. It is *not* an LLM.
-- **LLM, at the edges only**, for the things that are genuinely fuzzy:
-  - **Intake:** natural language → a validated, structured record.
-  - **Language:** drafting emails / Teams DMs / welcome + confirmation messages in the project's configured voice.
-  - **Exceptions:** proposing a resolution when something is off (missing data, a failed write) — as a suggested Action, never an autonomous fix.
-  - **Explanation & Q&A:** "where is Jane's onboarding?", "what's overdue on my projects?" — answered from the event log.
-  - **Authoring assistance:** the Compose co‑editor.
+- **Deterministic orchestration engine** runs the compiled ProcessVersion: sequencing, branches, waits/resumes, SLAs, escalation, dedup, audit. Predictable and explainable — not an LLM.
+- **LLM at the edges only:** draft comms in the project's voice; summarize readiness/blockers **traceable to underlying evidence**; assist authoring (the Compose co‑editor); explain a case / answer "what's at risk?" from the event log; and **extract fields from an explicitly‑submitted structured request**.
 
 **Hard rules (non‑negotiable):**
-- The LLM never performs an irreversible or external action (grant access, send external mail, add to a system) without either a deterministic rule authorising it *or* explicit human approval.
-- Policy (SLAs, who escalates, owner‑vs‑member, which tools) lives in **config/process**, never in a model's discretion.
-- Every action — deterministic or human — emits an event and is reversible/auditable.
-
-This is why "agentic" here is serious rather than a toy: the intelligence is real and useful, but it is bounded by a legible, deterministic spine and human command.
-
----
-
-## 10. Data, events & reporting (what replaces SharePoint)
-
-- **Source of truth:** the product's own datastore — Processes/Versions, Cases, ProjectConfig, and the **event log**.
-- **Event log:** append‑only, immutable, per Case. It powers three things from one stream: the **live case state** (a projection), the **audit trail** (verbatim), and **reporting/analytics** (aggregations).
-- **Reporting, natively:** time‑to‑onboard, per‑project onboarding health, SLA adherence, overdue/escalation rates, tool‑provisioning success, manual‑minutes saved — live queries, not a SharePoint export. A future analytics view can even reuse our metrics‑canvas.
-- **Sharing, natively:** role‑aware read views + push notifications + shareable Case links. "The team can see it" without anyone opening a list.
-- **Where data still lands in M365:** only as **integration outputs** the agent writes (e.g. a project resource list a downstream tool reads) — recorded as events, not treated as our memory.
+- No work from unstructured comms; the agent never infers onboarding intent — ambiguous/free‑form → reject or route to triage.
+- The LLM never performs an irreversible/external action without a deterministic rule **or** human approval; policy (SLAs, escalation, owner rules, which readiness items) lives in config/process, never in model discretion.
+- Autonomous actions only where rules + permissions are explicit; **ambiguous, high‑impact, policy‑sensitive, or conflicting → human**.
+- Outputs that may affect an onboarding outcome must be **traceable to evidence and designed for human review**.
 
 ---
 
-## 11. Integrations
+## 10. Data & events — owned vs. referenced
 
-- **Microsoft Graph** for what's programmatically reachable: Teams channel membership, M365/Viva Engage groups, mailing lists (where Graph‑accessible), Outlook mail, Planner (if retained), SharePoint resource‑list writes.
-- **Human‑assisted** for the API‑less/standards‑less: **CDP RORO** (prepared block + link, human pastes), **MyTE WBS** (pre‑filled, human authorises), **org chart** (link, human edits). The agent's job is to make these <2‑minute, one‑paste tasks — the "ease what was hard" promise.
-- **Known dependency (from requirements):** IT must confirm which mailing lists / Engage groups are Graph‑accessible vs WebAdmin‑only. This is a real blocker to close before the runtime phase; until then those steps degrade gracefully to prepared human actions.
-- **Project‑specific exceptions** (e.g. CACF's CDP handled by PMO in the Philippines; client‑facing Teams channels not auto‑populated) are modelled as **config toggles / branches**, not code.
+- **Owned (source of truth):** the readiness/orchestration layer — processes/versions, canonical readiness records, config, and the **immutable event log**.
+- **Referenced (NOT owned):** people, access, equipment, tickets — they remain in the authoritative enterprise systems (HR/IAM/asset/ticketing/M365). The record holds references + outcomes; data movement is minimized and explicit.
+- **The event log** powers three things from one stream: live case state (projection), audit trail (verbatim), and reporting/analytics (aggregations).
+- **SharePoint** as the team's own store is replaced; where a downstream tool genuinely reads a SharePoint resource list, the agent writes it as an *output* (recorded as an event), not as our memory.
 
 ---
 
-## 12. What we've already built, and how it maps
+## 11. Governance, security & data design (first‑class pillar)
 
-| Built (prototype) | Role in the product |
+Design constraints from the BRD — to be honoured in architecture, data models, and integrations, not added later:
+
+- **Classify before processing** — every data element has a classification + handling rule before it is stored, transformed, indexed, embedded, logged, or shared.
+- **Minimum necessary data** — persist only fields readiness needs; reference rather than copy.
+- **Protect PII by default** — access control, masking, encryption, retention, and disposal for identifiers, onboarding attributes, task details, operational metadata.
+- **Keep authoritative systems authoritative** — the agent is never the system of record for people/access/equipment/tickets.
+- **Least privilege & need‑to‑know** — users, services, connectors, and agent tools access only what their role requires; privileged access separated, logged, reviewed, revocable.
+- **Environment separation** — dev/test/stage/prod isolated; synthetic/anonymized data outside prod unless controlled production use is approved.
+- **Explicit data‑movement contracts** — every integration defines what moves, why, where it's stored, who can access it, retention, and deletion/archival.
+- **Govern retrieval & knowledge** — if search/embeddings/vector storage are used, indexed content preserves sensitivity metadata, retrieval is permission‑aware, and users never receive content they aren't authorized to see.
+- **Log decisions & actions** — classification, extracted fields, validation, state transitions, tool calls, task creation, escalations, overrides, closures — auditable without leaking unnecessary PII into logs.
+- **Control autonomous actions** — deterministic + permitted only; else route to a human.
+- **Validate outputs before reliance** — summaries/blocker explanations/updates/recommendations trace to evidence and are review‑ready.
+- **Ongoing monitoring** — data quality, schema‑validation failures, rejected inputs, failed integrations, exception/duplicate rates, access anomalies, stale tasks, unresolved blockers.
+- **Preserve accountability** — every case has a business owner, technical owner, exception owner, and audit trail; the agent supports accountability, it does not remove human ownership of policy/access/exception decisions.
+
+---
+
+## 12. Integrations
+
+Orchestrate **across** authoritative systems, referencing their data:
+- **Microsoft Graph** where reachable: Teams membership, M365/Viva Engage groups, mailing lists (Graph‑accessible), Outlook, Planner (if retained), SharePoint resource‑list writes.
+- **Human‑assisted** where API‑less: **CDP RORO**, **MyTE WBS**, **org chart** — agent prepares (pre‑filled block + link), a human executes, the system records the outcome.
+- **Resilience (NFR):** degrade gracefully when a source/ticketing/data system is unavailable; **preserve current case state**.
+- **Project/pathway exceptions** (e.g. CACF's CDP handled in the Philippines; client‑facing Teams channels not auto‑populated) are **config toggles / branches**, not code.
+- **Known dependency:** IT must confirm which mailing lists / Engage groups are Graph‑accessible vs WebAdmin‑only; until then those steps degrade to prepared human actions.
+
+---
+
+## 13. What we've already built, and how it maps
+
+| Built (prototype) | Role |
 |---|---|
-| `nodeweave` canvas + Angular binding | The visual surface for **both** Compose (author) and Operate (live case map) |
-| `@nodeweave/angular-authoring` (catalog, palette, schema inspector, DnD) | The Compose authoring toolkit |
-| Process node catalogue (15 types) + graph→YAML compiler | ProcessVersion definition + the compiled spec the runtime runs |
-| Branch/wait ports + labeled ports | Real gate outcomes and suspend/resume in the model |
-| Dry‑run simulation (scenarios, animated) | The Compose confidence check; the seed of the real execution trace/animation |
-| Propose → preview → approve pattern (copilot) | The **spine** of the whole product: how the AI co‑edits and how humans supervise execution |
+| `nodeweave` canvas + Angular binding | Visual surface for **Compose** (author) and **Operate** (live readiness map) |
+| `@nodeweave/angular-authoring` (catalog, palette, schema inspector, DnD) | The Compose toolkit |
+| Process catalogue + graph→YAML compiler | ProcessVersion definition + the compiled spec the runtime runs |
+| Branch/wait ports + labeled ports | Real gate outcomes + suspend/resume (maps to readiness states/blockers) |
+| Dry‑run simulation (scenarios, animated) | Compose confidence check; seed of the live execution trace |
+| Propose → preview → approve pattern | The **spine**: how AI co‑edits and how humans supervise |
 
-**The honest gap (the real engineering):** the domain + event model, persistence (the source‑of‑truth DB), and the agent runtime. Strategy: **design these properly, then build the front‑of‑house against a mock runtime** so the product is real, demoable, and testable *before* the backend exists.
-
----
-
-## 13. Architecture & technology
-
-- **Front‑of‑house (now, no backend):** Angular + nodeweave. Compose and Operate built against an in‑memory **mock runtime** that plays events, so the full experience is real to click through.
-- **Source of truth (later):** a proper datastore + append‑only event log. Technology TBD against Accenture constraints (could be a managed DB + service; the domain model is deliberately storage‑agnostic).
-- **Agent runtime (later):** the deterministic engine executing compiled ProcessVersions, plus integration adapters (Graph, mail, Planner) and an LLM service for the edge tasks. Hosting is an open question (bespoke service vs Power Platform vs Copilot Studio vs hybrid) — chosen against security, Graph‑permission, and operability needs, not fashion.
-- **Contract between them:** the **compiled process spec** + the **event log** are the stable interface. The UI renders processes/cases/events; the runtime produces events; neither needs to know the other's internals.
+**The honest gap (real engineering):** the domain + event model, **governed** persistence (readiness records + event log + classification), and the agent runtime. Strategy unchanged: build **front‑of‑house against a mock runtime** so the product is real and demoable before the plumbing exists.
 
 ---
 
-## 14. Non‑goals (for this iteration)
+## 14. Architecture & technology
 
-- Centre‑level (non‑project) onboarding — separate process, later.
-- A generic workflow platform for all of PPSO — we solve onboarding excellently first; generality is earned, not assumed.
-- Replacing Teams/Outlook/CDP/MyTE — we integrate, not rebuild.
-- A public/self‑service portal for new joiners beyond a read‑only case view.
-
----
-
-## 15. Delivery plan
-
-- **Phase 0 — Prototype (done).** nodeweave library + PPSO Compose prototype: catalogue, compiler, branch/wait, dry‑run, propose→approve.
-- **Phase 1 — Definition (now).** This vision doc; the domain + event model; the UX design of Operate (Action Inbox + live case view). *Exit:* agreement on shape and scope.
-- **Phase 2 — Front‑of‑house on a mock runtime.** Polished Compose (inline AI co‑editor, versioning, publish) + Operate (live case canvas + Action Inbox) driven by simulated events. *Exit:* a believable, demoable product with zero backend — the thing we show the PPSO team.
-- **Phase 3 — Persistence & reporting.** Real datastore + event log + native reporting. *Exit:* processes/cases/events survive and report for real.
-- **Phase 4 — Agent runtime & integrations.** Deterministic engine + Graph/mail/Planner adapters + human‑assisted actions + SLA/monitoring + LLM drafting. *Exit:* a real onboarding runs end‑to‑end for one project.
-- **Phase 5 — Pilot & roll‑out.** 1–2 projects, measure against the metrics below, iterate, then scale to ~30.
+- **Front‑of‑house (now, no backend):** Angular + nodeweave; Compose + Operate against an in‑memory **mock runtime** that plays events.
+- **Source of truth (later):** governed datastore + append‑only event log; storage‑agnostic domain model; classification + retention baked in.
+- **Agent runtime (later):** deterministic engine + integration adapters (Graph/mail/ticketing) + an LLM service for edge tasks; **least‑privilege connectors, environment separation, permission‑aware retrieval**. Hosting (bespoke vs Power Platform vs Copilot Studio vs hybrid) chosen against security/Graph‑permission/operability needs.
+- **Stable contract:** the **compiled process spec** + the **event log** — the UI renders processes/cases/events; the runtime emits events; neither needs the other's internals.
 
 ---
 
-## 16. Risks & open questions
+## 15. Non‑goals
 
-- **Graph permissions** for mailing lists / Engage groups (the requirements' explicit blocker) — resolve before Phase 4.
-- **Keep/replace validation** — confirm who actually consumes SharePoint resource lists and whether Planner is relied upon beyond onboarding.
-- **Identity, RBAC & approvals** — who may publish a ProcessVersion; who supervises which projects; least‑privilege for the agent's Graph access.
-- **Security & data residency** — Accenture policy on where onboarding/PII data lives; the event log will contain sensitive fields (EID, dates).
-- **Agent runtime hosting** — bespoke vs Power Platform vs Copilot Studio; operability, cost, and auditability trade‑offs.
-- **Change management** — PMO adoption; the Action Inbox must genuinely be lighter than today, not a new place to check.
-- **LLM reliability** — drafting/intake quality; guardrails and the human‑approval boundary must hold under messy real input.
+- Not the system of record for people, access, equipment, or tickets.
+- Not an interpreter of unstructured email / intent‑guesser.
+- Not a replacement for authoritative enterprise systems — we orchestrate across them.
+- Not a generic workflow platform for all of PPSO (yet) — onboarding excellently first.
+- No public new‑joiner portal beyond read‑only case transparency.
 
 ---
 
-## 17. How we know it worked (transformation, not mimicry)
+## 16. Delivery plan
 
-- **PMO manual minutes per onboarding** drop from ~60–90 to near‑zero for automated steps (human time only on genuine judgment/human‑only tasks).
-- **Time‑to‑ready** (submission → fully provisioned) measurably shorter and more consistent.
-- **% of steps fully automated** vs agent‑assisted vs human‑only — and it climbs over time as integrations open up.
-- **Config self‑service:** process/config changes ship with **zero developer tickets**.
-- **Overdue / escalation rate** falls; nothing silently slips before a start date.
-- **Nobody opens a SharePoint list to find out what's happening.** If they still do, we haven't transformed it yet.
+- **Phase 0 — Prototype (done).** nodeweave + PPSO Compose prototype: catalogue, compiler, branch/wait, dry‑run, propose→approve.
+- **Phase 1 — Definition (now).** This vision (v2); the domain + event model; the **governance/data‑classification design**; the UX of Operate (Action Inbox + live readiness view); the **structured intake contract(s)**. *Exit:* agreed shape, scope, and data‑governance posture.
+- **Phase 2 — Front‑of‑house on a mock runtime.** Polished Compose (inline AI co‑editor, versioning, publish) + Operate (live readiness view + Action Inbox) for **both tracks**, driven by simulated events. *Exit:* a believable, demoable product with zero backend.
+- **Phase 3 — Governed persistence & reporting.** Datastore + event log + classification/retention + native reporting.
+- **Phase 4 — Agent runtime & integrations.** Deterministic engine + Graph/mail/ticketing adapters + human‑assisted actions + SLA/monitoring + LLM drafting — under the governance rules.
+- **Phase 5 — Pilot & roll‑out.** 1–2 projects/batches, measure, iterate, scale.
 
 ---
 
-*Feedback welcome — this document is meant to be argued with. The next build step (Phase 2) depends on agreeing the shape above.*
+## 17. Risks & open questions
+
+- **Intake mechanism** — which approved structured sources define the contract(s) per track (forms/APIs/feeds)?
+- **Data classification sign‑off** — classify the readiness record + every integration's fields before build.
+- **Graph permissions** — mailing lists / Engage groups accessibility (the requirements' explicit blocker).
+- **Keep/reference validation** — who actually consumes SharePoint resource lists; is Planner relied upon beyond onboarding?
+- **Retrieval governance** — if we use search/embeddings, enforce permission‑aware retrieval + sensitivity metadata.
+- **Runtime hosting & identity** — least‑privilege connectors, RBAC (who publishes a version; who supervises which cases), data residency.
+- **Change management** — the Action Inbox must be genuinely lighter than today, not a new place to check.
+
+---
+
+## 18. Success metrics
+
+- Manual coordination minutes per onboarding → near‑zero for automated steps.
+- Time‑to‑ready shorter and more consistent; **cases Ready‑for‑Day‑1 on time**.
+- **Readiness completion rate**, **cycle time**, **exception volume**, **blocker categories**, **cases at risk**, **duplicate rate**, **rejected‑input rate** — all visible (BRD observability).
+- % steps fully automated vs agent‑assisted vs human‑only — climbing over time.
+- Config/process changes ship with **zero developer tickets**.
+- **Nobody opens a SharePoint list to find out what's happening.** If they still do, it isn't transformed yet.
+
+---
+
+## 19. Requirements traceability (Centre‑Level BRD)
+
+| BR | Capability | Where addressed |
+|---|---|---|
+| BR‑01 | Structured intake | §3.2, §8.1, §9 (no‑guess), §11 (approved sources) |
+| BR‑02 | Canonical readiness record | §6 (one per case, dedup) |
+| BR‑03 | Completeness & quality checks | §8.3, §6 (Waiting‑for‑Info), Compose gate |
+| BR‑04 | Readiness orchestration | §8.4–8.5, §6 (rule‑driven package) |
+| BR‑05 | Exception management | §8.8 (Action Inbox w/ context + recommendation) |
+| BR‑06 | Readiness visibility | §8.6 (live readiness view) |
+| BR‑07 | Proactive intervention | §8.7 (before Day 1) |
+| BR‑08 | Outcome‑based closure | §8.9, §6 (Completed gated on outcomes) |
+| §4 rules | Data governance & AI design | §11 (governance pillar), §10, §14 |
+| §9 NFRs | Traceability/configurability/resilience/observability/scalability | §8 (audit/events), §3.9 (no‑code), §12 (resilience), §18 (observability), §14 |
+
+---
+
+*Feedback welcome — meant to be argued with. Once the shape and the governance posture feel right, Phase 2 (Operate on a mock runtime) is the next build.*
