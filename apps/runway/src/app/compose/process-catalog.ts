@@ -83,10 +83,13 @@ interface Seed { type: string; id: string; x: number; y: number; overrides?: Rec
 function fanoutFor(pathway: Pathway): Seed[] {
   return pathway === 'centre-level'
     ? [
-        { type: 'action.provision', id: 'equip', x: 900, y: 20, overrides: { title: 'Equipment' } },
-        { type: 'action.provision', id: 'access', x: 900, y: 118, overrides: { title: 'Access & licences' } },
-        { type: 'task.prepare', id: 'workspace', x: 900, y: 216, overrides: { title: 'Workspace', system: 'Facilities' } },
-        { type: 'action.notify', id: 'orientation', x: 900, y: 314, overrides: { title: 'Orientation invite' } },
+        // ids match the readiness item ids on centre-level cases, so a published
+        // process lights correctly on the Operate map.
+        { type: 'action.provision', id: 'laptop', x: 900, y: 20, overrides: { title: 'Laptop provisioned' } },
+        { type: 'action.provision', id: 'm365', x: 900, y: 108, overrides: { title: 'M365 account & licences' } },
+        { type: 'task.prepare', id: 'desk', x: 900, y: 196, overrides: { title: 'Workspace / desk', system: 'Facilities' } },
+        { type: 'action.notify', id: 'orientation', x: 900, y: 284, overrides: { title: 'Orientation session' } },
+        { type: 'action.provision', id: 'buddy', x: 900, y: 372, overrides: { title: 'Buddy assigned' } },
       ]
     : [
         { type: 'action.provision', id: 'access', x: 900, y: 20, overrides: { title: 'Directory & mailing lists' } },

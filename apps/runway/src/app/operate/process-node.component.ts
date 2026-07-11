@@ -7,7 +7,10 @@ const RUN_LABEL: Record<RunState, string> = {
   blocked: 'Blocked', pending: 'Pending', skipped: 'N/A',
 };
 
-const KIND_GLYPH: Record<NodeKind, string> = { trigger: '▶', gate: '◇', item: '•', done: '⚑' };
+const KIND_GLYPH: Record<NodeKind, string> = {
+  trigger: '▶', gate: '◇', wait: '⏳', item: '•',
+  action: '⚙', task: '☑', monitor: '⟳', notify: '✉', done: '⚑',
+};
 
 /** Read-only node on the case process map. Lit by the case's readiness state. */
 @Component({

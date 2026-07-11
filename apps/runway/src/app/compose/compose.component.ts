@@ -1,10 +1,11 @@
 import {
   Component, ChangeDetectionStrategy, ViewEncapsulation, ElementRef,
-  computed, effect, signal, viewChild,
+  computed, effect, inject, signal, viewChild,
 } from '@angular/core';
-import { VisualCanvasComponent, NodeweavePanelComponent } from '@nodeweave/angular';
+import { VisualCanvasComponent, NodeweavePanelComponent, type VisualCanvasService } from '@nodeweave/angular';
 import { NwPaletteComponent, NwInspectorComponent, nodeFromDrop, allowNodeDrop } from '@nodeweave/angular-authoring';
 import type { Pathway } from '../domain/model';
+import { ProcessStore } from '../runtime/process-store';
 import { processCatalog, buildTemplate } from './process-catalog';
 
 /**
@@ -26,12 +27,12 @@ import { processCatalog, buildTemplate } from './process-catalog';
           <button type="button" [class.on]="pathway() === 'centre-level'" (click)="pathway.set('centre-level')">Centre-level</button>
           <button type="button" [class.on]="pathway() === 'project-level'" (click)="pathway.set('project-level')">Project-level</button>
         </div>
-        <span class="ver">{{ pathway() === 'centre-level' ? 'centre-onboarding' : 'project-onboarding' }} · draft</span>
+        <span class="ver">{{ processName() }} · {{ versionLabel() }}</span>
         <span class="grow"></span>
         <span class="count">{{ cv.service.nodes().length }} steps</span>
         <span class="count">{{ cv.service.edges().length }} links</span>
         <button type="button" (click)="reset()">Reset</button>
-        <button type="button" class="soon" disabled title="Versioning + wiring to Operate comes with persistence">Publish · soon</button>
+        <button type="button" class="primary" (click)="publish(cv.service)">{{ justPublished() ? 'Published ✓' : 'Publish' }}</button>
       </div>
 
       <div class="body">
@@ -62,7 +63,8 @@ import { processCatalog, buildTemplate } from './process-catalog';
     .count { font-size: 0.76rem; color: var(--muted); }
     .cbar button { padding: 6px 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 8px; font: inherit; font-size: 0.78rem; cursor: pointer; }
     .cbar button:hover:not(:disabled) { background: var(--surface-2); }
-    .cbar .soon { opacity: 0.5; cursor: default; }
+    .cbar .primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+    .cbar .primary:hover:not(:disabled) { background: #4338ca; }
 
     .body { flex: 1; min-height: 0; display: grid; grid-template-columns: 248px 1fr; }
     .canvas { position: relative; min-width: 0; overflow: hidden; }
@@ -90,10 +92,18 @@ export class ComposeComponent {
   readonly cvRef = viewChild(VisualCanvasComponent);
   readonly wrap = viewChild<ElementRef<HTMLElement>>('wrap');
 
+  readonly #store = inject(ProcessStore);
   readonly pathway = signal<Pathway>('centre-level');
   readonly catalog = processCatalog;
   readonly nodeTypes = processCatalog.nodeTypes();
+  readonly justPublished = signal(false);
   #addCounter = 0;
+
+  readonly processName = computed(() => (this.pathway() === 'centre-level' ? 'centre-onboarding' : 'project-onboarding'));
+  readonly versionLabel = computed(() => {
+    const p = this.#store.published(this.pathway());
+    return p ? `v${p.version} · published` : 'draft';
+  });
 
   readonly inspector = computed(() => {
     const cv = this.cvRef();
@@ -119,6 +129,12 @@ export class ComposeComponent {
   reset(): void {
     const cv = this.cvRef();
     if (cv) buildTemplate(cv.service, this.pathway());
+  }
+
+  publish(service: VisualCanvasService): void {
+    this.#store.publish(this.pathway(), service.toJSON());
+    this.justPublished.set(true);
+    setTimeout(() => this.justPublished.set(false), 2200);
   }
 
   onDragOver(ev: DragEvent): void { allowNodeDrop(ev); }

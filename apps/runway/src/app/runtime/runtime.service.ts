@@ -1,8 +1,9 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, effect, signal } from '@angular/core';
 import {
   type ReadinessRecord, type DomainEvent, type ActionItem, type ReadinessItem,
   type ReadinessState, confidenceOf,
 } from '../domain/model';
+import { loadJson, saveJson } from './persist';
 
 /**
  * Mock runtime. Stands in for the eventual governed backend (datastore + event
@@ -12,16 +13,25 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class RuntimeService {
-  readonly #cases = signal<ReadinessRecord[]>(seedCases());
-  readonly #events = signal<DomainEvent[]>(seedEvents());
-  readonly #actions = signal<ActionItem[]>(seedActions());
+  readonly #cases = signal<ReadinessRecord[]>(loadJson('cases', seedCases()));
+  readonly #events = signal<DomainEvent[]>(loadJson('events', seedEvents()));
+  readonly #actions = signal<ActionItem[]>(loadJson('actions', seedActions()));
 
-  /** Governance: PII is masked until an authorized viewer reveals it. */
+  /** Governance: PII is masked until an authorized viewer reveals it (not persisted). */
   readonly piiAuthorized = signal(false);
 
   readonly cases = this.#cases.asReadonly();
   readonly actions = this.#actions.asReadonly();
   readonly openActions = computed(() => this.#actions().filter((a) => a.status === 'open'));
+
+  constructor() {
+    // Persist on any change — the event log + cases survive a refresh.
+    effect(() => {
+      saveJson('cases', this.#cases());
+      saveJson('events', this.#events());
+      saveJson('actions', this.#actions());
+    });
+  }
 
   caseByRef(ref: string): ReadinessRecord | undefined {
     return this.#cases().find((c) => c.caseRef === ref);

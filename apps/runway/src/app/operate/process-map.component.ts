@@ -1,10 +1,10 @@
 import {
   Component, ChangeDetectionStrategy, ViewEncapsulation, Type,
-  afterNextRender, effect, viewChild,
+  afterNextRender, effect, inject, input, viewChild,
 } from '@angular/core';
 import { VisualCanvasComponent } from '@nodeweave/angular';
 import type { ReadinessRecord } from '../domain/model';
-import { input } from '@angular/core';
+import { ProcessStore } from '../runtime/process-store';
 import { buildCaseMap } from './process-graph';
 import { ProcessNodeComponent } from './process-node.component';
 
@@ -68,15 +68,18 @@ import { ProcessNodeComponent } from './process-node.component';
 export class ProcessMapComponent {
   readonly rec = input.required<ReadinessRecord>();
   readonly cvRef = viewChild(VisualCanvasComponent);
+  readonly #store = inject(ProcessStore);
 
   readonly nodeTypes: Record<string, Type<unknown>> = { step: ProcessNodeComponent };
 
   constructor() {
-    // Rebuild the map whenever the canvas is ready or the case changes.
+    // Rebuild when the canvas is ready, the case changes, or a new process is published.
     effect(() => {
       const cv = this.cvRef();
       const rec = this.rec();
-      if (cv && rec) buildCaseMap(cv.service, rec);
+      if (!cv || !rec) return;
+      const published = this.#store.published(rec.pathway);
+      buildCaseMap(cv.service, rec, published?.graph);
     });
     afterNextRender(() => this.#fit());
   }
