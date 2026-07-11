@@ -35,6 +35,9 @@ importers:
       '@nodeweave/angular':
         specifier: workspace:*
         version: link:../../packages/angular
+      '@nodeweave/angular-authoring':
+        specifier: workspace:*
+        version: link:../../packages/angular-authoring
       '@nodeweave/core':
         specifier: workspace:*
         version: link:../../packages/core
