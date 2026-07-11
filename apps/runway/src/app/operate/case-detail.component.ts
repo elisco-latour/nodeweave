@@ -1,86 +1,103 @@
-import { Component, ChangeDetectionStrategy, computed, inject, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, input, signal } from '@angular/core';
 import { RuntimeService } from '../runtime/runtime.service';
 import { StateChipComponent, itemTone, stateTone, ITEM_STATE_LABEL } from '../shared/state-chip.component';
 import { maskPersonal } from '../domain/data-dictionary';
 import { READINESS_STATE_LABEL, type ReadinessRecord, type Fulfilment, type DomainEvent } from '../domain/model';
+import { ProcessMapComponent } from './process-map.component';
 
 const FULFIL_LABEL: Record<Fulfilment, string> = { auto: 'Automated', 'agent-assisted': 'Agent-assisted', human: 'Human' };
 
-/** The readiness view for one case: outcome-first, with the audit timeline. */
+/** The readiness view for one case: outcome-first, with a readiness/flow toggle. */
 @Component({
   selector: 'rw-case-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [StateChipComponent],
+  imports: [StateChipComponent, ProcessMapComponent],
   template: `
-    <header class="head">
-      <div class="who">
-        <h1>{{ joinerName() }}</h1>
-        <p class="meta">{{ rec().role }} · {{ rec().location }} · <span class="pathway">{{ rec().pathway }}</span> · {{ rec().processVersion }}</p>
+    <div class="topinfo">
+      <header class="head">
+        <div class="who">
+          <h1>{{ joinerName() }}</h1>
+          <p class="meta">{{ rec().role }} · {{ rec().location }} · <span class="pathway">{{ rec().pathway }}</span> · {{ rec().processVersion }}</p>
+        </div>
+        <rw-chip [label]="stateLabel()" [tone]="tone()"></rw-chip>
+      </header>
+
+      <div class="confidence">
+        <div class="bar"><span [style.width.%]="confidencePct()"></span></div>
+        <span class="pct">{{ confidencePct() }}% ready</span>
+        <span class="grow"></span>
+        <span class="deadline" [class.overdue]="overdue()">Day 1 {{ rec().startDate }} · ready by {{ rec().readinessDeadline }}</span>
       </div>
-      <rw-chip [label]="stateLabel()" [tone]="tone()"></rw-chip>
-    </header>
 
-    <div class="confidence">
-      <div class="bar"><span [style.width.%]="confidencePct()"></span></div>
-      <span class="pct">{{ confidencePct() }}% ready</span>
-      <span class="grow"></span>
-      <span class="deadline" [class.overdue]="overdue()">Day 1 {{ rec().startDate }} · ready by {{ rec().readinessDeadline }}</span>
+      <div class="owners">
+        <span><b>Owner</b> {{ rec().owners.current || '—' }}</span>
+        <span><b>Next</b> {{ rec().owners.nextAction || '—' }}</span>
+        <span><b>Escalation</b> {{ rec().owners.escalation || '—' }}</span>
+      </div>
+
+      @if (rec().blockers.length) {
+        <div class="blockers">
+          @for (b of rec().blockers; track b.detail) {
+            <div class="blocker"><span class="bk">{{ b.kind }}</span>{{ b.detail }}</div>
+          }
+        </div>
+      }
+
+      <div class="tabs">
+        <button type="button" [class.active]="tab() === 'readiness'" (click)="tab.set('readiness')">Readiness</button>
+        <button type="button" [class.active]="tab() === 'flow'" (click)="tab.set('flow')">Process map</button>
+      </div>
     </div>
 
-    <div class="owners">
-      <span><b>Owner</b> {{ rec().owners.current || '—' }}</span>
-      <span><b>Next</b> {{ rec().owners.nextAction || '—' }}</span>
-      <span><b>Escalation</b> {{ rec().owners.escalation || '—' }}</span>
-    </div>
+    @if (tab() === 'readiness') {
+      <div class="body scroll">
+        <section>
+          <h2 class="section">Readiness items</h2>
+          <div class="items">
+            @for (it of rec().items; track it.id) {
+              <div class="item">
+                <span class="cat">{{ it.category }}</span>
+                <div class="ibody">
+                  <div class="label">{{ it.label }}</div>
+                  <div class="itmeta">
+                    <span class="fulfil" [attr.data-f]="it.fulfilment">{{ fulfil(it.fulfilment) }}</span>
+                    @if (it.owner) { <span>· {{ it.owner }}</span> }
+                    @if (it.due) { <span>· due {{ it.due }}</span> }
+                    @if (it.taskRef) { <span class="ref">· {{ it.taskRef.system }}:{{ it.taskRef.id }}</span> }
+                  </div>
+                  @if (it.blocker) { <div class="ib">{{ it.blocker.detail }}</div> }
+                </div>
+                <rw-chip [label]="itemLabel(it.state)" [tone]="itemToneOf(it.state)"></rw-chip>
+              </div>
+            }
+          </div>
+        </section>
 
-    @if (rec().blockers.length) {
-      <div class="blockers">
-        @for (b of rec().blockers; track b.detail) {
-          <div class="blocker"><span class="bk">{{ b.kind }}</span>{{ b.detail }}</div>
-        }
+        <section>
+          <h2 class="section">Activity</h2>
+          <ol class="timeline">
+            @for (e of events(); track e.id) {
+              <li>
+                <span class="axis" [attr.data-actor]="e.actor"></span>
+                <div class="ev">
+                  <div class="row"><span class="actor" [attr.data-actor]="e.actor">{{ e.actor }}</span><span class="etype">{{ e.type }}</span><span class="grow"></span><span class="at">{{ when(e.at) }}</span></div>
+                  <div class="summary">{{ e.summary }}</div>
+                </div>
+              </li>
+            }
+          </ol>
+        </section>
+      </div>
+    } @else {
+      <div class="body map">
+        <rw-process-map [rec]="rec()"></rw-process-map>
       </div>
     }
-
-    <section>
-      <h2 class="section">Readiness items</h2>
-      <div class="items">
-        @for (it of rec().items; track it.id) {
-          <div class="item">
-            <span class="cat">{{ it.category }}</span>
-            <div class="body">
-              <div class="label">{{ it.label }}</div>
-              <div class="itmeta">
-                <span class="fulfil" [attr.data-f]="it.fulfilment">{{ fulfil(it.fulfilment) }}</span>
-                @if (it.owner) { <span>· {{ it.owner }}</span> }
-                @if (it.due) { <span>· due {{ it.due }}</span> }
-                @if (it.taskRef) { <span class="ref">· {{ it.taskRef.system }}:{{ it.taskRef.id }}</span> }
-              </div>
-              @if (it.blocker) { <div class="ib">{{ it.blocker.detail }}</div> }
-            </div>
-            <rw-chip [label]="itemLabel(it.state)" [tone]="itemToneOf(it.state)"></rw-chip>
-          </div>
-        }
-      </div>
-    </section>
-
-    <section>
-      <h2 class="section">Activity</h2>
-      <ol class="timeline">
-        @for (e of events(); track e.id) {
-          <li>
-            <span class="axis" [attr.data-actor]="e.actor"></span>
-            <div class="ev">
-              <div class="row"><span class="actor" [attr.data-actor]="e.actor">{{ e.actor }}</span><span class="etype">{{ e.type }}</span><span class="grow"></span><span class="at">{{ when(e.at) }}</span></div>
-              <div class="summary">{{ e.summary }}</div>
-            </div>
-          </li>
-        }
-      </ol>
-    </section>
   `,
   styles: `
-    :host { display: block; padding: 24px 28px 60px; overflow-y: auto; }
+    :host { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+    .topinfo { flex: none; padding: 24px 28px 0; }
     .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
     h1 { margin: 0; font-size: 1.35rem; letter-spacing: -0.01em; }
     .meta { margin: 4px 0 0; color: var(--muted); font-size: 0.86rem; }
@@ -100,11 +117,20 @@ const FULFIL_LABEL: Record<Fulfilment, string> = { auto: 'Automated', 'agent-ass
     .blocker { background: var(--danger-weak); color: #991b1b; border-radius: var(--radius-sm); padding: 9px 12px; font-size: 0.84rem; }
     .blocker .bk { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-right: 8px; opacity: 0.8; }
 
-    .section { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); margin: 26px 0 10px; }
+    .tabs { display: flex; gap: 4px; margin-top: 16px; border-bottom: 1px solid var(--border); }
+    .tabs button { border: none; background: transparent; font: inherit; font-size: 0.86rem; color: var(--muted); padding: 8px 12px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .tabs button:hover { color: var(--text); }
+    .tabs button.active { color: var(--accent); font-weight: 600; border-bottom-color: var(--accent); }
+
+    .body { flex: 1; min-height: 0; }
+    .body.scroll { overflow-y: auto; padding: 0 28px 40px; }
+    .body.map { padding: 0; }
+
+    .section { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); margin: 22px 0 10px; }
     .items { display: flex; flex-direction: column; gap: 8px; }
     .item { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 14px; }
     .item .cat { flex: 0 0 82px; font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); font-weight: 700; }
-    .item .body { flex: 1; min-width: 0; }
+    .item .ibody { flex: 1; min-width: 0; }
     .item .label { font-size: 0.9rem; font-weight: 500; }
     .itmeta { font-size: 0.76rem; color: var(--muted); display: flex; gap: 5px; flex-wrap: wrap; margin-top: 2px; }
     .itmeta .ref { font-family: ui-monospace, Menlo, monospace; color: var(--faint); }
@@ -135,6 +161,7 @@ const FULFIL_LABEL: Record<Fulfilment, string> = { auto: 'Automated', 'agent-ass
 export class CaseDetailComponent {
   readonly rec = input.required<ReadinessRecord>();
   readonly #rt = inject(RuntimeService);
+  readonly tab = signal<'readiness' | 'flow'>('readiness');
 
   readonly joinerName = computed(() => maskPersonal(this.rec().joinerName, this.#rt.piiAuthorized()));
   readonly stateLabel = computed(() => READINESS_STATE_LABEL[this.rec().state]);
