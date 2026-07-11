@@ -2,14 +2,15 @@ import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@a
 import { RuntimeService } from './runtime/runtime.service';
 import { InboxComponent } from './operate/inbox.component';
 import { CasesComponent } from './operate/cases.component';
+import { ComposeComponent } from './compose/compose.component';
 
-type View = 'inbox' | 'cases';
+type View = 'inbox' | 'cases' | 'compose';
 
 @Component({
   selector: 'rw-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [InboxComponent, CasesComponent],
+  imports: [InboxComponent, CasesComponent, ComposeComponent],
   template: `
     <header class="topbar">
       <div class="brand">
@@ -24,7 +25,7 @@ type View = 'inbox' | 'cases';
           @if (openCount() > 0) { <span class="badge">{{ openCount() }}</span> }
         </button>
         <button type="button" [class.active]="view() === 'cases'" (click)="view.set('cases')">Cases</button>
-        <button type="button" class="soon" disabled title="Process authoring — next">Compose</button>
+        <button type="button" [class.active]="view() === 'compose'" (click)="view.set('compose')">Compose</button>
       </nav>
 
       <div class="right">
@@ -40,6 +41,7 @@ type View = 'inbox' | 'cases';
       @switch (view()) {
         @case ('inbox') { <rw-inbox></rw-inbox> }
         @case ('cases') { <rw-cases></rw-cases> }
+        @case ('compose') { <rw-compose></rw-compose> }
       }
     </main>
   `,
