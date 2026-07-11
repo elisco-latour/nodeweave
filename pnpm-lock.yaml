@@ -32,6 +32,12 @@ importers:
       '@angular/platform-browser':
         specifier: ^22.0.0
         version: 22.0.6(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))
+      '@nodeweave/angular':
+        specifier: workspace:*
+        version: link:../../packages/angular
+      '@nodeweave/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       rxjs:
         specifier: ^7.8.0
         version: 7.8.2
