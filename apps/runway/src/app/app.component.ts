@@ -1,14 +1,11 @@
 import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { RuntimeService } from './runtime/runtime.service';
-import { InboxComponent } from './operate/inbox.component';
-import { CasesComponent } from './operate/cases.component';
-import { ComposeComponent } from './compose/compose.component';
 import { IconComponent, type IconName } from './shared/icon.component';
-import { ShellService, type View } from './shell/shell.service';
 import { SearchComponent } from './shell/search.component';
 import { TourComponent } from './shell/tour.component';
 import { TourService } from './shell/tour.service';
-import { HelpComponent } from './shell/help.component';
+import type { View } from './shell/shell.service';
 
 interface NavItem { id: View; label: string; icon: IconName; iconActive: IconName; }
 
@@ -22,7 +19,7 @@ const NAV: NavItem[] = [
   selector: 'rw-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [InboxComponent, CasesComponent, ComposeComponent, HelpComponent, IconComponent, SearchComponent, TourComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, SearchComponent, TourComponent],
   template: `
     <!-- Command bar -->
     <header class="chrome">
@@ -31,11 +28,11 @@ const NAV: NavItem[] = [
                 [attr.aria-label]="collapsed() ? 'Expand navigation' : 'Collapse navigation'" title="Toggle navigation">
           <rw-icon name="menu" [size]="20" />
         </button>
-        <div class="brand">
+        <a class="brand" routerLink="/inbox">
           <span class="brand-mark"><rw-icon name="brand" [size]="20" /></span>
           <span class="brand-name">Runway</span>
           <span class="brand-tagline">Onboarding readiness</span>
-        </div>
+        </a>
       </div>
 
       <div class="chrome-search"><rw-search /></div>
@@ -47,7 +44,7 @@ const NAV: NavItem[] = [
           <span>{{ rt.piiAuthorized() ? 'Hide PII' : 'Reveal PII' }}</span>
         </button>
         <button type="button" class="icon-btn" title="Settings" aria-label="Settings"><rw-icon name="settings" [size]="20" /></button>
-        <button type="button" class="icon-btn" [class.on]="shell.view() === 'help'" (click)="shell.show('help')" title="Help" aria-label="Help"><rw-icon name="help" [size]="20" /></button>
+        <a class="icon-btn" routerLink="/help" routerLinkActive="on" title="Help" aria-label="Help"><rw-icon name="help" [size]="20" /></a>
         <button type="button" class="icon-btn" title="Apps" aria-label="Apps"><rw-icon name="waffle" [size]="20" /></button>
         <span class="avatar" title="PPSO Operations" aria-hidden="true">NR</span>
       </div>
@@ -59,14 +56,13 @@ const NAV: NavItem[] = [
         <ul class="nav">
           @for (item of nav; track item.id) {
             <li>
-              <button type="button" class="nav-item" [class.active]="shell.view() === item.id"
-                      (click)="shell.show(item.id)" [title]="item.label">
-                <span class="nav-ico"><rw-icon [name]="shell.view() === item.id ? item.iconActive : item.icon" [size]="20" /></span>
+              <a class="nav-item" [routerLink]="'/' + item.id" routerLinkActive="active" #rla="routerLinkActive" [title]="item.label">
+                <span class="nav-ico"><rw-icon [name]="rla.isActive ? item.iconActive : item.icon" [size]="20" /></span>
                 <span class="nav-label">{{ item.label }}</span>
                 @if (item.id === 'inbox' && openCount() > 0) {
                   <span class="badge" [class.dot]="collapsed()">{{ collapsed() ? '' : openCount() }}</span>
                 }
-              </button>
+              </a>
             </li>
           }
         </ul>
@@ -79,14 +75,7 @@ const NAV: NavItem[] = [
       </nav>
 
       <!-- Content -->
-      <main>
-        @switch (shell.view()) {
-          @case ('inbox') { <rw-inbox /> }
-          @case ('cases') { <rw-cases /> }
-          @case ('compose') { <rw-compose /> }
-          @case ('help') { <rw-help /> }
-        }
-      </main>
+      <main><router-outlet /></main>
     </div>
 
     <rw-tour />
@@ -102,7 +91,7 @@ const NAV: NavItem[] = [
       color: var(--chrome-fg); z-index: 20;
     }
     .chrome-left { display: flex; align-items: center; gap: var(--s-4); min-width: 0; }
-    .brand { display: flex; align-items: baseline; gap: var(--s-8); padding-left: var(--s-4); min-width: 0; }
+    .brand { display: flex; align-items: baseline; gap: var(--s-8); padding-left: var(--s-4); min-width: 0; text-decoration: none; color: inherit; }
     .brand-mark { display: inline-flex; align-self: center; color: #fff; }
     .brand-name { font-family: var(--font-display); font-weight: var(--fw-bold); font-size: var(--fs-400); letter-spacing: -0.01em; }
     .brand-tagline { font-size: var(--fs-200); color: var(--chrome-fg-muted); white-space: nowrap; }
@@ -113,7 +102,7 @@ const NAV: NavItem[] = [
     .icon-btn {
       display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
       border: none; background: transparent; color: var(--chrome-fg-muted); border-radius: var(--radius-sm);
-      cursor: pointer; transition: background 0.1s ease, color 0.1s ease;
+      cursor: pointer; transition: background 0.1s ease, color 0.1s ease; text-decoration: none;
     }
     .icon-btn:hover { background: var(--chrome-hover); color: #fff; }
     .icon-btn:active { background: var(--chrome-pressed); }
@@ -150,7 +139,7 @@ const NAV: NavItem[] = [
       position: relative; display: flex; align-items: center; gap: var(--s-12); width: 100%; height: 40px;
       padding: 0 var(--s-12); border: none; background: transparent; color: var(--muted);
       border-radius: var(--radius); font: inherit; font-size: var(--fs-300); cursor: pointer; text-align: left;
-      transition: background 0.1s ease, color 0.1s ease;
+      text-decoration: none; transition: background 0.1s ease, color 0.1s ease;
     }
     .nav-item:hover { background: var(--surface-3); color: var(--text); }
     .nav-item.active { background: var(--accent-weak); color: var(--accent); font-weight: var(--fw-semibold); }
@@ -187,7 +176,6 @@ const NAV: NavItem[] = [
 })
 export class AppComponent {
   readonly rt = inject(RuntimeService);
-  readonly shell = inject(ShellService);
   readonly tour = inject(TourService);
   readonly collapsed = signal(false);
   readonly nav = NAV;

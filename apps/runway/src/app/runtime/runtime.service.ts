@@ -1,9 +1,9 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
 import {
   type ReadinessRecord, type DomainEvent, type ActionItem, type ReadinessItem,
-  type ReadinessState, type Pathway, type RequestType, confidenceOf,
+  type ReadinessState, type ReadinessItemState, type Pathway, type RequestType, confidenceOf,
 } from '../domain/model';
-import { loadJson, saveJson } from './persist';
+import { loadJson, saveJson, clearAll } from './persist';
 
 /** The structured-intake payload the New-case form submits (the mock's POST /intake body). */
 export interface NewCaseInput {
@@ -46,6 +46,13 @@ export class RuntimeService {
       saveJson('events', this.#events());
       saveJson('actions', this.#actions());
     });
+
+    // Dev/demo hooks: window.rwSeed(1000) to prove scale; window.rwReset() to restore.
+    if (typeof window !== 'undefined') {
+      const w = window as unknown as Record<string, unknown>;
+      w['rwSeed'] = (n = 1000) => this.seedSynthetic(n);
+      w['rwReset'] = () => { clearAll(); location.reload(); };
+    }
   }
 
   caseByRef(ref: string): ReadinessRecord | undefined {
@@ -145,12 +152,53 @@ export class RuntimeService {
     return caseRef;
   }
 
-  #nextCaseRef(): string {
+  /** Dev/demo helper: append N synthetic cases to prove the UI scales (window.rwSeed). */
+  seedSynthetic(count = 1000): number {
+    const roles = ['Analyst', 'Consultant', 'Manager', 'Senior Analyst', 'Associate', 'Architect'];
+    const firsts = ['Aisha', 'Marc', 'Wei', 'Priya', 'Tom', 'Sanjay', 'Lena', 'Omar', 'Nina', 'Raj', 'Chloe', 'Ken', 'Fatima', 'Diego', 'Yuki', 'Ana', 'Paul', 'Zoe', 'Sami', 'Ravi'];
+    const lasts = ['Bello', 'Olsen', 'Chen', 'Nair', 'Reeves', 'Ramdin', 'Costa', 'Haddad', 'Petit', 'Kumar', 'Meyer', 'Tan', 'Diallo', 'Silva', 'Sato', 'Lopez', 'Dubois', 'Ng', 'Khan', 'Patil'];
+    const states: ReadinessState[] = ['ready-for-orchestration', 'in-progress', 'blocked', 'waiting-for-info', 'ready-for-day-1', 'completed'];
+    const pathways: Pathway[] = ['centre-level', 'project-level'];
+    const day = 864e5;
+    const base = this.#nextCaseNum();
+    const now = Date.now();
+    const newCases: ReadinessRecord[] = [];
+    const newEvents: DomainEvent[] = [];
+    for (let i = 0; i < count; i++) {
+      const num = base + i;
+      const ref = `RW-${num}`;
+      const pathway = pathways[i % 2];
+      const state = states[i % states.length];
+      const created = new Date(now - i * 3.6e6).toISOString();
+      newCases.push({
+        caseRef: ref, requestType: 'new', pathway,
+        processVersion: pathway === 'centre-level' ? 'centre-onboarding@1' : 'project-onboarding@1',
+        joinerRef: `J-${90000 + num}`,
+        joinerName: `${firsts[i % firsts.length]} ${lasts[(i * 7) % lasts.length]}`,
+        role: roles[i % roles.length], location: 'Ebène, MU',
+        intakeSource: 'Runway intake form', schemaVersion: 'v2',
+        startDate: new Date(now + ((i % 40) - 8) * day).toISOString().slice(0, 10),
+        readinessDeadline: new Date(now + ((i % 40) - 10) * day).toISOString().slice(0, 10),
+        state, items: syntheticItems(pathway, state),
+        blockers: state === 'blocked' ? [{ kind: 'missing-info', detail: 'EID missing — gate not passed', since: created }] : [],
+        owners: { current: 'PPSO Operations', nextAction: 'Agent', escalation: 'PPSO Head' },
+        createdAt: created, updatedAt: created,
+      });
+      newEvents.push({ id: `ev-syn-${num}`, caseRef: ref, type: 'case.created', actor: 'system', summary: 'Case created (synthetic demo data)', at: created });
+    }
+    this.#cases.update((list) => [...newCases, ...list]);
+    this.#events.update((list) => [...list, ...newEvents]);
+    return count;
+  }
+
+  #nextCaseNum(): number {
     const nums = this.#cases()
       .map((c) => parseInt(c.caseRef.replace(/\D/g, ''), 10))
       .filter((n) => !Number.isNaN(n));
-    const next = (nums.length ? Math.max(...nums) : 1000) + 1;
-    return `RW-${next}`;
+    return (nums.length ? Math.max(...nums) : 1000) + 1;
+  }
+  #nextCaseRef(): string {
+    return `RW-${this.#nextCaseNum()}`;
   }
 
   // ── internals ──────────────────────────────────────────────────────────────
@@ -204,6 +252,17 @@ function defaultItems(pathway: Pathway): ReadinessItem[] {
     item('teams', 'access', 'Teams channel membership', 'pending', 'auto', { owner: 'Project Lead' }),
     item('myte', 'access', 'MyTE WBS access', 'pending', 'agent-assisted', { owner: 'MyTE Admin' }),
   ];
+}
+
+/** Vary synthetic item states by case state so readiness percentages look realistic. */
+function syntheticItems(pathway: Pathway, state: ReadinessState): ReadinessItem[] {
+  return defaultItems(pathway).map((it, idx) => {
+    let s: ReadinessItemState = 'pending';
+    if (state === 'completed' || state === 'ready-for-day-1') s = 'done';
+    else if (state === 'in-progress') s = idx < 2 ? 'done' : idx === 2 ? 'in-progress' : 'pending';
+    else if (state === 'blocked') s = idx === 0 ? 'blocked' : 'pending';
+    return { ...it, state: s };
+  });
 }
 
 function seedCases(): ReadinessRecord[] {

@@ -12,6 +12,7 @@
     "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
     "@angular/platform-browser": "^22.0.0",
+    "@angular/router": "^22.0.6",
     "@nodeweave/angular": "workspace:*",
     "@nodeweave/angular-authoring": "workspace:*",
     "@nodeweave/core": "workspace:*",

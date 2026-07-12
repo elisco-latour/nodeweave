@@ -1,34 +1,32 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 
-/** The surfaces the shell can show. Inbox/Cases/Compose are primary nav; Help is reached from the command bar. */
+/** Top-level surfaces (also the route paths). */
 export type View = 'inbox' | 'cases' | 'compose' | 'help';
 
 /**
- * Navigation state for the shell — which surface is showing, which case is
- * selected, and whether an Inbox card should be focused. Lifted out of the
- * components so global search + the guided tour can drive the app.
+ * Thin navigation facade over the Router — lets search, the guided tour, and
+ * Help drive the app without each knowing the route shapes. Also carries the
+ * "focus this Inbox action" signal (e.g. when a search result is an action).
  */
 @Injectable({ providedIn: 'root' })
 export class ShellService {
-  readonly view = signal<View>('inbox');
-  readonly selectedCaseRef = signal<string | null>(null);
-  /** When set, the Inbox scrolls to + briefly highlights this action (e.g. from search). */
+  readonly #router = inject(Router);
   readonly focusActionId = signal<string | null>(null);
 
   show(view: View): void {
-    this.view.set(view);
+    this.#router.navigate(['/', view]);
   }
 
-  /** Open a case in the Cases surface. */
+  /** Open a case (deep-linkable /cases/:ref). */
   openCase(caseRef: string): void {
-    this.selectedCaseRef.set(caseRef);
-    this.view.set('cases');
+    this.#router.navigate(['/cases', caseRef]);
   }
 
   /** Jump to the Inbox and focus a specific action. */
   openAction(actionId: string): void {
     this.focusActionId.set(actionId);
-    this.view.set('inbox');
+    this.#router.navigate(['/inbox']);
   }
 
   consumeFocusAction(): void {
