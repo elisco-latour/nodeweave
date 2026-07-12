@@ -100,7 +100,7 @@ interface ProcessDefinition { pathway: Pathway; version: number; graph: unknown 
 
 Notes:
 - **Live case state and the audit trail are projections of the same event stream.** Do not maintain a separate mutable status that can drift — derive from events (or keep a materialized view that is always rebuilt from events).
-- `ProcessDefinition.graph` is the nodeweave graph JSON (`CanvasState.toJSON()`): `{ nodes:[{id,type,x,y,width,height,metadata:{config},ports:[{id,direction,label?}]}], edges:[{id,sourcePortId,targetPortId,type,markerEnd,label?,data?}], viewport }`. The **compiled/executable spec** the engine runs should be derived from this graph — see the examples prototype's `examples/angular/src/app/ppso/workflow-compiler.ts` for a working graph→spec compiler (topological order, `on:` branches for gate outcomes, `next` for the rest). Reuse/port that logic server‑side.
+- `ProcessDefinition.graph` is the nodeweave graph JSON (`CanvasState.toJSON()`): `{ nodes:[{id,type,x,y,width,height,metadata:{config},ports:[{id,direction,label?}]}], edges:[{id,sourcePortId,targetPortId,type,markerEnd,label?,data?}], viewport }`. The **compiled/executable spec** the engine runs is defined in **`apps/runway/docs/WORKFLOW-SPEC.md`** + **`apps/runway/docs/workflow-spec.schema.json`** (the formal target of the compiler: triggers, steps, `on:` branches, waits, SLAs, closure, monitoring, bindings + execution semantics). Port the working compiler in `examples/angular/src/app/ppso/workflow-compiler.ts` (graph→spec) server‑side to emit that shape.
 
 ---
 
@@ -191,6 +191,7 @@ Design REST/RPC as you prefer; these are the operations the UI needs:
 ## 10. Repo map (read these first)
 
 - `examples/angular/src/app/ppso/PRODUCT-VISION.md` — the vision (v2), incl. governance (§11) and the BR‑01…08 traceability (§19). **Start here.**
+- `apps/runway/docs/WORKFLOW-SPEC.md` + `apps/runway/docs/workflow-spec.schema.json` — the compiled workflow spec the engine runs (contract + JSON Schema + execution semantics + worked example).
 - `apps/runway/src/app/domain/model.ts` — the contract (types above).
 - `apps/runway/src/app/domain/data-dictionary.ts` — classification + owned/referenced.
 - `apps/runway/src/app/runtime/{runtime.service.ts,process-store.ts,persist.ts}` — the mock to replace; method signatures = your API spec.
