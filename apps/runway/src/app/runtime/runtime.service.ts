@@ -1,9 +1,24 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
 import {
   type ReadinessRecord, type DomainEvent, type ActionItem, type ReadinessItem,
-  type ReadinessState, confidenceOf,
+  type ReadinessState, type Pathway, type RequestType, confidenceOf,
 } from '../domain/model';
 import { loadJson, saveJson } from './persist';
+
+/** The structured-intake payload the New-case form submits (the mock's POST /intake body). */
+export interface NewCaseInput {
+  pathway: Pathway;
+  requestType: RequestType;
+  processVersion: string;
+  joinerName: string;
+  joinerRef: string; // EID
+  role: string;
+  location: string;
+  startDate: string;
+  readinessDeadline: string;
+  intakeSource: string;
+  schemaVersion: string;
+}
 
 /**
  * Mock runtime. Stands in for the eventual governed backend (datastore + event
@@ -80,6 +95,64 @@ export class RuntimeService {
     this.#append(action.caseRef, 'exception.raised', 'human', `Dismissed: ${action.title}`);
   }
 
+  /** Re-read state from the store — stands in for a backend refetch. */
+  reload(): void {
+    this.#cases.set(loadJson('cases', this.#cases()));
+    this.#events.set(loadJson('events', this.#events()));
+    this.#actions.set(loadJson('actions', this.#actions()));
+  }
+
+  /** An active (non-closed) case for this EID, if any — dedup awareness (BR-02). */
+  openCaseForJoiner(joinerRef: string): ReadinessRecord | undefined {
+    const ref = joinerRef.trim().toLowerCase();
+    if (!ref) return undefined;
+    return this.#cases().find(
+      (c) => c.joinerRef.trim().toLowerCase() === ref && c.state !== 'completed' && c.state !== 'cancelled',
+    );
+  }
+
+  /**
+   * Create a case from a validated structured intake. Stands in for the backend
+   * POST /intake: builds the canonical record, fans out readiness items for the
+   * pathway, and emits case.created + validation.passed. Returns the new caseRef.
+   */
+  createCase(input: NewCaseInput): string {
+    const caseRef = this.#nextCaseRef();
+    const now = new Date().toISOString();
+    const rec: ReadinessRecord = {
+      caseRef,
+      requestType: input.requestType,
+      pathway: input.pathway,
+      processVersion: input.processVersion,
+      joinerRef: input.joinerRef.trim(),
+      joinerName: input.joinerName.trim(),
+      role: input.role.trim(),
+      location: input.location.trim(),
+      intakeSource: input.intakeSource,
+      schemaVersion: input.schemaVersion,
+      startDate: input.startDate,
+      readinessDeadline: input.readinessDeadline,
+      state: 'ready-for-orchestration',
+      items: defaultItems(input.pathway),
+      blockers: [],
+      owners: { current: 'PPSO Operations', nextAction: 'Agent', escalation: 'PPSO Head' },
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.#cases.update((list) => [rec, ...list]);
+    this.#append(caseRef, 'case.created', 'system', `Case created from ${input.intakeSource}`);
+    this.#append(caseRef, 'validation.passed', 'agent', 'Mandatory fields valid — ready for orchestration');
+    return caseRef;
+  }
+
+  #nextCaseRef(): string {
+    const nums = this.#cases()
+      .map((c) => parseInt(c.caseRef.replace(/\D/g, ''), 10))
+      .filter((n) => !Number.isNaN(n));
+    const next = (nums.length ? Math.max(...nums) : 1000) + 1;
+    return `RW-${next}`;
+  }
+
   // ── internals ──────────────────────────────────────────────────────────────
   #patchCase(ref: string, fn: (rec: ReadinessRecord) => ReadinessRecord): void {
     this.#cases.update((list) => list.map((c) => (c.caseRef === ref ? fn(c) : c)));
@@ -112,6 +185,25 @@ function item(
   extra: Partial<ReadinessItem> = {},
 ): ReadinessItem {
   return { id, category, label, state, fulfilment, ...extra };
+}
+
+/** The readiness items a fresh case starts with, per pathway (ids match the process map). */
+function defaultItems(pathway: Pathway): ReadinessItem[] {
+  if (pathway === 'centre-level') {
+    return [
+      item('laptop', 'equipment', 'Laptop provisioned', 'pending', 'auto', { owner: 'IT Assets' }),
+      item('m365', 'access', 'M365 account & licences', 'pending', 'auto', { owner: 'IAM' }),
+      item('desk', 'workspace', 'Workspace / desk assignment', 'pending', 'human', { owner: 'Facilities' }),
+      item('orientation', 'orientation', 'Orientation session booked', 'pending', 'agent-assisted', { owner: 'PPSO' }),
+      item('buddy', 'stakeholder', 'Buddy assigned', 'pending', 'auto', { owner: 'PPSO' }),
+    ];
+  }
+  return [
+    item('access', 'access', 'Directory & mailing lists', 'pending', 'auto', { owner: 'IAM' }),
+    item('cdp', 'tooling', 'CDP RORO', 'pending', 'agent-assisted', { owner: 'CDP Owner' }),
+    item('teams', 'access', 'Teams channel membership', 'pending', 'auto', { owner: 'Project Lead' }),
+    item('myte', 'access', 'MyTE WBS access', 'pending', 'agent-assisted', { owner: 'MyTE Admin' }),
+  ];
 }
 
 function seedCases(): ReadinessRecord[] {
