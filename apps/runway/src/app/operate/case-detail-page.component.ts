@@ -6,8 +6,8 @@ import { IconComponent } from '../shared/icon.component';
 
 /**
  * Routed case detail (/cases/:ref). `ref` is bound from the route param
- * (withComponentInputBinding). Renders inside the master-detail pane in list
- * view, or full-width in table view — the parent decides the frame.
+ * (withComponentInputBinding). A standalone page with a breadcrumb back to the
+ * cases table.
  */
 @Component({
   selector: 'rw-case-detail-page',
@@ -24,20 +24,21 @@ import { IconComponent } from '../shared/icon.component';
       <div class="missing">
         <rw-icon name="error-circle" [size]="30" />
         <p>Case <b>{{ ref() }}</b> was not found.</p>
-        <a class="crumb" routerLink="/cases"><rw-icon name="chevron-right" [size]="15" class="flip" />Back to cases</a>
+        <a routerLink="/cases">Back to cases</a>
       </div>
     }
   `,
   styles: `
     :host { display: block; height: 100%; min-height: 0; }
     .page { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--surface); }
-    .crumb { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: var(--s-8) var(--s-16); font-size: var(--fs-200); font-weight: var(--fw-semibold); color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--border); }
+    .crumb { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: var(--s-8) var(--s-24); font-size: var(--fs-200); font-weight: var(--fw-semibold); color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--border); }
     .crumb:hover { background: var(--surface-2); }
     .crumb .flip { transform: rotate(180deg); }
     rw-case-detail { flex: 1; min-height: 0; }
-    .missing { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-12); color: var(--muted); }
+    .missing { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-12); color: var(--muted); background: var(--surface); }
     .missing rw-icon { color: var(--idle); }
     .missing p { margin: 0; }
+    .missing a { color: var(--accent); font-weight: var(--fw-semibold); }
   `,
 })
 export class CaseDetailPageComponent {

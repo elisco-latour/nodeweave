@@ -33,6 +33,7 @@ import { ProcessNodeComponent } from './process-node.component';
     </div>
   `,
   styles: `
+    rw-process-map { display: block; height: 100%; min-height: 0; }
     .rw-map { position: relative; height: 100%; min-height: 0; }
     .rw-map nodeweave {
       display: block; width: 100%; height: 100%;

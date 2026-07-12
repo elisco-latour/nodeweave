@@ -5,11 +5,14 @@ import { IconComponent, type IconName } from './shared/icon.component';
 import { SearchComponent } from './shell/search.component';
 import { TourComponent } from './shell/tour.component';
 import { TourService } from './shell/tour.service';
+import { NotificationsComponent } from './shell/notifications.component';
+import { ThemeService } from './shell/theme.service';
 import type { View } from './shell/shell.service';
 
 interface NavItem { id: View; label: string; icon: IconName; iconActive: IconName; }
 
 const NAV: NavItem[] = [
+  { id: 'home', label: 'Home', icon: 'home', iconActive: 'home-filled' },
   { id: 'inbox', label: 'Inbox', icon: 'inbox', iconActive: 'inbox-filled' },
   { id: 'cases', label: 'Cases', icon: 'cases', iconActive: 'cases-filled' },
   { id: 'compose', label: 'Compose', icon: 'compose', iconActive: 'compose-filled' },
@@ -19,7 +22,7 @@ const NAV: NavItem[] = [
   selector: 'rw-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, SearchComponent, TourComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, SearchComponent, TourComponent, NotificationsComponent],
   template: `
     <!-- Command bar -->
     <header class="chrome">
@@ -43,7 +46,8 @@ const NAV: NavItem[] = [
           <rw-icon [name]="rt.piiAuthorized() ? 'eye-off' : 'eye'" [size]="18" />
           <span>{{ rt.piiAuthorized() ? 'Hide PII' : 'Reveal PII' }}</span>
         </button>
-        <button type="button" class="icon-btn" title="Settings" aria-label="Settings"><rw-icon name="settings" [size]="20" /></button>
+        <rw-notifications />
+        <a class="icon-btn" routerLink="/settings" routerLinkActive="on" title="Settings" aria-label="Settings"><rw-icon name="settings" [size]="20" /></a>
         <a class="icon-btn" routerLink="/help" routerLinkActive="on" title="Help" aria-label="Help"><rw-icon name="help" [size]="20" /></a>
         <button type="button" class="icon-btn" title="Apps" aria-label="Apps"><rw-icon name="waffle" [size]="20" /></button>
         <span class="avatar" title="PPSO Operations" aria-hidden="true">NR</span>
@@ -177,6 +181,7 @@ const NAV: NavItem[] = [
 export class AppComponent {
   readonly rt = inject(RuntimeService);
   readonly tour = inject(TourService);
+  readonly #theme = inject(ThemeService); // instantiate so the saved theme is applied on boot
   readonly collapsed = signal(false);
   readonly nav = NAV;
   readonly openCount = computed(() => this.rt.openActions().length);

@@ -1,182 +1,148 @@
-import { Component, ChangeDetectionStrategy, computed, effect, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
+import { filter, map } from 'rxjs';
 import { RuntimeService } from '../runtime/runtime.service';
-import { ShellService } from '../shell/shell.service';
-import { StateChipComponent, type Tone } from '../shared/state-chip.component';
 import { IconComponent, type IconName } from '../shared/icon.component';
+import { type Tone } from '../shared/state-chip.component';
 import { maskPersonal } from '../domain/data-dictionary';
 import type { ActionItem, ActionKind } from '../domain/model';
 
-const KIND_TONE: Record<ActionKind, Tone> = { approval: 'accent', decision: 'warn', 'human-task': 'info', triage: 'danger' };
-const KIND_LABEL: Record<ActionKind, string> = { approval: 'Approval', decision: 'Decision', 'human-task': 'Human task', triage: 'Triage' };
-const KIND_CTA: Record<ActionKind, string> = { approval: 'Approve', decision: 'Confirm', 'human-task': 'Mark done', triage: 'Resolve' };
-const KIND_ICON: Record<ActionKind, IconName> = { approval: 'check-circle', decision: 'split', 'human-task': 'person', triage: 'alert-urgent' };
+export const KIND_TONE: Record<ActionKind, Tone> = { approval: 'accent', decision: 'warn', 'human-task': 'info', triage: 'danger' };
+export const KIND_LABEL: Record<ActionKind, string> = { approval: 'Approval', decision: 'Decision', 'human-task': 'Human task', triage: 'Triage' };
+export const KIND_CTA: Record<ActionKind, string> = { approval: 'Approve', decision: 'Confirm', 'human-task': 'Mark done', triage: 'Resolve' };
+export const KIND_ICON: Record<ActionKind, IconName> = { approval: 'check-circle', decision: 'split', 'human-task': 'person', triage: 'alert-urgent' };
 
-/** The Action Inbox: the calm, high-signal home surface — only what needs a person. */
+export function actionAgo(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  const h = Math.floor(ms / 3.6e6);
+  if (h < 1) return 'just now';
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+/** The Action Inbox — an email-like master-detail: the queue on the left, a reading pane on the right. */
 @Component({
   selector: 'rw-inbox',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [StateChipComponent, IconComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent],
   template: `
-    <div class="wrap">
+    <div class="surface">
       <header class="head">
         <div>
           <h1>Inbox</h1>
           <p class="sub">Things that need a person. Everything else, the agent is handling.</p>
         </div>
-        <span class="count">{{ items().length }} open</span>
+        <span class="count">{{ openCount() }} open</span>
       </header>
 
-      @if (items().length === 0) {
-        <div class="empty">
-          <div class="tick"><rw-icon name="check-circle-filled" [size]="30" /></div>
-          <p>You're all caught up. No decisions or human steps are waiting.</p>
+      <div class="md">
+        <aside class="list">
+          @for (a of actions(); track a.id) {
+            <a class="row" [class.done]="a.status !== 'open'" [routerLink]="['/inbox', a.id]" routerLinkActive="sel">
+              <span class="kind" [attr.data-tone]="tone(a)"><rw-icon [name]="icon(a)" [size]="16" /></span>
+              <span class="rbody">
+                <span class="r1">
+                  <span class="title">{{ a.title }}</span>
+                  @if (a.status !== 'open') { <rw-icon name="check" [size]="14" class="donetick" /> }
+                </span>
+                <span class="r2">
+                  <span class="ref">{{ a.caseRef }}</span>
+                  <span class="dot">·</span>
+                  <span class="joiner">{{ joiner(a) }}</span>
+                  <span class="grow"></span>
+                  <span class="ago">{{ ago(a.createdAt) }}</span>
+                </span>
+              </span>
+            </a>
+          } @empty {
+            <div class="empty"><rw-icon name="check-circle" [size]="26" /><p>No actions yet.</p></div>
+          }
+        </aside>
+
+        <div class="pane">
+          @if (!activeId()) {
+            <div class="prompt">
+              <div class="tick"><rw-icon name="check-circle-filled" [size]="30" /></div>
+              <p>{{ openCount() > 0 ? 'Select an item to review and act on it.' : "You're all caught up — nothing needs a person." }}</p>
+            </div>
+          }
+          <router-outlet />
         </div>
-      }
-
-      <div class="list">
-        @for (a of items(); track a.id) {
-          <article class="card" [id]="'act-' + a.id" [attr.data-kind]="a.kind" [class.flash]="a.id === highlightId()">
-            <div class="top">
-              <rw-chip [label]="kindLabel(a)" [tone]="kindTone(a)" [icon]="kindIcon(a)" />
-              <span class="ref">{{ a.caseRef }}</span>
-              <span class="sep">·</span>
-              <span class="joiner">{{ joiner(a) }}</span>
-              <span class="grow"></span>
-              <span class="ago">{{ ago(a.createdAt) }}</span>
-            </div>
-
-            <h2>{{ a.title }}</h2>
-            <p class="reason">{{ a.reason }}</p>
-
-            @if (a.impactedItems.length) {
-              <div class="impacted">
-                <span class="lbl">Impacts</span>
-                @for (it of a.impactedItems; track it) { <span class="tag">{{ it }}</span> }
-              </div>
-            }
-
-            @if (a.recommendation) {
-              <div class="rec">
-                <rw-icon name="flash" [size]="16" />
-                <div><span class="lbl">Recommended</span>{{ a.recommendation }}</div>
-              </div>
-            }
-            @if (a.evidence) {
-              <div class="evidence"><span class="lbl">Evidence</span>{{ a.evidence }}</div>
-            }
-
-            <div class="actions">
-              <button type="button" class="btn primary" (click)="rt.resolveAction(a.id)">
-                <rw-icon name="check" [size]="16" />{{ cta(a) }}
-              </button>
-              <button type="button" class="btn ghost" (click)="rt.dismissAction(a.id)">
-                <rw-icon name="dismiss" [size]="16" />Dismiss
-              </button>
-            </div>
-          </article>
-        }
       </div>
     </div>
   `,
   styles: `
-    :host { display: block; }
-    .wrap { max-width: 860px; margin: 0 auto; padding: var(--s-32) var(--s-24) 64px; }
-    .head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--s-24); }
+    :host { display: block; height: 100%; min-height: 0; }
+    .surface { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--surface); }
+
+    .head { flex: none; display: flex; align-items: flex-start; justify-content: space-between; padding: var(--s-24) var(--s-32) var(--s-16); }
     h1 { margin: 0; font-family: var(--font-display); font-size: var(--fs-600); font-weight: var(--fw-bold); letter-spacing: -0.02em; }
     .sub { margin: var(--s-4) 0 0; color: var(--muted); font-size: var(--fs-300); }
     .count { font-size: var(--fs-200); font-weight: var(--fw-semibold); color: var(--muted); background: var(--surface); border: 1px solid var(--border); padding: var(--s-4) var(--s-10); border-radius: var(--radius-pill); }
 
-    .empty { text-align: center; color: var(--muted); padding: 72px 0; }
-    .empty .tick { width: 56px; height: 56px; margin: 0 auto var(--s-16); border-radius: 50%; background: var(--ok-weak); color: var(--ok); display: grid; place-items: center; }
+    .md { flex: 1; min-height: 0; display: grid; grid-template-columns: 380px 1fr; border-top: 1px solid var(--border); }
 
-    .list { display: flex; flex-direction: column; gap: var(--s-12); }
-    .card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-2); padding: var(--s-16) var(--s-20); position: relative;
-      transition: box-shadow 0.12s ease, border-color 0.12s ease;
-    }
-    .card::before {
-      content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: var(--radius-pill);
-      background: var(--k-tone, var(--border-strong));
-    }
-    .card[data-kind="triage"]     { --k-tone: var(--danger); }
-    .card[data-kind="decision"]   { --k-tone: var(--warn); }
-    .card[data-kind="human-task"] { --k-tone: var(--info); }
-    .card[data-kind="approval"]   { --k-tone: var(--accent); }
-    .card:hover { box-shadow: var(--shadow-8); border-color: var(--border-strong); }
-    .card.flash { animation: rw-flash 2.2s ease; }
-    @keyframes rw-flash {
-      0% { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-weak-2), var(--shadow-8); }
-      70% { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-weak-2), var(--shadow-8); }
-      100% { border-color: var(--border); box-shadow: var(--shadow-2); }
-    }
+    .list { border-right: 1px solid var(--border); overflow-y: auto; padding: var(--s-8); min-height: 0; }
+    .row { position: relative; display: flex; align-items: flex-start; gap: var(--s-10); width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius); padding: var(--s-10) var(--s-12); margin-bottom: 2px; text-decoration: none; cursor: pointer; transition: background 0.1s ease; }
+    .row:hover { background: var(--surface-3); }
+    .row.sel { background: var(--accent-weak); border-color: var(--accent-border); }
+    .row.sel::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; background: var(--brand); border-radius: var(--radius-pill); }
+    .row.done { opacity: 0.62; }
+    .kind { display: inline-grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: var(--radius); background: var(--tone-weak, var(--surface-3)); color: var(--tone-strong, var(--muted)); margin-top: 1px; }
+    .kind[data-tone="accent"] { --tone-weak: var(--accent-weak); --tone-strong: var(--accent); }
+    .kind[data-tone="warn"]   { --tone-weak: var(--warn-weak);   --tone-strong: var(--warn); }
+    .kind[data-tone="info"]   { --tone-weak: var(--info-weak);   --tone-strong: var(--info); }
+    .kind[data-tone="danger"] { --tone-weak: var(--danger-weak); --tone-strong: var(--danger); }
+    .rbody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .r1 { display: flex; align-items: center; gap: var(--s-6); }
+    .title { font-size: var(--fs-300); font-weight: var(--fw-semibold); color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .donetick { color: var(--ok); flex: none; }
+    .r2 { display: flex; align-items: center; gap: var(--s-6); font-size: var(--fs-200); color: var(--muted); }
+    .r2 .ref { font-weight: var(--fw-semibold); }
+    .r2 .dot { color: var(--faint); }
+    .r2 .joiner { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .r2 .grow { flex: 1; }
+    .r2 .ago { color: var(--faint); white-space: nowrap; }
+    .empty { text-align: center; color: var(--faint); padding: 48px 16px; }
+    .empty rw-icon { color: var(--ok); }
+    .empty p { margin: var(--s-8) 0 0; font-size: var(--fs-200); }
 
-    .top { display: flex; align-items: center; gap: var(--s-8); font-size: var(--fs-200); color: var(--muted); margin-bottom: var(--s-8); }
-    .top .ref { font-weight: var(--fw-semibold); color: var(--text); }
-    .top .sep { color: var(--faint); }
-    .top .joiner { color: var(--muted); }
-    .top .grow { flex: 1; }
-    .top .ago { color: var(--faint); }
-
-    h2 { margin: var(--s-2) 0 var(--s-6); font-size: var(--fs-400); font-weight: var(--fw-semibold); letter-spacing: -0.01em; }
-    .reason { margin: 0; color: var(--muted); font-size: var(--fs-300); line-height: 1.5; }
-
-    .impacted { display: flex; align-items: center; gap: var(--s-6); margin-top: var(--s-12); flex-wrap: wrap; }
-    .tag { font-size: var(--fs-100); font-weight: var(--fw-medium); background: var(--surface-3); border: 1px solid var(--border); color: var(--muted); padding: 1px var(--s-8); border-radius: var(--radius-sm); }
-    .lbl { font-size: var(--fs-100); text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); font-weight: var(--fw-bold); margin-right: var(--s-8); }
-
-    .rec { display: flex; gap: var(--s-8); margin-top: var(--s-12); padding: var(--s-10) var(--s-12); background: var(--accent-weak); border: 1px solid var(--accent-border); border-radius: var(--radius); color: var(--accent-strong); font-size: var(--fs-300); line-height: 1.45; }
-    .rec rw-icon { color: var(--accent); flex: none; margin-top: 1px; }
-    .rec .lbl { display: block; margin: 0 0 2px; color: var(--accent); }
-    .evidence { margin-top: var(--s-8); font-size: var(--fs-200); color: var(--faint); font-family: var(--font-mono); }
-    .evidence .lbl { font-family: var(--font); }
-
-    .actions { display: flex; gap: var(--s-8); margin-top: var(--s-16); }
-    .btn {
-      display: inline-flex; align-items: center; gap: var(--s-6); padding: var(--s-8) var(--s-16); border-radius: var(--radius-sm);
-      font: inherit; font-size: var(--fs-300); font-weight: var(--fw-semibold); cursor: pointer; border: 1px solid transparent;
-      transition: background 0.1s ease, border-color 0.1s ease;
-    }
-    .btn.primary { background: var(--brand); color: var(--brand-fg); }
-    .btn.primary:hover { background: var(--brand-hover); }
-    .btn.primary:active { background: var(--brand-pressed); }
-    .btn.ghost { background: var(--surface); color: var(--muted); border-color: var(--border-strong); }
-    .btn.ghost:hover { background: var(--surface-3); color: var(--text); }
+    .pane { min-width: 0; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); position: relative; }
+    .pane rw-action-detail { flex: 1; min-height: 0; }
+    .prompt { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-12); color: var(--muted); padding: 24px; text-align: center; }
+    .prompt .tick { width: 56px; height: 56px; border-radius: 50%; background: var(--ok-weak); color: var(--ok); display: grid; place-items: center; }
+    .prompt p { margin: 0; max-width: 320px; }
   `,
 })
 export class InboxComponent {
-  readonly rt = inject(RuntimeService);
-  readonly #shell = inject(ShellService);
-  readonly items = computed(() => this.rt.openActions());
-  readonly highlightId = signal<string | null>(null);
+  readonly #rt = inject(RuntimeService);
+  readonly #router = inject(Router);
 
-  constructor() {
-    // When search (or elsewhere) asks to focus an action, scroll to it and flash it.
-    effect(() => {
-      const id = this.#shell.focusActionId();
-      if (!id) return;
-      this.highlightId.set(id);
-      setTimeout(() => document.getElementById('act-' + id)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
-      setTimeout(() => { this.highlightId.set(null); this.#shell.consumeFocusAction(); }, 2300);
-    });
-  }
+  readonly openCount = computed(() => this.#rt.openActions().length);
+  readonly actions = computed(() =>
+    [...this.#rt.actions()].sort((a, b) => {
+      const ao = a.status === 'open' ? 0 : 1;
+      const bo = b.status === 'open' ? 0 : 1;
+      return ao !== bo ? ao - bo : b.createdAt.localeCompare(a.createdAt);
+    }),
+  );
 
-  kindTone(a: ActionItem): Tone { return KIND_TONE[a.kind]; }
-  kindLabel(a: ActionItem): string { return KIND_LABEL[a.kind]; }
-  kindIcon(a: ActionItem): IconName { return KIND_ICON[a.kind]; }
-  cta(a: ActionItem): string { return KIND_CTA[a.kind]; }
+  readonly #url = toSignal(
+    this.#router.events.pipe(filter((e) => e instanceof NavigationEnd), map(() => this.#router.url)),
+    { initialValue: this.#router.url },
+  );
+  readonly activeId = computed(() => {
+    const m = this.#url().match(/\/inbox\/([^/?#]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
+  });
 
+  tone(a: ActionItem): Tone { return KIND_TONE[a.kind]; }
+  icon(a: ActionItem): IconName { return KIND_ICON[a.kind]; }
+  ago(iso: string): string { return actionAgo(iso); }
   joiner(a: ActionItem): string {
-    const rec = this.rt.caseByRef(a.caseRef);
-    return rec ? maskPersonal(rec.joinerName, this.rt.piiAuthorized()) : a.caseRef;
-  }
-
-  ago(iso: string): string {
-    const ms = Date.now() - new Date(iso).getTime();
-    const h = Math.floor(ms / 3.6e6);
-    if (h < 1) return 'just now';
-    if (h < 24) return `${h}h ago`;
-    return `${Math.floor(h / 24)}d ago`;
+    const rec = this.#rt.caseByRef(a.caseRef);
+    return rec ? maskPersonal(rec.joinerName, this.#rt.piiAuthorized()) : a.caseRef;
   }
 }

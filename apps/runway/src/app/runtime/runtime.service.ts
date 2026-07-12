@@ -37,6 +37,7 @@ export class RuntimeService {
 
   readonly cases = this.#cases.asReadonly();
   readonly actions = this.#actions.asReadonly();
+  readonly allEvents = this.#events.asReadonly();
   readonly openActions = computed(() => this.#actions().filter((a) => a.status === 'open'));
 
   constructor() {
@@ -57,6 +58,10 @@ export class RuntimeService {
 
   caseByRef(ref: string): ReadinessRecord | undefined {
     return this.#cases().find((c) => c.caseRef === ref);
+  }
+
+  actionById(id: string): ActionItem | undefined {
+    return this.#actions().find((a) => a.id === id);
   }
 
   eventsFor(ref: string): DomainEvent[] {
