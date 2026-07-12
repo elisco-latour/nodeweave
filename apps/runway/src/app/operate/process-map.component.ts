@@ -36,33 +36,33 @@ import { ProcessNodeComponent } from './process-node.component';
     .rw-map { position: relative; height: 100%; min-height: 0; }
     .rw-map nodeweave {
       display: block; width: 100%; height: 100%;
-      --nw-bg-color: #f6f7f9;
-      --nw-bg-pattern: #dfe3e9;
+      --nw-bg-color: #f3f1f5;
+      --nw-bg-pattern: #dcd7e2;
       --nw-node-bg: #ffffff;
-      --nw-node-border: #e6e8ec;
+      --nw-node-border: #e2dfe7;
       --nw-node-radius: 10px;
-      --nw-edge-color: #cbd5e1;
-      --nw-port-color: #cbd5e1;
-      --nw-port-border-color: #b6bcc6;
+      --nw-edge-color: #c4c0cc;
+      --nw-port-color: #cfcbd8;
+      --nw-port-border-color: #b6b1c2;
     }
     /* Read-only: nodes are non-interactive; the surface still pans/zooms. */
-    .rw-map .vc-node { pointer-events: none; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07); }
-    .rw-map path.vc-edge.rw-edge-done { stroke: #22c55e; stroke-width: 2; }
+    .rw-map .vc-node { pointer-events: none; box-shadow: var(--shadow-2); }
+    .rw-map path.vc-edge.rw-edge-done { stroke: #107c10; stroke-width: 2; }
 
     .legend {
       position: absolute; left: 12px; bottom: 12px; z-index: 40;
       display: flex; flex-wrap: wrap; gap: 10px;
-      background: rgba(255, 255, 255, 0.92); border: 1px solid var(--border);
-      border-radius: 9px; padding: 7px 11px; font-size: 0.7rem; color: var(--muted);
-      box-shadow: var(--shadow-sm);
+      background: rgba(255, 255, 255, 0.94); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 7px 11px; font-size: var(--fs-100); font-weight: var(--fw-medium); color: var(--muted);
+      box-shadow: var(--shadow-4); backdrop-filter: blur(4px);
     }
     .legend span { display: inline-flex; align-items: center; gap: 5px; }
     .legend .d { width: 8px; height: 8px; border-radius: 2px; }
-    .legend .done { background: #16a34a; }
-    .legend .active { background: #4f46e5; }
-    .legend .awaiting { background: #d97706; }
-    .legend .blocked { background: #dc2626; }
-    .legend .pending { background: #94a3b8; }
+    .legend .done { background: #107c10; }
+    .legend .active { background: #7500c0; }
+    .legend .awaiting { background: #bc4b09; }
+    .legend .blocked { background: #c50f1f; }
+    .legend .pending { background: #9a95a4; }
   `,
 })
 export class ProcessMapComponent {

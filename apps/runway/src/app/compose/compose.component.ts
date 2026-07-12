@@ -3,23 +3,24 @@ import {
   computed, effect, inject, signal, viewChild,
 } from '@angular/core';
 import { VisualCanvasComponent, NodeweavePanelComponent, type VisualCanvasService } from '@nodeweave/angular';
-import { NwPaletteComponent, NwInspectorComponent, nodeFromDrop, allowNodeDrop } from '@nodeweave/angular-authoring';
+import { NwInspectorComponent, nodeFromDrop, allowNodeDrop, NW_DND_TYPE, type NodeTypeDefinition } from '@nodeweave/angular-authoring';
 import type { Pathway } from '../domain/model';
 import { ProcessStore } from '../runtime/process-store';
 import { processCatalog, buildTemplate } from './process-catalog';
+import { IconComponent } from '../shared/icon.component';
+import { stepIcon, stepColor } from './step-visuals';
 
 /**
  * Compose — the Process Studio. Author/evolve the onboarding process for a
- * pathway on the visual canvas (palette + schema inspector). Standalone
- * authoring surface for now; publishing versions + wiring to Operate comes
- * with persistence (Phase 3).
+ * pathway on the visual canvas (Fluent palette + schema inspector) and publish
+ * a versioned ProcessDefinition to the store that Operate reads.
  */
 @Component({
   selector: 'rw-compose',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [VisualCanvasComponent, NodeweavePanelComponent, NwPaletteComponent, NwInspectorComponent],
+  imports: [VisualCanvasComponent, NodeweavePanelComponent, NwInspectorComponent, IconComponent],
   template: `
     <div class="rw-compose">
       <div class="cbar">
@@ -27,16 +28,37 @@ import { processCatalog, buildTemplate } from './process-catalog';
           <button type="button" [class.on]="pathway() === 'centre-level'" (click)="pathway.set('centre-level')">Centre-level</button>
           <button type="button" [class.on]="pathway() === 'project-level'" (click)="pathway.set('project-level')">Project-level</button>
         </div>
-        <span class="ver">{{ processName() }} · {{ versionLabel() }}</span>
+        <span class="ver">{{ processName() }}</span>
+        <span class="verchip" [class.pub]="isPublished()">{{ versionLabel() }}</span>
         <span class="grow"></span>
-        <span class="count">{{ cv.service.nodes().length }} steps</span>
-        <span class="count">{{ cv.service.edges().length }} links</span>
-        <button type="button" (click)="reset()">Reset</button>
-        <button type="button" class="primary" (click)="publish(cv.service)">{{ justPublished() ? 'Published ✓' : 'Publish' }}</button>
+        <span class="count"><rw-icon name="compose" [size]="15" />{{ cv.service.nodes().length }} steps</span>
+        <span class="count"><rw-icon name="branch" [size]="15" />{{ cv.service.edges().length }} links</span>
+        <button type="button" class="btn ghost" (click)="reset()"><rw-icon name="reset" [size]="16" />Reset</button>
+        <button type="button" class="btn primary" (click)="publish(cv.service)">
+          <rw-icon [name]="justPublished() ? 'check' : 'flag'" [size]="16" />{{ justPublished() ? 'Published' : 'Publish' }}
+        </button>
       </div>
 
       <div class="body">
-        <nw-palette [catalog]="catalog" heading="Steps" (add)="onPaletteAdd($event)"></nw-palette>
+        <aside class="palette">
+          <div class="pal-head"><span class="pal-title">Steps</span><span class="pal-tip">drag onto canvas</span></div>
+          @for (grp of paletteGroups; track grp.category) {
+            <div class="pal-group">
+              <div class="pal-cat">{{ grp.category }}</div>
+              @for (item of grp.items; track item.type) {
+                <button type="button" class="pal-item" draggable="true"
+                        (dragstart)="onDragStart($event, item)" (click)="onPaletteAdd(item.type)">
+                  <span class="pal-ico" [style.background]="stepColor(item.type)"><rw-icon [name]="stepIcon(item.type)" [size]="15" /></span>
+                  <span class="pal-text">
+                    <span class="pal-label">{{ item.label }}</span>
+                    @if (item.hint) { <span class="pal-hint">{{ item.hint }}</span> }
+                  </span>
+                </button>
+              }
+            </div>
+          }
+        </aside>
+
         <div #wrap class="canvas">
           <nodeweave #cv background="dots" [backgroundGap]="22" [nodeTypes]="nodeTypes" [nodesResizable]="false"
                      (dragover)="onDragOver($event)" (drop)="onDrop($event)">
@@ -54,38 +76,69 @@ import { processCatalog, buildTemplate } from './process-catalog';
     :host { display: block; height: 100%; min-height: 0; }
     .rw-compose { display: flex; flex-direction: column; height: 100%; min-height: 0; }
 
-    .cbar { flex: none; display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 0.84rem; }
-    .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 2px; }
-    .seg button { border: none; background: transparent; font: inherit; font-size: 0.8rem; color: var(--muted); padding: 5px 14px; border-radius: 999px; cursor: pointer; }
-    .seg button.on { background: var(--accent); color: #fff; font-weight: 600; }
-    .ver { font-size: 0.76rem; color: var(--faint); font-family: ui-monospace, Menlo, monospace; }
+    /* ── Command bar ─────────────────────────────────────────────────────── */
+    .cbar { flex: none; display: flex; align-items: center; gap: var(--s-12); padding: var(--s-10) var(--s-16); background: var(--surface); border-bottom: 1px solid var(--border); font-size: var(--fs-300); }
+    .seg { display: inline-flex; background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 2px; }
+    .seg button { border: none; background: transparent; font: inherit; font-size: var(--fs-200); font-weight: var(--fw-semibold); color: var(--muted); padding: 5px 14px; border-radius: var(--radius-pill); cursor: pointer; transition: background 0.1s ease, color 0.1s ease; }
+    .seg button.on { background: var(--brand); color: #fff; }
+    .ver { font-weight: var(--fw-semibold); color: var(--text); }
+    .verchip { font-size: var(--fs-100); font-family: var(--font-mono); color: var(--faint); background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 2px 7px; }
+    .verchip.pub { color: var(--ok); background: var(--ok-weak); border-color: transparent; }
     .grow { flex: 1; }
-    .count { font-size: 0.76rem; color: var(--muted); }
-    .cbar button { padding: 6px 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 8px; font: inherit; font-size: 0.78rem; cursor: pointer; }
-    .cbar button:hover:not(:disabled) { background: var(--surface-2); }
-    .cbar .primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
-    .cbar .primary:hover:not(:disabled) { background: #4338ca; }
+    .count { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-200); color: var(--muted); }
+    .count rw-icon { color: var(--faint); }
 
-    .body { flex: 1; min-height: 0; display: grid; grid-template-columns: 248px 1fr; }
+    .btn { display: inline-flex; align-items: center; gap: var(--s-6); padding: var(--s-6) var(--s-12); border: 1px solid transparent; border-radius: var(--radius-sm); font: inherit; font-size: var(--fs-200); font-weight: var(--fw-semibold); cursor: pointer; transition: background 0.1s ease, border-color 0.1s ease; }
+    .btn.ghost { background: var(--surface); color: var(--muted); border-color: var(--border-strong); }
+    .btn.ghost:hover { background: var(--surface-3); color: var(--text); }
+    .btn.primary { background: var(--brand); color: #fff; }
+    .btn.primary:hover { background: var(--brand-hover); }
+    .btn.primary:active { background: var(--brand-pressed); }
+
+    .body { flex: 1; min-height: 0; display: grid; grid-template-columns: 256px 1fr; }
+
+    /* ── Palette ─────────────────────────────────────────────────────────── */
+    .palette { background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; padding: var(--s-16) var(--s-12); }
+    .pal-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--s-12); padding: 0 var(--s-4); }
+    .pal-title { font-size: var(--fs-300); font-weight: var(--fw-bold); }
+    .pal-tip { font-size: var(--fs-100); color: var(--faint); }
+    .pal-group { margin-bottom: var(--s-16); }
+    .pal-cat { font-size: var(--fs-100); text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); font-weight: var(--fw-bold); margin: 0 0 var(--s-6) var(--s-4); }
+    .pal-item { display: flex; align-items: center; gap: var(--s-10); width: 100%; text-align: left; padding: var(--s-8) var(--s-10); margin-bottom: var(--s-4); cursor: grab; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font: inherit; color: inherit; transition: background 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease; }
+    .pal-item:hover { background: var(--surface-2); border-color: var(--accent-border); box-shadow: var(--shadow-2); }
+    .pal-item:active { cursor: grabbing; }
+    .pal-ico { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--radius); color: #fff; background: var(--muted); }
+    .pal-text { display: flex; flex-direction: column; min-width: 0; }
+    .pal-label { font-size: var(--fs-300); font-weight: var(--fw-semibold); }
+    .pal-hint { font-size: var(--fs-100); color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
     .canvas { position: relative; min-width: 0; overflow: hidden; }
 
+    /* ── Canvas theme ────────────────────────────────────────────────────── */
     .rw-compose nodeweave {
       display: block; width: 100%; height: 100%;
-      --nw-bg-color: #f6f7f9;
-      --nw-bg-pattern: #dfe3e9;
+      --nw-bg-color: #f3f1f5;
+      --nw-bg-pattern: #dad5e2;
       --nw-node-bg: #ffffff;
-      --nw-node-border: #e6e8ec;
+      --nw-node-border: #e2dfe7;
       --nw-node-radius: 11px;
-      --nw-selection-border: #4f46e5;
-      --nw-edge-color: #b6bcc6;
-      --nw-edge-color-phantom: #a5b4fc;
-      --nw-port-color: #cbd5e1;
-      --nw-port-border-color: #b6bcc6;
-      --nw-port-hover-color: #4f46e5;
-      --nw-port-label-color: #98a2b3;
+      --nw-selection-border: #a100ff;
+      --nw-edge-color: #bdb8c8;
+      --nw-edge-color-phantom: #cd94ff;
+      --nw-port-color: #cfcbd8;
+      --nw-port-border-color: #b6b1c2;
+      --nw-port-hover-color: #a100ff;
+      --nw-port-label-color: #9a95a4;
     }
-    .rw-compose .vc-node { box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08); }
-    .rw-compose .vc-node.vc-selected { box-shadow: 0 6px 18px rgba(79, 70, 229, 0.26); }
+    .rw-compose .vc-node { box-shadow: var(--shadow-2); }
+    .rw-compose .vc-node.vc-selected { box-shadow: 0 6px 18px rgba(161, 0, 255, 0.24); }
+
+    /* ── Inspector retint (library uses indigo) ──────────────────────────── */
+    .rw-compose .inspector { border-radius: var(--radius-lg); box-shadow: var(--shadow-16); border-color: var(--border); }
+    .rw-compose .inspector header { background: var(--surface-2); border-color: var(--border); }
+    .rw-compose .inspector .field input:focus,
+    .rw-compose .inspector .field select:focus,
+    .rw-compose .inspector .field textarea:focus { border-color: var(--brand) !important; box-shadow: 0 0 0 3px rgba(161, 0, 255, 0.15) !important; }
   `,
 })
 export class ComposeComponent {
@@ -95,11 +148,17 @@ export class ComposeComponent {
   readonly #store = inject(ProcessStore);
   readonly pathway = signal<Pathway>('centre-level');
   readonly catalog = processCatalog;
+  readonly paletteGroups = processCatalog.byCategory();
   readonly nodeTypes = processCatalog.nodeTypes();
   readonly justPublished = signal(false);
   #addCounter = 0;
 
+  // Exposed for the template.
+  readonly stepIcon = stepIcon;
+  readonly stepColor = stepColor;
+
   readonly processName = computed(() => (this.pathway() === 'centre-level' ? 'centre-onboarding' : 'project-onboarding'));
+  readonly isPublished = computed(() => !!this.#store.published(this.pathway()));
   readonly versionLabel = computed(() => {
     const p = this.#store.published(this.pathway());
     return p ? `v${p.version} · published` : 'draft';
@@ -137,6 +196,11 @@ export class ComposeComponent {
     setTimeout(() => this.justPublished.set(false), 2200);
   }
 
+  onDragStart(ev: DragEvent, item: NodeTypeDefinition): void {
+    ev.dataTransfer?.setData(NW_DND_TYPE, item.type);
+    ev.dataTransfer?.setData('text/plain', item.label);
+    if (ev.dataTransfer) ev.dataTransfer.effectAllowed = 'copy';
+  }
   onDragOver(ev: DragEvent): void { allowNodeDrop(ev); }
   onDrop(ev: DragEvent): void {
     const cv = this.cvRef();

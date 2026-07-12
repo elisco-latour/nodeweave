@@ -3,74 +3,193 @@ import { RuntimeService } from './runtime/runtime.service';
 import { InboxComponent } from './operate/inbox.component';
 import { CasesComponent } from './operate/cases.component';
 import { ComposeComponent } from './compose/compose.component';
+import { IconComponent, type IconName } from './shared/icon.component';
+import { ShellService, type View } from './shell/shell.service';
+import { SearchComponent } from './shell/search.component';
+import { TourComponent } from './shell/tour.component';
+import { TourService } from './shell/tour.service';
+import { HelpComponent } from './shell/help.component';
 
-type View = 'inbox' | 'cases' | 'compose';
+interface NavItem { id: View; label: string; icon: IconName; iconActive: IconName; }
+
+const NAV: NavItem[] = [
+  { id: 'inbox', label: 'Inbox', icon: 'inbox', iconActive: 'inbox-filled' },
+  { id: 'cases', label: 'Cases', icon: 'cases', iconActive: 'cases-filled' },
+  { id: 'compose', label: 'Compose', icon: 'compose', iconActive: 'compose-filled' },
+];
 
 @Component({
   selector: 'rw-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [InboxComponent, CasesComponent, ComposeComponent],
+  imports: [InboxComponent, CasesComponent, ComposeComponent, HelpComponent, IconComponent, SearchComponent, TourComponent],
   template: `
-    <header class="topbar">
-      <div class="brand">
-        <span class="mark">▲</span>
-        <span class="name">Runway</span>
-        <span class="tagline">Onboarding readiness</span>
+    <!-- Command bar -->
+    <header class="chrome">
+      <div class="chrome-left">
+        <button type="button" class="icon-btn" (click)="collapsed.set(!collapsed())"
+                [attr.aria-label]="collapsed() ? 'Expand navigation' : 'Collapse navigation'" title="Toggle navigation">
+          <rw-icon name="menu" [size]="20" />
+        </button>
+        <div class="brand">
+          <span class="brand-mark"><rw-icon name="brand" [size]="20" /></span>
+          <span class="brand-name">Runway</span>
+          <span class="brand-tagline">Onboarding readiness</span>
+        </div>
       </div>
 
-      <nav class="nav">
-        <button type="button" [class.active]="view() === 'inbox'" (click)="view.set('inbox')">
-          Inbox
-          @if (openCount() > 0) { <span class="badge">{{ openCount() }}</span> }
-        </button>
-        <button type="button" [class.active]="view() === 'cases'" (click)="view.set('cases')">Cases</button>
-        <button type="button" [class.active]="view() === 'compose'" (click)="view.set('compose')">Compose</button>
-      </nav>
+      <div class="chrome-search"><rw-search /></div>
 
-      <div class="right">
+      <div class="chrome-right">
         <button type="button" class="pii" [class.on]="rt.piiAuthorized()" (click)="rt.togglePii()"
                 title="Personal data is masked by classification until an authorized viewer reveals it">
-          {{ rt.piiAuthorized() ? 'Hide PII' : 'Reveal PII' }}
+          <rw-icon [name]="rt.piiAuthorized() ? 'eye-off' : 'eye'" [size]="18" />
+          <span>{{ rt.piiAuthorized() ? 'Hide PII' : 'Reveal PII' }}</span>
         </button>
-        <span class="mock" title="This build runs on an in-memory mock runtime">mock runtime</span>
+        <button type="button" class="icon-btn" title="Settings" aria-label="Settings"><rw-icon name="settings" [size]="20" /></button>
+        <button type="button" class="icon-btn" [class.on]="shell.view() === 'help'" (click)="shell.show('help')" title="Help" aria-label="Help"><rw-icon name="help" [size]="20" /></button>
+        <button type="button" class="icon-btn" title="Apps" aria-label="Apps"><rw-icon name="waffle" [size]="20" /></button>
+        <span class="avatar" title="PPSO Operations" aria-hidden="true">NR</span>
       </div>
     </header>
 
-    <main>
-      @switch (view()) {
-        @case ('inbox') { <rw-inbox></rw-inbox> }
-        @case ('cases') { <rw-cases></rw-cases> }
-        @case ('compose') { <rw-compose></rw-compose> }
-      }
-    </main>
+    <div class="shell">
+      <!-- Navigation rail -->
+      <nav class="rail" [class.collapsed]="collapsed()">
+        <ul class="nav">
+          @for (item of nav; track item.id) {
+            <li>
+              <button type="button" class="nav-item" [class.active]="shell.view() === item.id"
+                      (click)="shell.show(item.id)" [title]="item.label">
+                <span class="nav-ico"><rw-icon [name]="shell.view() === item.id ? item.iconActive : item.icon" [size]="20" /></span>
+                <span class="nav-label">{{ item.label }}</span>
+                @if (item.id === 'inbox' && openCount() > 0) {
+                  <span class="badge" [class.dot]="collapsed()">{{ collapsed() ? '' : openCount() }}</span>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+        <div class="rail-foot">
+          <button type="button" class="tour-btn" (click)="tour.start()" title="Take the guided tour">
+            <rw-icon name="play" [size]="18" /><span class="nav-label">Guided tour</span>
+          </button>
+          <span class="runtime"><span class="pulse"></span><span class="nav-label">Mock runtime</span></span>
+        </div>
+      </nav>
+
+      <!-- Content -->
+      <main>
+        @switch (shell.view()) {
+          @case ('inbox') { <rw-inbox /> }
+          @case ('cases') { <rw-cases /> }
+          @case ('compose') { <rw-compose /> }
+          @case ('help') { <rw-help /> }
+        }
+      </main>
+    </div>
+
+    <rw-tour />
   `,
   styles: `
-    :host { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
-    .topbar { display: flex; align-items: center; gap: 22px; padding: 0 18px; height: 54px; background: var(--surface); border-bottom: 1px solid var(--border); }
-    .brand { display: flex; align-items: baseline; gap: 8px; }
-    .brand .mark { color: var(--accent); font-size: 0.85rem; }
-    .brand .name { font-weight: 700; letter-spacing: -0.01em; }
-    .brand .tagline { font-size: 0.76rem; color: var(--faint); }
+    :host { display: grid; grid-template-rows: var(--chrome-h) 1fr; height: 100vh; overflow: hidden; }
 
-    .nav { display: flex; gap: 4px; }
-    .nav button { position: relative; display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border: none; background: transparent; color: var(--muted); border-radius: 8px; font: inherit; font-size: 0.86rem; cursor: pointer; }
-    .nav button:hover { background: var(--surface-2); color: var(--text); }
-    .nav button.active { background: var(--accent-weak); color: var(--accent); font-weight: 600; }
-    .nav .badge { background: var(--accent); color: #fff; font-size: 0.66rem; font-weight: 700; border-radius: 999px; padding: 0 6px; min-width: 16px; text-align: center; }
-    .nav .soon { opacity: 0.45; cursor: default; }
+    /* ── Command bar ─────────────────────────────────────────────────────── */
+    .chrome {
+      display: grid; grid-template-columns: 1fr minmax(0, 520px) 1fr; align-items: center;
+      gap: var(--s-16); padding: 0 var(--s-12) 0 var(--s-8);
+      background: linear-gradient(100deg, var(--chrome-bg) 0%, var(--chrome-bg-2) 100%);
+      color: var(--chrome-fg); z-index: 20;
+    }
+    .chrome-left { display: flex; align-items: center; gap: var(--s-4); min-width: 0; }
+    .brand { display: flex; align-items: baseline; gap: var(--s-8); padding-left: var(--s-4); min-width: 0; }
+    .brand-mark { display: inline-flex; align-self: center; color: #fff; }
+    .brand-name { font-family: var(--font-display); font-weight: var(--fw-bold); font-size: var(--fs-400); letter-spacing: -0.01em; }
+    .brand-tagline { font-size: var(--fs-200); color: var(--chrome-fg-muted); white-space: nowrap; }
 
-    .right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-    .pii { padding: 5px 11px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: 8px; font: inherit; font-size: 0.78rem; cursor: pointer; }
-    .pii:hover { background: var(--surface-2); }
-    .pii.on { background: var(--warn-weak); border-color: #fcd34d; color: #92400e; }
-    .mock { font-size: 0.7rem; color: var(--faint); border: 1px dashed var(--border-strong); border-radius: 999px; padding: 2px 9px; }
+    .chrome-search { min-width: 0; }
 
-    main { min-height: 0; overflow-y: auto; }
+    .chrome-right { display: flex; align-items: center; justify-content: flex-end; gap: var(--s-4); }
+    .icon-btn {
+      display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
+      border: none; background: transparent; color: var(--chrome-fg-muted); border-radius: var(--radius-sm);
+      cursor: pointer; transition: background 0.1s ease, color 0.1s ease;
+    }
+    .icon-btn:hover { background: var(--chrome-hover); color: #fff; }
+    .icon-btn:active { background: var(--chrome-pressed); }
+    .icon-btn.on { background: var(--chrome-pressed); color: #fff; }
+
+    .pii {
+      display: inline-flex; align-items: center; gap: var(--s-6); height: 32px; padding: 0 var(--s-10);
+      border: 1px solid transparent; background: var(--chrome-hover); color: #fff; border-radius: var(--radius-sm);
+      font: inherit; font-size: var(--fs-200); font-weight: var(--fw-semibold); cursor: pointer; margin-right: var(--s-4);
+      transition: background 0.1s ease;
+    }
+    .pii:hover { background: var(--chrome-pressed); }
+    .pii.on { background: #fff; color: var(--acn-90); }
+
+    .avatar {
+      display: inline-grid; place-items: center; width: 32px; height: 32px; margin-left: var(--s-6);
+      border-radius: var(--radius-pill); background: linear-gradient(135deg, var(--acn-40), var(--acn-70));
+      color: #fff; font-size: var(--fs-200); font-weight: var(--fw-bold); letter-spacing: 0.02em;
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.28);
+    }
+
+    /* ── Shell (rail + content) ──────────────────────────────────────────── */
+    .shell { display: grid; grid-template-columns: var(--rail-w) 1fr; min-height: 0; }
+    .rail {
+      display: flex; flex-direction: column; background: var(--rail-bg);
+      border-right: 1px solid var(--border); padding: var(--s-8) var(--s-8) var(--s-12);
+      transition: width 0.14s ease; overflow: hidden;
+    }
+    .rail.collapsed { width: var(--rail-w-collapsed); }
+    .shell:has(.rail.collapsed) { grid-template-columns: var(--rail-w-collapsed) 1fr; }
+
+    .nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      position: relative; display: flex; align-items: center; gap: var(--s-12); width: 100%; height: 40px;
+      padding: 0 var(--s-12); border: none; background: transparent; color: var(--muted);
+      border-radius: var(--radius); font: inherit; font-size: var(--fs-300); cursor: pointer; text-align: left;
+      transition: background 0.1s ease, color 0.1s ease;
+    }
+    .nav-item:hover { background: var(--surface-3); color: var(--text); }
+    .nav-item.active { background: var(--accent-weak); color: var(--accent); font-weight: var(--fw-semibold); }
+    .nav-item.active::before {
+      content: ''; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px;
+      background: var(--brand); border-radius: var(--radius-pill);
+    }
+    .nav-ico { display: inline-flex; flex: none; }
+    .nav-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; }
+    .rail.collapsed .nav-label { display: none; }
+    .rail.collapsed .nav-item { justify-content: center; padding: 0; gap: 0; }
+
+    .badge {
+      flex: none; min-width: 20px; height: 20px; padding: 0 var(--s-6); border-radius: var(--radius-pill);
+      background: var(--brand); color: var(--brand-fg); font-size: var(--fs-100); font-weight: var(--fw-bold);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .badge.dot { position: absolute; top: 6px; right: 8px; min-width: 8px; width: 8px; height: 8px; padding: 0; }
+
+    .rail-foot { margin-top: auto; display: flex; flex-direction: column; gap: var(--s-4); padding-top: var(--s-8); }
+    .tour-btn {
+      display: flex; align-items: center; gap: var(--s-12); width: 100%; height: 36px; padding: 0 var(--s-12);
+      border: none; background: transparent; color: var(--muted); border-radius: var(--radius); font: inherit;
+      font-size: var(--fs-300); cursor: pointer; text-align: left; transition: background 0.1s ease, color 0.1s ease;
+    }
+    .tour-btn:hover { background: var(--surface-3); color: var(--accent); }
+    .rail.collapsed .tour-btn { justify-content: center; padding: 0; gap: 0; }
+    .runtime { display: inline-flex; align-items: center; gap: var(--s-12); padding: 0 var(--s-12); height: 24px; font-size: var(--fs-200); color: var(--faint); }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px var(--ok-weak); flex: none; }
+    .rail.collapsed .runtime { justify-content: center; padding: 0; }
+
+    main { min-width: 0; min-height: 0; overflow-y: auto; background: var(--bg); }
   `,
 })
 export class AppComponent {
   readonly rt = inject(RuntimeService);
-  readonly view = signal<View>('inbox');
+  readonly shell = inject(ShellService);
+  readonly tour = inject(TourService);
+  readonly collapsed = signal(false);
+  readonly nav = NAV;
   readonly openCount = computed(() => this.rt.openActions().length);
 }
