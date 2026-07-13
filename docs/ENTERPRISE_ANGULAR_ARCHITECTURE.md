@@ -2,7 +2,9 @@
 
 ## 1. Introduction
 
-This guide is the authoritative architecture reference for the **skills-intel** application. It combines **Feature-Centric Clean Architecture**, **MVVM**, **Railway-Oriented Programming (ROP)**, and **Test-Driven Development (TDD)** to produce code that is maintainable, testable, and scalable without the ceremony of layer-first global structures.
+This guide is the authoritative architecture reference for this workspace's Angular app — **Runway** (`apps/runway`). It combines **Feature-Centric Clean Architecture**, **MVVM**, **Railway-Oriented Programming (ROP)**, and **Test-Driven Development (TDD)** to produce code that is maintainable, testable, and scalable without the ceremony of layer-first global structures.
+
+> **Workspace paths.** This repo is a pnpm monorepo; the Angular app root is `apps/runway/`. Where this guide writes `src/app/…`, read it as `apps/runway/src/app/…`. The foundation is owned here: `apps/runway/src/app/shared/kernel/result.ts` and `apps/runway/src/app/core/base/{observable-object,view-model.base,use-case.base}.ts`.
 
 ### Core philosophy
 

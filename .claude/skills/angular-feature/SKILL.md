@@ -1,16 +1,23 @@
 ---
 name: angular-feature
 description: >
-  Build or refactor Angular features for skills-intel following Feature-Centric Clean
-  Architecture + MVVM + ROP (Result<T,E>) + TDD. Use when creating new pages, components,
+  Build or refactor Angular features in this workspace (the Runway app, apps/runway)
+  following Feature-Centric Clean Architecture + MVVM + ROP (Result<T,E>) + TDD. Use when creating new pages, components,
   view models, use cases, ports, or restructuring existing features. Covers the full
   pattern from domain entity through smart component, including test-first discipline
   and typed error handling with Railway-Oriented Programming.
 ---
 
-# Angular Feature Development — skills-intel
+# Angular Feature Development — Runway (apps/runway)
 
 Full narrative with code examples: `docs/ENTERPRISE_ANGULAR_ARCHITECTURE.md`.
+
+> **Workspace note.** This repo is a pnpm monorepo; the Angular app root is `apps/runway/`.
+> Paths in the folder map (§2) and the reference table (§9) are shown from the workspace
+> root; feature-relative paths like `features/<name>/…` live under `apps/runway/src/app/`.
+> The architecture foundation is owned by this repo:
+> `apps/runway/src/app/shared/kernel/result.ts` and
+> `apps/runway/src/app/core/base/{observable-object,view-model.base,use-case.base}.ts`.
 
 ---
 
@@ -39,7 +46,7 @@ User Action → Component → ViewModel → Use Case → Repository (Port) → H
 ## 2. Feature Folder Structure
 
 ```
-src/app/
+apps/runway/src/app/
   features/
     <feature-name>/
       domain/
@@ -410,8 +417,8 @@ employee-card.component.ts
 
 | File | Purpose |
 |------|---------|
-| `src/app/core/base/observable-object.ts` | `ObservableObject` base — `setProperty()` / `updateProperty()` |
-| `src/app/core/base/view-model.base.ts` | `ViewModelBase` — `isLoading`, `error`, `executeWithResult` |
-| `src/app/core/base/use-case.base.ts` | `UseCase<TParam, TResult>` interface |
-| `src/app/shared/kernel/result.ts` | `Result<T,E>`, `ok`, `fail`, `isOk`, `match`, `NetworkError` |
+| `apps/runway/src/app/core/base/observable-object.ts` | `ObservableObject` base — `setProperty()` / `updateProperty()` |
+| `apps/runway/src/app/core/base/view-model.base.ts` | `ViewModelBase` — `isLoading`, `error`, `executeWithResult` |
+| `apps/runway/src/app/core/base/use-case.base.ts` | `UseCase<TParam, TResult>` interface |
+| `apps/runway/src/app/shared/kernel/result.ts` | `Result<T,E>`, `ok`, `fail`, `isOk`, `match`, `NetworkError` |
 | `docs/ENTERPRISE_ANGULAR_ARCHITECTURE.md` | Full narrative, rationale, and extended code examples |
