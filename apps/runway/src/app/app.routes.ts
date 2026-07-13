@@ -4,7 +4,7 @@ import { InboxPageComponent, ActionDetailPageComponent, InboxViewModel } from '.
 import { CasesPageComponent, CaseDetailPageComponent } from './features/cases';
 import { ComposePageComponent, ComposeViewModel } from './features/processes';
 import { HelpComponent } from './shell/help.component';
-import { SettingsComponent } from './shell/settings.component';
+import { SettingsPageComponent, SettingsViewModel } from './features/settings';
 
 /**
  * App routes.
@@ -28,6 +28,6 @@ export const routes: Routes = [
   { path: 'cases/:ref', component: CaseDetailPageComponent, title: 'Case — Runway' },
   { path: 'compose', component: ComposePageComponent, title: 'Compose — Runway', providers: [ComposeViewModel] },
   { path: 'help', component: HelpComponent, title: 'Help — Runway' },
-  { path: 'settings', component: SettingsComponent, title: 'Settings — Runway' },
+  { path: 'settings', component: SettingsPageComponent, title: 'Settings — Runway', providers: [SettingsViewModel] },
   { path: '**', redirectTo: 'home' },
 ];

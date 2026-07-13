@@ -1,40 +1,22 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
-import { ThemeService, type ThemePref } from './theme.service';
-import { ConfigService } from './config.service';
-import { RuntimeService } from '../runtime/runtime.service';
-import { IconComponent, type IconName } from '../shared/icon.component';
-import { READINESS_FIELD_DICTIONARY, CLASSIFICATION_LABEL, type Classification } from '../domain/data-dictionary';
-import type { Pathway } from '../domain/model';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { IconComponent } from '../../../shared/icon.component';
+import { READINESS_FIELD_DICTIONARY, CLASSIFICATION_LABEL, type Classification } from '../../../domain/data-dictionary';
+import type { Pathway } from '../../../domain/model';
+import { SettingsViewModel } from '../state/settings.view-model';
+import {
+  THEMES, PATHWAYS, INTEGRATIONS, CLASS_TONE, INTEG_LABEL, type IntegStatus,
+} from './settings-presentation';
 
-type IntegStatus = 'connected' | 'assisted' | 'off';
-interface Integration { name: string; desc: string; status: IntegStatus; icon: IconName; }
-
-const THEMES: { id: ThemePref; label: string; icon: IconName }[] = [
-  { id: 'light', label: 'Light', icon: 'eye' },
-  { id: 'dark', label: 'Dark', icon: 'eye-off' },
-  { id: 'system', label: 'System', icon: 'settings' },
-];
-const PATHWAYS: { id: Pathway; label: string }[] = [
-  { id: 'centre-level', label: 'Centre-level' },
-  { id: 'project-level', label: 'Project-level' },
-];
-const INTEGRATIONS: Integration[] = [
-  { name: 'Microsoft Graph', desc: 'Teams membership, M365 groups, Outlook mail', status: 'connected', icon: 'mail' },
-  { name: 'IAM / Directory', desc: 'Accounts, licences, mailing lists', status: 'connected', icon: 'person' },
-  { name: 'AssetHub', desc: 'Laptop & equipment provisioning', status: 'connected', icon: 'flash' },
-  { name: 'CDP RORO', desc: 'No API — agent prepares, a human executes', status: 'assisted', icon: 'bot' },
-  { name: 'MyTE', desc: 'WBS access — agent prepares, a human executes', status: 'assisted', icon: 'bot' },
-  { name: 'SharePoint', desc: 'Resource-list writes (output only)', status: 'off', icon: 'cases' },
-];
-const CLASS_TONE: Record<Classification, string> = { public: 'idle', internal: 'info', confidential: 'warn', personal: 'danger' };
-const INTEG_LABEL: Record<IntegStatus, string> = { connected: 'Connected', assisted: 'Human-assisted', off: 'Not configured' };
-
-/** Settings — Appearance (theme), Governance & data, Process configuration, Integrations. */
+/**
+ * Settings — Appearance (theme), Governance & data, Process configuration, and
+ * Integrations. Smart page: provides and binds the SettingsViewModel; every
+ * edit flows through a dedicated command use case.
+ */
 @Component({
   selector: 'rw-settings',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [SettingsViewModel],
   template: `
     <div class="wrap">
       <header class="head">
@@ -49,7 +31,7 @@ const INTEG_LABEL: Record<IntegStatus, string> = { connected: 'Connected', assis
           <div class="r-label"><span class="r-title">Theme</span><span class="r-desc">Light, dark, or follow your system.</span></div>
           <div class="seg">
             @for (t of themes; track t.id) {
-              <button type="button" [class.on]="theme.pref() === t.id" (click)="theme.set(t.id)"><rw-icon [name]="t.icon" [size]="15" />{{ t.label }}</button>
+              <button type="button" [class.on]="vm.appearance() === t.id" (click)="vm.setAppearance(t.id)"><rw-icon [name]="t.icon" [size]="15" />{{ t.label }}</button>
             }
           </div>
         </div>
@@ -60,11 +42,11 @@ const INTEG_LABEL: Record<IntegStatus, string> = { connected: 'Connected', assis
         <div class="c-head"><rw-icon name="alert" [size]="18" /><div><h2>Governance &amp; data</h2><p>Classification, PII protection, and retention.</p></div></div>
         <div class="row">
           <div class="r-label"><span class="r-title">Reveal personal data (PII)</span><span class="r-desc">Personal fields are masked by default. Revealing is an authorization decision — audited.</span></div>
-          <button type="button" class="switch" [class.on]="rt.piiAuthorized()" (click)="rt.togglePii()" role="switch" [attr.aria-checked]="rt.piiAuthorized()"><span class="knob"></span></button>
+          <button type="button" class="switch" [class.on]="vm.piiRevealed()" (click)="vm.togglePii()" role="switch" [attr.aria-checked]="vm.piiRevealed()"><span class="knob"></span></button>
         </div>
         <div class="row">
           <div class="r-label"><span class="r-title">Event-log retention</span><span class="r-desc">Set by data policy; the append-only log holds PII (names, dates, EIDs).</span></div>
-          <select class="select" [value]="retention()" (change)="retention.set($any($event.target).value)">
+          <select class="select" [value]="vm.retentionDays()" (change)="onRetention($event)">
             <option value="90">90 days</option><option value="180">180 days</option><option value="365">1 year</option><option value="1825">5 years</option>
           </select>
         </div>
@@ -92,12 +74,12 @@ const INTEG_LABEL: Record<IntegStatus, string> = { connected: 'Connected', assis
           @for (p of pathways; track p.id) {
             <div class="pcol">
               <div class="pcol-head">{{ p.label }}</div>
-              <label class="field"><span>Requester</span><input type="text" [value]="cfg.get(p.id).requester" (input)="set(p.id, 'requester', $event)" /></label>
-              <label class="field"><span>Escalation contact</span><input type="text" [value]="cfg.get(p.id).escalation" (input)="set(p.id, 'escalation', $event)" /></label>
-              <label class="field"><span>Leads / recipients</span><input type="text" [value]="cfg.get(p.id).leads" (input)="set(p.id, 'leads', $event)" /></label>
+              <label class="field"><span>Requester</span><input type="text" [value]="vm.configFor(p.id).requester" (input)="set(p.id, 'requester', $event)" /></label>
+              <label class="field"><span>Escalation contact</span><input type="text" [value]="vm.configFor(p.id).escalation" (input)="set(p.id, 'escalation', $event)" /></label>
+              <label class="field"><span>Leads / recipients</span><input type="text" [value]="vm.configFor(p.id).leads" (input)="set(p.id, 'leads', $event)" /></label>
               <div class="field2">
-                <label class="field"><span>Remind after (h)</span><input type="number" [value]="cfg.get(p.id).remindAfterH" (input)="setNum(p.id, 'remindAfterH', $event)" /></label>
-                <label class="field"><span>Escalate after (h)</span><input type="number" [value]="cfg.get(p.id).escalateAfterH" (input)="setNum(p.id, 'escalateAfterH', $event)" /></label>
+                <label class="field"><span>Remind after (h)</span><input type="number" [value]="vm.configFor(p.id).remindAfterH" (input)="setNum(p.id, 'remindAfterH', $event)" /></label>
+                <label class="field"><span>Escalate after (h)</span><input type="number" [value]="vm.configFor(p.id).escalateAfterH" (input)="setNum(p.id, 'escalateAfterH', $event)" /></label>
               </div>
             </div>
           }
@@ -185,24 +167,24 @@ const INTEG_LABEL: Record<IntegStatus, string> = { connected: 'Connected', assis
     @media (max-width: 720px) { .pconfig, .integs { grid-template-columns: 1fr; } }
   `,
 })
-export class SettingsComponent {
-  readonly theme = inject(ThemeService);
-  readonly cfg = inject(ConfigService);
-  readonly rt = inject(RuntimeService);
+export class SettingsPageComponent {
+  readonly vm = inject(SettingsViewModel);
   readonly themes = THEMES;
   readonly pathways = PATHWAYS;
   readonly integrations = INTEGRATIONS;
   readonly dictionary = READINESS_FIELD_DICTIONARY;
-  readonly retention = signal('365');
 
   classLabel(c: Classification): string { return CLASSIFICATION_LABEL[c]; }
   classTone(c: Classification): string { return CLASS_TONE[c]; }
   integLabel(s: IntegStatus): string { return INTEG_LABEL[s]; }
 
+  onRetention(ev: Event): void {
+    this.vm.setRetention(Number((ev.target as HTMLSelectElement).value) || 0);
+  }
   set(p: Pathway, key: 'requester' | 'escalation' | 'leads', ev: Event): void {
-    this.cfg.update(p, { [key]: (ev.target as HTMLInputElement).value });
+    this.vm.updateConfig(p, { [key]: (ev.target as HTMLInputElement).value });
   }
   setNum(p: Pathway, key: 'remindAfterH' | 'escalateAfterH', ev: Event): void {
-    this.cfg.update(p, { [key]: Number((ev.target as HTMLInputElement).value) || 0 });
+    this.vm.updateConfig(p, { [key]: Number((ev.target as HTMLInputElement).value) || 0 });
   }
 }
