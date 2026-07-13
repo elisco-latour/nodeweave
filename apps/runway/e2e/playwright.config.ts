@@ -1,7 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/// <reference types="node" />
-
 /**
  * Runway Playwright config — journeys (e2e), accessibility (a11y), and
  * performance (perf) projects, mirroring the nodeweave test structure.
