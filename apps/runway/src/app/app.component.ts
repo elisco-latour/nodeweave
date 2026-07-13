@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { RuntimeService } from './runtime/runtime.service';
+import { GovernanceService } from './core/governance/governance.service';
 import { IconComponent, type IconName } from './shared/icon.component';
 import { SearchComponent } from './shell/search.component';
 import { TourComponent } from './shell/tour.component';
@@ -41,10 +42,10 @@ const NAV: NavItem[] = [
       <div class="chrome-search"><rw-search /></div>
 
       <div class="chrome-right">
-        <button type="button" class="pii" [class.on]="rt.piiAuthorized()" (click)="rt.togglePii()"
+        <button type="button" class="pii" [class.on]="gov.piiRevealed()" (click)="gov.toggle()"
                 title="Personal data is masked by classification until an authorized viewer reveals it">
-          <rw-icon [name]="rt.piiAuthorized() ? 'eye-off' : 'eye'" [size]="18" />
-          <span>{{ rt.piiAuthorized() ? 'Hide PII' : 'Reveal PII' }}</span>
+          <rw-icon [name]="gov.piiRevealed() ? 'eye-off' : 'eye'" [size]="18" />
+          <span>{{ gov.piiRevealed() ? 'Hide PII' : 'Reveal PII' }}</span>
         </button>
         <rw-notifications />
         <a class="icon-btn" routerLink="/settings" routerLinkActive="on" title="Settings" aria-label="Settings"><rw-icon name="settings" [size]="20" /></a>
@@ -180,6 +181,7 @@ const NAV: NavItem[] = [
 })
 export class AppComponent {
   readonly rt = inject(RuntimeService);
+  readonly gov = inject(GovernanceService);
   readonly tour = inject(TourService);
   readonly #theme = inject(ThemeService); // instantiate so the saved theme is applied on boot
   readonly collapsed = signal(false);

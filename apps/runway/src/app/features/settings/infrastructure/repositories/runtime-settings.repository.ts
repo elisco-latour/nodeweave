@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { RuntimeService } from '../../../../runtime/runtime.service';
+import { GovernanceService } from '../../../../core/governance/governance.service';
 import { ThemeService } from '../../../../shell/theme.service';
 import { loadJson, saveJson } from '../../../../runtime/persist';
 import type { Pathway } from '../../../../domain/model';
@@ -17,7 +17,7 @@ const DEFAULT_RETENTION_DAYS = 365;
 
 /**
  * Settings facade over the preference stores: appearance (ThemeService, applied
- * app-wide), governance (RuntimeService PII), event-log retention, and the
+ * app-wide), governance (GovernanceService PII), event-log retention, and the
  * per-pathway process config (persisted here — this repository is now the config
  * store the old ConfigService used to be). Swap for an HTTP implementation when
  * the backend lands; the port and everything above it stay unchanged.
@@ -25,14 +25,14 @@ const DEFAULT_RETENTION_DAYS = 365;
 @Injectable({ providedIn: 'root' })
 export class RuntimeSettingsRepository implements ISettingsRepository {
   readonly #theme = inject(ThemeService);
-  readonly #rt = inject(RuntimeService);
+  readonly #gov = inject(GovernanceService);
 
   readonly #config = signal<Record<Pathway, PathwayConfig>>(loadJson('config', DEFAULT_CONFIG));
   readonly #retention = signal<number>(loadJson('retention', DEFAULT_RETENTION_DAYS));
 
   readonly #view: SettingsView = {
     appearance: computed<ThemePreference>(() => this.#theme.pref()),
-    piiRevealed: computed(() => this.#rt.piiAuthorized()),
+    piiRevealed: computed(() => this.#gov.piiRevealed()),
     retentionDays: this.#retention.asReadonly(),
     pathwayConfig: this.#config.asReadonly(),
   };
@@ -46,7 +46,7 @@ export class RuntimeSettingsRepository implements ISettingsRepository {
   }
 
   togglePiiReveal(): void {
-    this.#rt.togglePii();
+    this.#gov.toggle();
   }
 
   setRetentionDays(days: number): void {

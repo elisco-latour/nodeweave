@@ -32,9 +32,6 @@ export class RuntimeService {
   readonly #events = signal<DomainEvent[]>(loadJson('events', seedEvents()));
   readonly #actions = signal<ActionItem[]>(loadJson('actions', seedActions()));
 
-  /** Governance: PII is masked until an authorized viewer reveals it (not persisted). */
-  readonly piiAuthorized = signal(false);
-
   readonly cases = this.#cases.asReadonly();
   readonly actions = this.#actions.asReadonly();
   readonly allEvents = this.#events.asReadonly();
@@ -72,10 +69,6 @@ export class RuntimeService {
 
   confidence(rec: ReadinessRecord): number {
     return confidenceOf(rec);
-  }
-
-  togglePii(): void {
-    this.piiAuthorized.update((v) => !v);
   }
 
   /** Approve/handle an action: log it, complete any human-task items, re-derive state. */

@@ -1,9 +1,8 @@
 import { Component, ChangeDetectionStrategy, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { RuntimeService } from '../../../../runtime/runtime.service';
+import { GovernanceService } from '../../../../core/governance/governance.service';
 import { StateChipComponent } from '../../../../shared/state-chip.component';
 import { IconComponent } from '../../../../shared/icon.component';
-import { maskPersonal } from '../../../../domain/data-dictionary';
 import type { Action } from '../../domain/action.entity';
 import { InboxViewModel } from '../../state/inbox.view-model';
 import { KIND_TONE, KIND_LABEL, KIND_CTA, KIND_ICON, STATUS_LABEL, actionAgo } from '../action-presentation';
@@ -128,7 +127,7 @@ import { KIND_TONE, KIND_LABEL, KIND_CTA, KIND_ICON, STATUS_LABEL, actionAgo } f
 export class ActionDetailPageComponent {
   readonly actionId = input.required<string>();
   readonly vm = inject(InboxViewModel);
-  readonly #rt = inject(RuntimeService); // PII read — cross-cutting; to be extracted into a GovernanceService/port.
+  readonly #gov = inject(GovernanceService);
   readonly action = computed<Action | undefined>(() => this.vm.byId(this.actionId()));
 
   tone(a: Action) { return KIND_TONE[a.kind]; }
@@ -137,5 +136,5 @@ export class ActionDetailPageComponent {
   cta(a: Action) { return KIND_CTA[a.kind]; }
   statusLabel(a: Action) { return STATUS_LABEL[a.status]; }
   ago(iso: string) { return actionAgo(iso); }
-  joiner(a: Action): string { return maskPersonal(a.joinerName, this.#rt.piiAuthorized()); }
+  joiner(a: Action): string { return this.#gov.mask(a.joinerName); }
 }

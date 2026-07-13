@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy, computed, effect, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { RuntimeService } from '../../../../runtime/runtime.service';
-import { maskPersonal } from '../../../../domain/data-dictionary';
+import { GovernanceService } from '../../../../core/governance/governance.service';
 import { IconComponent } from '../../../../shared/icon.component';
 import { CaseDetailViewModel } from '../../state/case-detail.view-model';
 import { CaseDetailComponent } from '../components/case-detail.component';
@@ -9,10 +8,8 @@ import { CaseDetailComponent } from '../components/case-detail.component';
 /**
  * Routed case detail (/cases/:ref). `ref` is bound from the route param
  * (withComponentInputBinding); an effect loads it into the ViewModel. Smart
- * page: provides the CaseDetailViewModel shared with the readiness view.
- *
- * TODO (strangler): PII masking reads RuntimeService.piiAuthorized() directly —
- * becomes a GovernanceService/port (same cross-cutting debt as the actions pages).
+ * page: provides the CaseDetailViewModel shared with the readiness view. PII
+ * masking goes through the GovernanceService.
  */
 @Component({
   selector: 'rw-case-detail-page',
@@ -49,11 +46,11 @@ import { CaseDetailComponent } from '../components/case-detail.component';
 export class CaseDetailPageComponent {
   readonly ref = input.required<string>();
   readonly vm = inject(CaseDetailViewModel);
-  readonly #rt = inject(RuntimeService);
+  readonly #gov = inject(GovernanceService);
 
   readonly joinerName = computed(() => {
     const c = this.vm.case();
-    return c ? maskPersonal(c.joinerName, this.#rt.piiAuthorized()) : '';
+    return c ? this.#gov.mask(c.joinerName) : '';
   });
 
   constructor() {

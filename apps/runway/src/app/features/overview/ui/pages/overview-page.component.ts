@@ -1,9 +1,8 @@
 import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { RuntimeService } from '../../../../runtime/runtime.service';
+import { GovernanceService } from '../../../../core/governance/governance.service';
 import { StateChipComponent, stateTone, type Tone } from '../../../../shared/state-chip.component';
 import { IconComponent, type IconName } from '../../../../shared/icon.component';
-import { maskPersonal } from '../../../../domain/data-dictionary';
 import { OverviewViewModel } from '../../state/overview.view-model';
 import type { Case } from '../../../cases';
 
@@ -13,9 +12,7 @@ interface Tile { label: string; value: number; icon: IconName; tone: Tone; link:
  * Overview dashboard — onboarding readiness at a glance (the reporting surface).
  * Smart page: provides and binds the OverviewViewModel; the tiles and
  * distribution legend are presentation projections of the summary read model.
- *
- * TODO (strangler): PII masking reads RuntimeService.piiAuthorized() directly —
- * becomes a GovernanceService/port (same cross-cutting debt as the other pages).
+ * PII masking goes through the GovernanceService.
  */
 @Component({
   selector: 'rw-home',
@@ -150,7 +147,7 @@ interface Tile { label: string; value: number; icon: IconName; tone: Tone; link:
 })
 export class OverviewPageComponent {
   readonly vm = inject(OverviewViewModel);
-  readonly #rt = inject(RuntimeService);
+  readonly #gov = inject(GovernanceService);
 
   readonly tiles = computed<Tile[]>(() => {
     const s = this.vm.summary();
@@ -175,7 +172,7 @@ export class OverviewPageComponent {
     ];
   });
 
-  name(c: Case): string { return maskPersonal(c.joinerName, this.#rt.piiAuthorized()); }
+  name(c: Case): string { return this.#gov.mask(c.joinerName); }
   tone(c: Case): Tone { return stateTone(c.state); }
   day(iso: string): string { return String(new Date(iso).getDate()); }
   mon(iso: string): string { return new Date(iso).toLocaleString(undefined, { month: 'short' }); }

@@ -1,9 +1,8 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { RuntimeService } from '../../../../runtime/runtime.service';
+import { GovernanceService } from '../../../../core/governance/governance.service';
 import { StateChipComponent, stateTone } from '../../../../shared/state-chip.component';
 import { IconComponent } from '../../../../shared/icon.component';
-import { maskPersonal } from '../../../../domain/data-dictionary';
 import { CasesViewModel } from '../../state/cases.view-model';
 import { FILTERS, SORTS, type CaseFilterId, type CaseSortId } from '../../application/queries/case-query';
 import type { CreateCaseInput } from '../../application/ports/case.repository';
@@ -17,11 +16,8 @@ function csvCell(v: unknown): string {
 
 /**
  * Cases — the readiness registry: a command bar and an elevated, paginated
- * table. Smart page: provides and binds the CasesViewModel.
- *
- * TODO (strangler): PII masking still reads RuntimeService.piiAuthorized()
- * directly — this becomes a GovernanceService/port (same cross-cutting debt as
- * the actions pages).
+ * table. Smart page: provides and binds the CasesViewModel. PII masking goes
+ * through the GovernanceService.
  */
 @Component({
   selector: 'rw-cases',
@@ -169,7 +165,7 @@ function csvCell(v: unknown): string {
 })
 export class CasesPageComponent {
   readonly vm = inject(CasesViewModel);
-  readonly #rt = inject(RuntimeService);
+  readonly #gov = inject(GovernanceService);
   readonly #router = inject(Router);
   readonly filters = FILTERS;
   readonly sorts = SORTS;
@@ -187,7 +183,7 @@ export class CasesPageComponent {
   onSearch(ev: Event): void { this.vm.setSearch((ev.target as HTMLInputElement).value); }
   open(ref: string): void { this.#router.navigate(['/cases', ref]); }
 
-  name(c: Case): string { return maskPersonal(c.joinerName, this.#rt.piiAuthorized()); }
+  name(c: Case): string { return this.#gov.mask(c.joinerName); }
   tone(c: Case) { return stateTone(c.state); }
 
   refresh(): void {
@@ -205,12 +201,11 @@ export class CasesPageComponent {
   }
 
   exportCsv(): void {
-    const pii = this.#rt.piiAuthorized();
     const header = ['Case', 'Joiner', 'Role', 'Location', 'Pathway', 'State', 'Readiness %', 'Day 1', 'Ready by'];
     const lines = [header.join(',')];
     for (const c of this.vm.allMatched()) {
       lines.push([
-        c.caseRef, maskPersonal(c.joinerName, pii), c.role, c.location, c.pathway,
+        c.caseRef, this.#gov.mask(c.joinerName), c.role, c.location, c.pathway,
         c.stateLabel, c.confidencePct, c.startDate, c.readinessDeadline,
       ].map(csvCell).join(','));
     }

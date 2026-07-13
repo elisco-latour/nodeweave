@@ -2,9 +2,8 @@ import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/c
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs';
-import { RuntimeService } from '../../../../runtime/runtime.service';
+import { GovernanceService } from '../../../../core/governance/governance.service';
 import { IconComponent, type IconName } from '../../../../shared/icon.component';
-import { maskPersonal } from '../../../../domain/data-dictionary';
 import type { Action } from '../../domain/action.entity';
 import { InboxViewModel } from '../../state/inbox.view-model';
 import { KIND_TONE, KIND_ICON, INBOX_SORTS, KIND_FILTERS, actionAgo } from '../action-presentation';
@@ -135,7 +134,7 @@ import { KIND_TONE, KIND_ICON, INBOX_SORTS, KIND_FILTERS, actionAgo } from '../a
 })
 export class InboxPageComponent {
   readonly vm = inject(InboxViewModel);
-  readonly #rt = inject(RuntimeService); // PII/governance read — cross-cutting; to be extracted into a GovernanceService/port.
+  readonly #gov = inject(GovernanceService);
   readonly #router = inject(Router);
   readonly inboxSorts = INBOX_SORTS;
   readonly kindFilters = KIND_FILTERS;
@@ -152,5 +151,5 @@ export class InboxPageComponent {
   tone(a: Action) { return KIND_TONE[a.kind]; }
   icon(a: Action): IconName { return KIND_ICON[a.kind]; }
   ago(iso: string): string { return actionAgo(iso); }
-  joiner(a: Action): string { return maskPersonal(a.joinerName, this.#rt.piiAuthorized()); }
+  joiner(a: Action): string { return this.#gov.mask(a.joinerName); }
 }

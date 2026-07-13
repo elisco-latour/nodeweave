@@ -1,8 +1,8 @@
 import { Component, ChangeDetectionStrategy, computed, inject, signal, viewChild, ElementRef } from '@angular/core';
 import { RuntimeService } from '../runtime/runtime.service';
+import { GovernanceService } from '../core/governance/governance.service';
 import { ShellService } from './shell.service';
 import { IconComponent, type IconName } from '../shared/icon.component';
-import { maskPersonal } from '../domain/data-dictionary';
 import { READINESS_STATE_LABEL } from '../domain/model';
 
 interface Hit {
@@ -98,6 +98,7 @@ const ACTION_ICON: Record<string, IconName> = { approval: 'check-circle', decisi
 })
 export class SearchComponent {
   readonly #rt = inject(RuntimeService);
+  readonly #gov = inject(GovernanceService);
   readonly #shell = inject(ShellService);
   readonly input = viewChild<ElementRef<HTMLInputElement>>('input');
 
@@ -108,7 +109,6 @@ export class SearchComponent {
   readonly hits = computed<Hit[]>(() => {
     const q = this.query().trim().toLowerCase();
     if (!q) return [];
-    const pii = this.#rt.piiAuthorized();
     const terms = q.split(/\s+/);
     const match = (hay: string) => terms.every((t) => hay.includes(t));
 
@@ -118,7 +118,7 @@ export class SearchComponent {
       .map((c) => ({
         key: `c-${c.caseRef}`, kind: 'case', typeLabel: 'Case',
         icon: c.pathway === 'project-level' ? 'branch' : 'cases',
-        title: maskPersonal(c.joinerName, pii),
+        title: this.#gov.mask(c.joinerName),
         sub: `${c.caseRef} · ${c.role} · ${READINESS_STATE_LABEL[c.state]}`,
         caseRef: c.caseRef,
       }));
