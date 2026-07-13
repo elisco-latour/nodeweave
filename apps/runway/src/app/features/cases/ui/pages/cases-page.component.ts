@@ -1,54 +1,53 @@
-import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { RuntimeService } from '../runtime/runtime.service';
-import { IntakeWizardComponent } from '../shell/intake-wizard.component';
-import { StateChipComponent, stateTone } from '../shared/state-chip.component';
-import { IconComponent } from '../shared/icon.component';
-import { maskPersonal } from '../domain/data-dictionary';
-import { READINESS_STATE_LABEL, type ReadinessRecord } from '../domain/model';
-import { queryCases, countByFilter, FILTERS, SORTS, type FilterId, type SortId } from './case-query';
-
-const TABLE_PAGE = 25;
+import { RuntimeService } from '../../../../runtime/runtime.service';
+import { StateChipComponent, stateTone } from '../../../../shared/state-chip.component';
+import { IconComponent } from '../../../../shared/icon.component';
+import { maskPersonal } from '../../../../domain/data-dictionary';
+import { CasesViewModel } from '../../state/cases.view-model';
+import { FILTERS, SORTS, type CaseFilterId, type CaseSortId } from '../../application/queries/case-query';
+import type { CreateCaseInput } from '../../application/ports/case.repository';
+import type { Case } from '../../domain/case.entity';
+import { IntakeWizardComponent } from '../components/intake-wizard.component';
 
 function csvCell(v: unknown): string {
   const s = String(v ?? '');
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-/** Cases — the readiness registry: a calm header, a command bar, and an elevated, paginated table. */
+/**
+ * Cases — the readiness registry: a command bar and an elevated, paginated
+ * table. Smart page: provides and binds the CasesViewModel.
+ *
+ * TODO (strangler): PII masking still reads RuntimeService.piiAuthorized()
+ * directly — this becomes a GovernanceService/port (same cross-cutting debt as
+ * the actions pages).
+ */
 @Component({
   selector: 'rw-cases',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IntakeWizardComponent, StateChipComponent, IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [CasesViewModel],
   template: `
     <div class="surface">
-      <!--<header class="head">
-        <div>
-          <h1>Cases</h1>
-          <p class="sub">Every onboarding — the canonical readiness record, from intake through to Day 1.</p>
-        </div>
-        <span class="count">{{ result().matched }} shown · {{ cases().length }} total</span>
-      </header>-->
-
       <div class="cbar">
         <button type="button" class="cmd" (click)="refresh()"><rw-icon name="refresh" [size]="17" [class.spin]="refreshing()" />Refresh</button>
         <button type="button" class="cmd" (click)="exportCsv()"><rw-icon name="download" [size]="17" />Export</button>
         <label class="qsearch">
           <rw-icon name="search" [size]="15" />
-          <input type="text" [value]="search()" (input)="onSearch($event)" placeholder="Filter this list" aria-label="Filter cases" />
+          <input type="text" [value]="vm.search()" (input)="onSearch($event)" placeholder="Filter this list" aria-label="Filter cases" />
         </label>
         <span class="grow"></span>
         <label class="picker">
           <rw-icon name="sort" [size]="16" />
-          <select [value]="sort()" (change)="setSort($any($event.target).value)" aria-label="Sort cases">
+          <select [value]="vm.sort()" (change)="setSort($any($event.target).value)" aria-label="Sort cases">
             @for (s of sorts; track s.id) { <option [value]="s.id">{{ s.label }}</option> }
           </select>
         </label>
         <label class="picker">
           <rw-icon name="filter" [size]="16" />
-          <select [value]="filterId()" (change)="setFilter($any($event.target).value)" aria-label="Filter cases">
-            @for (f of filters; track f.id) { <option [value]="f.id">{{ f.label }} ({{ counts()[f.id] }})</option> }
+          <select [value]="vm.filterId()" (change)="setFilter($any($event.target).value)" aria-label="Filter cases">
+            @for (f of filters; track f.id) { <option [value]="f.id">{{ f.label }} ({{ vm.counts()[f.id] }})</option> }
           </select>
         </label>
         <button type="button" class="btn primary" (click)="wizardOpen.set(true)"><rw-icon name="add" [size]="16" />New case</button>
@@ -59,25 +58,25 @@ function csvCell(v: unknown): string {
           <table>
             <thead>
               <tr>
-                <th class="sortable" (click)="setSort('name')">Joiner @if (sort() === 'name') { <rw-icon name="chevron-down" [size]="13" /> }</th>
+                <th class="sortable" (click)="setSort('name')">Joiner @if (vm.sort() === 'name') { <rw-icon name="chevron-down" [size]="13" /> }</th>
                 <th>Case</th>
                 <th>Role</th>
                 <th>Pathway</th>
                 <th>State</th>
-                <th class="sortable" (click)="setSort('readiness')">Readiness @if (sort() === 'readiness') { <rw-icon name="chevron-down" [size]="13" /> }</th>
-                <th class="sortable" (click)="setSort('deadline')">Ready by @if (sort() === 'deadline') { <rw-icon name="chevron-down" [size]="13" /> }</th>
+                <th class="sortable" (click)="setSort('readiness')">Readiness @if (vm.sort() === 'readiness') { <rw-icon name="chevron-down" [size]="13" /> }</th>
+                <th class="sortable" (click)="setSort('deadline')">Ready by @if (vm.sort() === 'deadline') { <rw-icon name="chevron-down" [size]="13" /> }</th>
                 <th>Owner</th>
               </tr>
             </thead>
             <tbody>
-              @for (c of result().rows; track c.caseRef) {
+              @for (c of vm.result().rows; track c.caseRef) {
                 <tr (click)="open(c.caseRef)">
                   <td class="name">{{ name(c) }}</td>
                   <td class="mono">{{ c.caseRef }}</td>
                   <td>{{ c.role }}</td>
                   <td>{{ c.pathway === 'project-level' ? 'Project' : 'Centre' }}</td>
-                  <td><rw-chip [label]="label(c)" [tone]="tone(c)" /></td>
-                  <td><span class="rcell"><span class="mini"><span class="mini-fill" [style.width.%]="pct(c)"></span></span>{{ pct(c) }}%</span></td>
+                  <td><rw-chip [label]="c.stateLabel" [tone]="tone(c)" /></td>
+                  <td><span class="rcell"><span class="mini"><span class="mini-fill" [style.width.%]="c.confidencePct"></span></span>{{ c.confidencePct }}%</span></td>
                   <td class="mono">{{ c.readinessDeadline }}</td>
                   <td>{{ c.owners.current || '—' }}</td>
                 </tr>
@@ -88,27 +87,23 @@ function csvCell(v: unknown): string {
           </table>
         </div>
         <div class="pager">
-          <span class="range">{{ rangeFrom() }}–{{ rangeTo() }} of {{ result().matched }}</span>
+          <span class="range">{{ vm.rangeFrom() }}–{{ vm.rangeTo() }} of {{ vm.result().matched }}</span>
           <span class="grow"></span>
-          <button type="button" class="pbtn" [disabled]="result().page === 0" (click)="prevPage()"><rw-icon name="chevron-right" [size]="16" class="flip" /></button>
-          <span class="pnum">{{ result().page + 1 }} / {{ result().pageCount }}</span>
-          <button type="button" class="pbtn" [disabled]="result().page >= result().pageCount - 1" (click)="nextPage()"><rw-icon name="chevron-right" [size]="16" /></button>
+          <button type="button" class="pbtn" [disabled]="vm.result().page === 0" (click)="vm.prevPage()"><rw-icon name="chevron-right" [size]="16" class="flip" /></button>
+          <span class="pnum">{{ vm.result().page + 1 }} / {{ vm.result().pageCount }}</span>
+          <button type="button" class="pbtn" [disabled]="vm.result().page >= vm.result().pageCount - 1" (click)="vm.nextPage()"><rw-icon name="chevron-right" [size]="16" /></button>
         </div>
       </div>
     </div>
 
     @if (wizardOpen()) {
-      <rw-intake-wizard (close)="wizardOpen.set(false)" (created)="onCreated($event)" />
+      <rw-intake-wizard (close)="wizardOpen.set(false)" (submit)="onSubmit($event)" />
     }
   `,
   styles: `
     :host { display: block; height: 100%; min-height: 0; }
     .surface { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--bg); }
 
-    .head { flex: none; display: flex; align-items: flex-start; justify-content: space-between; padding: var(--s-24) var(--s-24) var(--s-12); }
-    h1 { margin: 0; font-family: var(--font-display); font-size: var(--fs-600); font-weight: var(--fw-bold); letter-spacing: -0.02em; }
-    .sub { margin: var(--s-4) 0 0; color: var(--muted); font-size: var(--fs-300); }
-    .count { font-size: var(--fs-200); color: var(--faint); font-variant-numeric: tabular-nums; white-space: nowrap; margin-top: var(--s-6); }
     .cbar {
       flex: none;
       display: flex;
@@ -119,15 +114,6 @@ function csvCell(v: unknown): string {
       border-bottom: 1px solid var(--border);
       font-size: var(--fs-300);
     }
-    .cmdbar { 
-      flex: none; 
-      display: flex; 
-      align-items: center;
-      gap: var(--s-4);
-      padding: var(--s-24) var(--s-12);
-      flex-wrap: wrap; 
-    }
-    .divider { width: 1px; height: 20px; background: var(--border); margin: 0 var(--s-8); }
     .grow { flex: 1; }
     .btn { display: inline-flex; align-items: center; gap: var(--s-6); height: 32px; padding: 0 var(--s-12); border: 1px solid transparent; border-radius: var(--radius-sm); font: inherit; font-size: var(--fs-300); font-weight: var(--fw-semibold); cursor: pointer; box-shadow: none; }
     .btn.primary { background: var(--brand); color: #fff; }
@@ -148,12 +134,9 @@ function csvCell(v: unknown): string {
     .tablecard {
       flex: 1;
       min-height: 0;
-      /* margin: 0 var(--s-24) var(--s-24); */
       display: flex;
       flex-direction: column;
       background: var(--surface);
-      /* border: 1px solid var(--border); */
-      /* border-radius: var(--radius-lg); */
       box-shadow: var(--shadow-4);
       overflow: hidden;
     }
@@ -184,16 +167,13 @@ function csvCell(v: unknown): string {
     @keyframes rw-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
   `,
 })
-export class CasesComponent {
+export class CasesPageComponent {
+  readonly vm = inject(CasesViewModel);
   readonly #rt = inject(RuntimeService);
   readonly #router = inject(Router);
   readonly filters = FILTERS;
   readonly sorts = SORTS;
 
-  readonly filterId = signal<FilterId>('all');
-  readonly sort = signal<SortId>('deadline');
-  readonly search = signal('');
-  readonly page = signal(0);
   readonly wizardOpen = signal(false);
   readonly refreshing = signal(false);
 
@@ -202,45 +182,36 @@ export class CasesComponent {
     if (inject(ActivatedRoute).snapshot.queryParamMap.get('create')) this.wizardOpen.set(true);
   }
 
-  readonly cases = computed(() => this.#rt.cases());
-  readonly counts = computed(() => countByFilter(this.cases()));
-  readonly result = computed(() =>
-    queryCases(this.cases(), { search: this.search(), filter: this.filterId(), sort: this.sort(), page: this.page(), pageSize: TABLE_PAGE }));
-  readonly rangeFrom = computed(() => (this.result().matched === 0 ? 0 : this.result().page * TABLE_PAGE + 1));
-  readonly rangeTo = computed(() => Math.min((this.result().page + 1) * TABLE_PAGE, this.result().matched));
-
-  setFilter(f: FilterId): void { this.filterId.set(f); this.page.set(0); }
-  setSort(s: SortId): void { this.sort.set(s); this.page.set(0); }
-  onSearch(ev: Event): void { this.search.set((ev.target as HTMLInputElement).value); this.page.set(0); }
-  prevPage(): void { this.page.update((p) => Math.max(0, p - 1)); }
-  nextPage(): void { this.page.update((p) => Math.min(this.result().pageCount - 1, p + 1)); }
+  setFilter(f: CaseFilterId): void { this.vm.setFilter(f); }
+  setSort(s: CaseSortId): void { this.vm.setSort(s); }
+  onSearch(ev: Event): void { this.vm.setSearch((ev.target as HTMLInputElement).value); }
   open(ref: string): void { this.#router.navigate(['/cases', ref]); }
 
-  name(c: ReadinessRecord): string { return maskPersonal(c.joinerName, this.#rt.piiAuthorized()); }
-  label(c: ReadinessRecord): string { return READINESS_STATE_LABEL[c.state]; }
-  tone(c: ReadinessRecord) { return stateTone(c.state); }
-  pct(c: ReadinessRecord): number { return Math.round(this.#rt.confidence(c) * 100); }
+  name(c: Case): string { return maskPersonal(c.joinerName, this.#rt.piiAuthorized()); }
+  tone(c: Case) { return stateTone(c.state); }
 
   refresh(): void {
-    this.#rt.reload();
+    void this.vm.refresh();
     this.refreshing.set(true);
     setTimeout(() => this.refreshing.set(false), 600);
   }
 
-  onCreated(caseRef: string): void {
-    this.wizardOpen.set(false);
-    this.#router.navigate(['/cases', caseRef]);
+  async onSubmit(input: CreateCaseInput): Promise<void> {
+    const created = await this.vm.create(input);
+    if (created) {
+      this.wizardOpen.set(false);
+      this.#router.navigate(['/cases', created.caseRef]);
+    }
   }
 
   exportCsv(): void {
     const pii = this.#rt.piiAuthorized();
-    const matched = queryCases(this.cases(), { search: this.search(), filter: this.filterId(), sort: this.sort(), page: 0, pageSize: Number.MAX_SAFE_INTEGER }).rows;
     const header = ['Case', 'Joiner', 'Role', 'Location', 'Pathway', 'State', 'Readiness %', 'Day 1', 'Ready by'];
     const lines = [header.join(',')];
-    for (const c of matched) {
+    for (const c of this.vm.allMatched()) {
       lines.push([
         c.caseRef, maskPersonal(c.joinerName, pii), c.role, c.location, c.pathway,
-        READINESS_STATE_LABEL[c.state], this.pct(c), c.startDate, c.readinessDeadline,
+        c.stateLabel, c.confidencePct, c.startDate, c.readinessDeadline,
       ].map(csvCell).join(','));
     }
     const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });

@@ -1,9 +1,7 @@
 import type { Routes } from '@angular/router';
 import { HomeComponent } from './operate/home.component';
-import { InboxComponent } from './operate/inbox.component';
-import { ActionDetailComponent } from './operate/action-detail.component';
-import { CasesComponent } from './operate/cases.component';
-import { CaseDetailPageComponent } from './operate/case-detail-page.component';
+import { InboxPageComponent, ActionDetailPageComponent, InboxViewModel } from './features/actions';
+import { CasesPageComponent, CaseDetailPageComponent } from './features/cases';
 import { ComposeComponent } from './compose/compose.component';
 import { HelpComponent } from './shell/help.component';
 import { SettingsComponent } from './shell/settings.component';
@@ -19,13 +17,14 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent, title: 'Overview — Runway' },
   {
     path: 'inbox',
-    component: InboxComponent,
+    component: InboxPageComponent,
     title: 'Inbox — Runway',
+    providers: [InboxViewModel], // shared by the list page and the reading pane
     children: [
-      { path: ':actionId', component: ActionDetailComponent, title: 'Action — Runway' },
+      { path: ':actionId', component: ActionDetailPageComponent, title: 'Action — Runway' },
     ],
   },
-  { path: 'cases', component: CasesComponent, title: 'Cases — Runway' },
+  { path: 'cases', component: CasesPageComponent, title: 'Cases — Runway' },
   { path: 'cases/:ref', component: CaseDetailPageComponent, title: 'Case — Runway' },
   { path: 'compose', component: ComposeComponent, title: 'Compose — Runway' },
   { path: 'help', component: HelpComponent, title: 'Help — Runway' },

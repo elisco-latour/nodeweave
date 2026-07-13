@@ -5,7 +5,7 @@ import { StateChipComponent, stateTone } from '../shared/state-chip.component';
 import { IconComponent, type IconName } from '../shared/icon.component';
 import { maskPersonal } from '../domain/data-dictionary';
 import { READINESS_STATE_LABEL, confidenceOf, type ReadinessRecord } from '../domain/model';
-import { matchesFilter } from './case-query';
+import { matchesFilter } from '../features/cases';
 
 type Tone = 'accent' | 'ok' | 'warn' | 'danger' | 'info';
 interface Tile { label: string; value: number; icon: IconName; tone: Tone; link: string; }

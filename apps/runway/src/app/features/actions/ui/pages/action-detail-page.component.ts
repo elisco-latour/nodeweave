@@ -1,15 +1,14 @@
 import { Component, ChangeDetectionStrategy, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { RuntimeService } from '../runtime/runtime.service';
-import { StateChipComponent } from '../shared/state-chip.component';
-import { IconComponent } from '../shared/icon.component';
-import { maskPersonal } from '../domain/data-dictionary';
-import type { ActionItem } from '../domain/model';
-import { KIND_TONE, KIND_LABEL, KIND_CTA, KIND_ICON, actionAgo } from './inbox.component';
+import { RuntimeService } from '../../../../runtime/runtime.service';
+import { StateChipComponent } from '../../../../shared/state-chip.component';
+import { IconComponent } from '../../../../shared/icon.component';
+import { maskPersonal } from '../../../../domain/data-dictionary';
+import type { Action } from '../../domain/action.entity';
+import { InboxViewModel } from '../../state/inbox.view-model';
+import { KIND_TONE, KIND_LABEL, KIND_CTA, KIND_ICON, STATUS_LABEL, actionAgo } from '../action-presentation';
 
-const STATUS_LABEL: Record<ActionItem['status'], string> = { open: 'Open', resolved: 'Resolved', dismissed: 'Dismissed' };
-
-/** The Inbox reading pane (/inbox/:actionId): the agent's recap + the action, with live or disabled controls. */
+/** Smart page — the Inbox reading pane (/inbox/:actionId). Shares the route's InboxViewModel. */
 @Component({
   selector: 'rw-action-detail',
   standalone: true,
@@ -21,7 +20,7 @@ const STATUS_LABEL: Record<ActionItem['status'], string> = { open: 'Open', resol
         <div class="dhead">
           <rw-chip [label]="kindLabel(a)" [tone]="tone(a)" [icon]="icon(a)" />
           <span class="status" [attr.data-s]="a.status">
-            @if (a.status !== 'open') { <rw-icon [name]="a.status === 'resolved' ? 'check-circle' : 'minus-circle'" [size]="14" /> }
+            @if (!a.isOpen) { <rw-icon [name]="a.isResolved ? 'check-circle' : 'minus-circle'" [size]="14" /> }
             {{ statusLabel(a) }}
           </span>
           <span class="grow"></span>
@@ -50,24 +49,21 @@ const STATUS_LABEL: Record<ActionItem['status'], string> = { open: 'Open', resol
             </div>
           }
           @if (a.evidence) {
-            <div class="block">
-              <span class="lbl">Evidence</span>
-              <div class="evidence">{{ a.evidence }}</div>
-            </div>
+            <div class="block"><span class="lbl">Evidence</span><div class="evidence">{{ a.evidence }}</div></div>
           }
         </div>
 
         <div class="actionbar">
-          @if (a.status === 'open') {
-            <button type="button" class="btn primary" (click)="resolve(a)"><rw-icon name="check" [size]="16" />{{ cta(a) }}</button>
-            <button type="button" class="btn ghost" (click)="dismiss(a)"><rw-icon name="dismiss" [size]="16" />Dismiss</button>
+          @if (a.isOpen) {
+            <button type="button" class="btn primary" (click)="vm.resolve(a.id)"><rw-icon name="check" [size]="16" />{{ cta(a) }}</button>
+            <button type="button" class="btn ghost" (click)="vm.dismiss(a.id)"><rw-icon name="dismiss" [size]="16" />Dismiss</button>
           } @else {
             <button type="button" class="btn primary" disabled><rw-icon name="check" [size]="16" />{{ cta(a) }}</button>
             <button type="button" class="btn ghost" disabled><rw-icon name="dismiss" [size]="16" />Dismiss</button>
             <span class="grow"></span>
             <span class="stamp" [attr.data-s]="a.status">
-              <rw-icon [name]="a.status === 'resolved' ? 'check-circle' : 'minus-circle'" [size]="15" />
-              {{ a.status === 'resolved' ? 'Resolved' : 'Dismissed' }} · logged to the case
+              <rw-icon [name]="a.isResolved ? 'check-circle' : 'minus-circle'" [size]="15" />
+              {{ a.isResolved ? 'Resolved' : 'Dismissed' }} · logged to the case
             </span>
           }
         </div>
@@ -83,7 +79,6 @@ const STATUS_LABEL: Record<ActionItem['status'], string> = { open: 'Open', resol
   styles: `
     :host { display: block; height: 100%; min-height: 0; }
     .page { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--surface); }
-
     .dhead { flex: none; display: flex; align-items: center; gap: var(--s-10); padding: var(--s-12) var(--s-24); border-bottom: 1px solid var(--border); }
     .status { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-100); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); }
     .status[data-s="open"] { color: var(--accent); }
@@ -130,22 +125,17 @@ const STATUS_LABEL: Record<ActionItem['status'], string> = { open: 'Open', resol
     .missing a { color: var(--accent); font-weight: var(--fw-semibold); }
   `,
 })
-export class ActionDetailComponent {
+export class ActionDetailPageComponent {
   readonly actionId = input.required<string>();
-  readonly #rt = inject(RuntimeService);
-  readonly action = computed(() => this.#rt.actionById(this.actionId()));
+  readonly vm = inject(InboxViewModel);
+  readonly #rt = inject(RuntimeService); // PII read — cross-cutting; to be extracted into a GovernanceService/port.
+  readonly action = computed<Action | undefined>(() => this.vm.byId(this.actionId()));
 
-  tone(a: ActionItem) { return KIND_TONE[a.kind]; }
-  icon(a: ActionItem) { return KIND_ICON[a.kind]; }
-  kindLabel(a: ActionItem) { return KIND_LABEL[a.kind]; }
-  cta(a: ActionItem) { return KIND_CTA[a.kind]; }
-  statusLabel(a: ActionItem) { return STATUS_LABEL[a.status]; }
+  tone(a: Action) { return KIND_TONE[a.kind]; }
+  icon(a: Action) { return KIND_ICON[a.kind]; }
+  kindLabel(a: Action) { return KIND_LABEL[a.kind]; }
+  cta(a: Action) { return KIND_CTA[a.kind]; }
+  statusLabel(a: Action) { return STATUS_LABEL[a.status]; }
   ago(iso: string) { return actionAgo(iso); }
-  joiner(a: ActionItem): string {
-    const rec = this.#rt.caseByRef(a.caseRef);
-    return rec ? maskPersonal(rec.joinerName, this.#rt.piiAuthorized()) : a.caseRef;
-  }
-
-  resolve(a: ActionItem): void { this.#rt.resolveAction(a.id); }
-  dismiss(a: ActionItem): void { this.#rt.dismissAction(a.id); }
+  joiner(a: Action): string { return maskPersonal(a.joinerName, this.#rt.piiAuthorized()); }
 }

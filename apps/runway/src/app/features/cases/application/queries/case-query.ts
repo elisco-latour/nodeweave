@@ -1,22 +1,24 @@
-import { confidenceOf, type ReadinessRecord, type ReadinessState } from '../domain/model';
+import type { ReadinessRecord, ReadinessState } from '../../../../domain/model';
+import type { Case } from '../../domain/case.entity';
 
 /**
  * Case querying — filter, search, sort, and paginate the case set. This is the
  * shape a real backend would expose as GET /cases?filter=&sort=&page= ; the
- * List and Table views both go through it so the API seam is honest and the
- * client never has to render more than a page.
+ * table view goes through it so the API seam is honest and the client never has
+ * to render more than a page. Pure, framework-free application logic operating
+ * on domain `Case` entities.
  */
-export type FilterId = 'all' | 'at-risk' | 'blocked' | 'ready' | 'completed';
-export type SortId = 'deadline' | 'readiness' | 'created' | 'name';
+export type CaseFilterId = 'all' | 'at-risk' | 'blocked' | 'ready' | 'completed';
+export type CaseSortId = 'deadline' | 'readiness' | 'created' | 'name';
 
-export const FILTERS: { id: FilterId; label: string }[] = [
+export const FILTERS: { id: CaseFilterId; label: string }[] = [
   { id: 'all', label: 'All cases' },
   { id: 'at-risk', label: 'At risk' },
   { id: 'blocked', label: 'Blocked' },
   { id: 'ready', label: 'Ready' },
   { id: 'completed', label: 'Completed' },
 ];
-export const SORTS: { id: SortId; label: string }[] = [
+export const SORTS: { id: CaseSortId; label: string }[] = [
   { id: 'deadline', label: 'Ready by' },
   { id: 'readiness', label: 'Readiness' },
   { id: 'created', label: 'Newest' },
@@ -25,13 +27,13 @@ export const SORTS: { id: SortId; label: string }[] = [
 
 export interface CaseQuery {
   search?: string;
-  filter?: FilterId;
-  sort?: SortId;
+  filter?: CaseFilterId;
+  sort?: CaseSortId;
   page?: number; // 0-based
   pageSize?: number;
 }
 export interface CasePage {
-  rows: ReadinessRecord[];
+  rows: Case[];
   total: number; // all records
   matched: number; // after filter + search
   page: number; // clamped 0-based
@@ -42,29 +44,34 @@ export interface CasePage {
 const AT_RISK_STATES: ReadinessState[] = ['blocked', 'exception', 'waiting-for-info'];
 const TODAY = new Date().toISOString().slice(0, 10);
 
-function overdue(c: ReadinessRecord): boolean {
-  return c.readinessDeadline < TODAY && c.state !== 'completed' && c.state !== 'ready-for-day-1';
+function overdue(state: ReadinessState, deadline: string): boolean {
+  return deadline < TODAY && state !== 'completed' && state !== 'ready-for-day-1';
 }
 
-export function matchesFilter(c: ReadinessRecord, f: FilterId): boolean {
+/**
+ * Filter predicate. Accepts the raw `ReadinessRecord` (not the `Case` entity)
+ * so legacy, not-yet-migrated surfaces (the Overview dashboard) can reuse the
+ * exact same classification during the strangler migration.
+ */
+export function matchesFilter(c: ReadinessRecord, f: CaseFilterId): boolean {
   switch (f) {
     case 'all': return true;
-    case 'at-risk': return AT_RISK_STATES.includes(c.state) || overdue(c);
+    case 'at-risk': return AT_RISK_STATES.includes(c.state) || overdue(c.state, c.readinessDeadline);
     case 'blocked': return c.state === 'blocked' || c.state === 'exception';
     case 'ready': return c.state === 'ready-for-day-1';
     case 'completed': return c.state === 'completed';
   }
 }
 
-function matchesSearch(c: ReadinessRecord, terms: string[]): boolean {
+function matchesSearch(c: Case, terms: string[]): boolean {
   if (terms.length === 0) return true;
   const hay = [c.caseRef, c.joinerName, c.role, c.location, c.pathway, c.state].join(' ').toLowerCase();
   return terms.every((t) => hay.includes(t));
 }
 
-function comparator(sort: SortId): (a: ReadinessRecord, b: ReadinessRecord) => number {
+function comparator(sort: CaseSortId): (a: Case, b: Case) => number {
   switch (sort) {
-    case 'readiness': return (a, b) => confidenceOf(b) - confidenceOf(a);
+    case 'readiness': return (a, b) => b.confidence - a.confidence;
     case 'created': return (a, b) => b.createdAt.localeCompare(a.createdAt);
     case 'name': return (a, b) => a.joinerName.localeCompare(b.joinerName);
     case 'deadline':
@@ -72,11 +79,13 @@ function comparator(sort: SortId): (a: ReadinessRecord, b: ReadinessRecord) => n
   }
 }
 
-export function queryCases(all: ReadinessRecord[], q: CaseQuery): CasePage {
+export function queryCases(all: Case[], q: CaseQuery): CasePage {
   const terms = (q.search ?? '').trim().toLowerCase().split(/\s+/).filter(Boolean);
   const filter = q.filter ?? 'all';
   const pageSize = q.pageSize ?? 25;
-  const matchedRows = all.filter((c) => matchesFilter(c, filter) && matchesSearch(c, terms)).sort(comparator(q.sort ?? 'deadline'));
+  const matchedRows = all
+    .filter((c) => matchesFilter(c.record, filter) && matchesSearch(c, terms))
+    .sort(comparator(q.sort ?? 'deadline'));
   const matched = matchedRows.length;
   const pageCount = Math.max(1, Math.ceil(matched / pageSize));
   const page = Math.min(Math.max(0, q.page ?? 0), pageCount - 1);
@@ -84,12 +93,12 @@ export function queryCases(all: ReadinessRecord[], q: CaseQuery): CasePage {
   return { rows, total: all.length, matched, page, pageSize, pageCount };
 }
 
-export function countByFilter(all: ReadinessRecord[]): Record<FilterId, number> {
+export function countByFilter(all: Case[]): Record<CaseFilterId, number> {
   return {
     all: all.length,
-    'at-risk': all.filter((c) => matchesFilter(c, 'at-risk')).length,
-    blocked: all.filter((c) => matchesFilter(c, 'blocked')).length,
-    ready: all.filter((c) => matchesFilter(c, 'ready')).length,
-    completed: all.filter((c) => matchesFilter(c, 'completed')).length,
+    'at-risk': all.filter((c) => matchesFilter(c.record, 'at-risk')).length,
+    blocked: all.filter((c) => matchesFilter(c.record, 'blocked')).length,
+    ready: all.filter((c) => matchesFilter(c.record, 'ready')).length,
+    completed: all.filter((c) => matchesFilter(c.record, 'completed')).length,
   };
 }

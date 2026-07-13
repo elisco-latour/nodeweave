@@ -1,8 +1,9 @@
 import { Component, ChangeDetectionStrategy, computed, inject, output, signal } from '@angular/core';
-import { RuntimeService, type NewCaseInput } from '../runtime/runtime.service';
-import { ProcessStore } from '../runtime/process-store';
-import { IconComponent } from '../shared/icon.component';
-import type { Pathway, RequestType } from '../domain/model';
+import { RuntimeService } from '../../../../runtime/runtime.service';
+import { ProcessStore } from '../../../../runtime/process-store';
+import { IconComponent } from '../../../../shared/icon.component';
+import type { Pathway, RequestType } from '../../../../domain/model';
+import type { CreateCaseInput } from '../../application/ports/case.repository';
 
 const REQUEST_TYPES: { value: RequestType; label: string }[] = [
   { value: 'new', label: 'New joiner' },
@@ -15,14 +16,17 @@ const STEP_LABELS = ['Request', 'Joiner', 'Timing', 'Review'];
 /**
  * New-case intake wizard — a multi-step structured-intake form. This IS the
  * "approved structured intake": explicit fields, an explicit request type, and
- * validation — never free-form text. On submit it calls the mock runtime's
- * createCase (the stand-in for POST /intake).
+ * validation — never free-form text. On submit it emits a validated
+ * `CreateCaseInput`; the smart page routes it through the CreateCaseUseCase.
+ *
+ * TODO (strangler): the duplicate-EID check (RuntimeService) and the published
+ * process version (ProcessStore) are legacy read dependencies — they become a
+ * CheckDuplicate use case and the processes-slice barrel when those migrate.
  */
 @Component({
   selector: 'rw-intake-wizard',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="scrim" (click)="close.emit()"></div>
     <div class="dialog" role="dialog" aria-modal="true" aria-label="New onboarding case">
@@ -221,7 +225,7 @@ const STEP_LABELS = ['Request', 'Joiner', 'Timing', 'Review'];
 })
 export class IntakeWizardComponent {
   readonly close = output<void>();
-  readonly created = output<string>();
+  readonly submit = output<CreateCaseInput>();
 
   readonly #rt = inject(RuntimeService);
   readonly #store = inject(ProcessStore);
@@ -287,7 +291,7 @@ export class IntakeWizardComponent {
   }
 
   create(): void {
-    const input: NewCaseInput = {
+    const input: CreateCaseInput = {
       pathway: this.pathway(),
       requestType: this.requestType(),
       processVersion: this.processLabel(),
@@ -300,6 +304,6 @@ export class IntakeWizardComponent {
       intakeSource: 'Runway intake form',
       schemaVersion: 'v2',
     };
-    this.created.emit(this.#rt.createCase(input));
+    this.submit.emit(input);
   }
 }

@@ -1,24 +1,29 @@
-import { Component, ChangeDetectionStrategy, computed, inject, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, effect, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { RuntimeService } from '../runtime/runtime.service';
-import { CaseDetailComponent } from './case-detail.component';
-import { IconComponent } from '../shared/icon.component';
+import { RuntimeService } from '../../../../runtime/runtime.service';
+import { maskPersonal } from '../../../../domain/data-dictionary';
+import { IconComponent } from '../../../../shared/icon.component';
+import { CaseDetailViewModel } from '../../state/case-detail.view-model';
+import { CaseDetailComponent } from '../components/case-detail.component';
 
 /**
  * Routed case detail (/cases/:ref). `ref` is bound from the route param
- * (withComponentInputBinding). A standalone page with a breadcrumb back to the
- * cases table.
+ * (withComponentInputBinding); an effect loads it into the ViewModel. Smart
+ * page: provides the CaseDetailViewModel shared with the readiness view.
+ *
+ * TODO (strangler): PII masking reads RuntimeService.piiAuthorized() directly —
+ * becomes a GovernanceService/port (same cross-cutting debt as the actions pages).
  */
 @Component({
   selector: 'rw-case-detail-page',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CaseDetailComponent, IconComponent, RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [CaseDetailViewModel],
   template: `
-    @if (record(); as rec) {
+    @if (vm.case(); as rec) {
       <div class="page">
         <a class="crumb" routerLink="/cases"><rw-icon name="chevron-right" [size]="15" class="flip" />All cases</a>
-        <rw-case-detail [rec]="rec" />
+        <rw-case-detail [case]="rec" [events]="vm.events()" [joinerName]="joinerName()" />
       </div>
     } @else {
       <div class="missing">
@@ -43,6 +48,15 @@ import { IconComponent } from '../shared/icon.component';
 })
 export class CaseDetailPageComponent {
   readonly ref = input.required<string>();
+  readonly vm = inject(CaseDetailViewModel);
   readonly #rt = inject(RuntimeService);
-  readonly record = computed(() => this.#rt.caseByRef(this.ref()));
+
+  readonly joinerName = computed(() => {
+    const c = this.vm.case();
+    return c ? maskPersonal(c.joinerName, this.#rt.piiAuthorized()) : '';
+  });
+
+  constructor() {
+    effect(() => { void this.vm.load(this.ref()); });
+  }
 }

@@ -1,13 +1,9 @@
-import { Component, ChangeDetectionStrategy, computed, inject, input, signal } from '@angular/core';
-import { RuntimeService } from '../runtime/runtime.service';
-import { StateChipComponent, itemTone, stateTone, ITEM_STATE_LABEL } from '../shared/state-chip.component';
-import { IconComponent, type IconName } from '../shared/icon.component';
-import { maskPersonal } from '../domain/data-dictionary';
-import {
-  READINESS_STATE_LABEL, type ReadinessRecord, type Fulfilment, type DomainEvent,
-  type ReadinessItemState, type Actor,
-} from '../domain/model';
-import { ProcessMapComponent } from './process-map.component';
+import { Component, ChangeDetectionStrategy, computed, input, signal } from '@angular/core';
+import { StateChipComponent, itemTone, stateTone, ITEM_STATE_LABEL } from '../../../../shared/state-chip.component';
+import { IconComponent, type IconName } from '../../../../shared/icon.component';
+import type { Fulfilment, DomainEvent, ReadinessItemState, Actor } from '../../../../domain/model';
+import { ProcessMapComponent } from '../../../../operate/process-map.component';
+import type { Case } from '../../domain/case.entity';
 
 const FULFIL_LABEL: Record<Fulfilment, string> = { auto: 'Automated', 'agent-assisted': 'Agent-assisted', human: 'Human' };
 const FULFIL_ICON: Record<Fulfilment, IconName> = { auto: 'flash', 'agent-assisted': 'bot', human: 'person' };
@@ -16,46 +12,53 @@ const ITEM_ICON: Record<ReadinessItemState, IconName> = {
   'in-progress': 'sync', pending: 'circle', skipped: 'minus-circle',
 };
 const ACTOR_ICON: Record<Actor, IconName> = { agent: 'bot', human: 'person', system: 'settings' };
+const TODAY = new Date().toISOString().slice(0, 10);
 
-/** The readiness view for one case: outcome-first, with a readiness/flow toggle. */
+/**
+ * The readiness view for one case: outcome-first, with a readiness/flow toggle.
+ * Dumb presentational component — it receives the `Case` entity, its activity
+ * events, and the (already masked) joiner name via inputs; it holds no services.
+ *
+ * TODO (strangler): `rw-process-map` still lives in operate/ — it moves into a
+ * processes slice when that migrates; this import is the temporary seam.
+ */
 @Component({
   selector: 'rw-case-detail',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [StateChipComponent, ProcessMapComponent, IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="topinfo">
       <header class="head">
         <div class="who">
           <h1>{{ joinerName() }}</h1>
           <p class="meta">
-            {{ rec().role }} <span class="dot">·</span> {{ rec().location }}
+            {{ case().role }} <span class="dot">·</span> {{ case().location }}
             <span class="dot">·</span> <span class="pathway">{{ pathwayLabel() }}</span>
-            <span class="dot">·</span> <span class="pv">{{ rec().processVersion }}</span>
+            <span class="dot">·</span> <span class="pv">{{ case().processVersion }}</span>
           </p>
         </div>
-        <rw-chip [label]="stateLabel()" [tone]="tone()" [icon]="stateIcon()" />
+        <rw-chip [label]="case().stateLabel" [tone]="tone()" [icon]="stateIcon()" />
       </header>
 
       <div class="confidence">
-        <div class="bar"><span [style.width.%]="confidencePct()"></span></div>
-        <span class="pct">{{ confidencePct() }}% ready</span>
+        <div class="bar"><span [style.width.%]="case().confidencePct"></span></div>
+        <span class="pct">{{ case().confidencePct }}% ready</span>
         <span class="grow"></span>
         <span class="deadline" [class.overdue]="overdue()">
           <rw-icon [name]="overdue() ? 'warning' : 'clock'" [size]="15" />
-          Day 1 {{ rec().startDate }} · ready by {{ rec().readinessDeadline }}
+          Day 1 {{ case().startDate }} · ready by {{ case().readinessDeadline }}
         </span>
       </div>
 
       <div class="owners">
-        <span><b>Owner</b> {{ rec().owners.current || '—' }}</span>
-        <span><b>Next</b> {{ rec().owners.nextAction || '—' }}</span>
-        <span><b>Escalation</b> {{ rec().owners.escalation || '—' }}</span>
+        <span><b>Owner</b> {{ case().owners.current || '—' }}</span>
+        <span><b>Next</b> {{ case().owners.nextAction || '—' }}</span>
+        <span><b>Escalation</b> {{ case().owners.escalation || '—' }}</span>
       </div>
 
-      @if (rec().blockers.length) {
+      @if (case().blockers.length) {
         <div class="blockers">
-          @for (b of rec().blockers; track b.detail) {
+          @for (b of case().blockers; track b.detail) {
             <div class="blocker">
               <rw-icon name="warning-filled" [size]="16" />
               <span><span class="bk">{{ b.kind }}</span>{{ b.detail }}</span>
@@ -75,7 +78,7 @@ const ACTOR_ICON: Record<Actor, IconName> = { agent: 'bot', human: 'person', sys
         <section>
           <h2 class="section">Readiness items</h2>
           <div class="items">
-            @for (it of rec().items; track it.id) {
+            @for (it of case().items; track it.id) {
               <div class="item">
                 <span class="istate" [attr.data-tone]="itemToneOf(it.state)"><rw-icon [name]="itemIcon(it.state)" [size]="18" /></span>
                 <div class="ibody">
@@ -117,7 +120,7 @@ const ACTOR_ICON: Record<Actor, IconName> = { agent: 'bot', human: 'person', sys
       </div>
     } @else {
       <div class="body map">
-        <rw-process-map [rec]="rec()" />
+        <rw-process-map [rec]="case().record" />
       </div>
     }
   `,
@@ -198,21 +201,19 @@ const ACTOR_ICON: Record<Actor, IconName> = { agent: 'bot', human: 'person', sys
   `,
 })
 export class CaseDetailComponent {
-  readonly rec = input.required<ReadinessRecord>();
-  readonly #rt = inject(RuntimeService);
+  readonly case = input.required<Case>();
+  readonly events = input.required<DomainEvent[]>();
+  readonly joinerName = input.required<string>();
+
   readonly tab = signal<'readiness' | 'flow'>('readiness');
 
-  readonly joinerName = computed(() => maskPersonal(this.rec().joinerName, this.#rt.piiAuthorized()));
-  readonly stateLabel = computed(() => READINESS_STATE_LABEL[this.rec().state]);
-  readonly tone = computed(() => stateTone(this.rec().state));
+  readonly tone = computed(() => stateTone(this.case().state));
   readonly stateIcon = computed<IconName>(() => {
     const t = this.tone();
     return t === 'ok' ? 'check-circle' : t === 'danger' ? 'error-circle' : t === 'warn' ? 'warning' : t === 'info' ? 'sync' : 'circle';
   });
-  readonly pathwayLabel = computed(() => (this.rec().pathway === 'project-level' ? 'Project-level' : 'Centre-level'));
-  readonly confidencePct = computed(() => Math.round(this.#rt.confidence(this.rec()) * 100));
-  readonly overdue = computed(() => this.rec().readinessDeadline < '2026-07-11' && this.rec().state !== 'completed' && this.rec().state !== 'ready-for-day-1');
-  readonly events = computed<DomainEvent[]>(() => this.#rt.eventsFor(this.rec().caseRef));
+  readonly pathwayLabel = computed(() => (this.case().pathway === 'project-level' ? 'Project-level' : 'Centre-level'));
+  readonly overdue = computed(() => this.case().isOverdue(TODAY));
 
   fulfil(f: Fulfilment): string { return FULFIL_LABEL[f]; }
   fulfilIcon(f: Fulfilment): IconName { return FULFIL_ICON[f]; }
