@@ -31,7 +31,7 @@ const NAV: NavItem[] = [
                 [attr.aria-label]="collapsed() ? 'Expand navigation' : 'Collapse navigation'" title="Toggle navigation">
           <rw-icon name="menu" [size]="20" />
         </button>
-        <a class="brand" routerLink="/inbox">
+        <a class="brand" routerLink="/home">
           <span class="brand-mark"><rw-icon name="brand" [size]="20" /></span>
           <span class="brand-name">Runway</span>
           <span class="brand-tagline">Onboarding readiness</span>
