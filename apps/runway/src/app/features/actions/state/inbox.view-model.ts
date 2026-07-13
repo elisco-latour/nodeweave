@@ -48,7 +48,8 @@ export class InboxViewModel extends ViewModelBase {
   }
 
   async load(): Promise<void> {
-    this.setProperty(this.#actions, await this.#listActions.execute());
+    const actions = await this.executeRead(() => this.#listActions.execute());
+    if (actions) this.setProperty(this.#actions, actions);
   }
 
   byId(id: string): Action | undefined {

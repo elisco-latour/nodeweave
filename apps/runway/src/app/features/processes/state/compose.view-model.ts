@@ -35,7 +35,8 @@ export class ComposeViewModel extends ViewModelBase {
   }
 
   async load(): Promise<void> {
-    this.setProperty(this.#processes, await this.#listProcesses.execute());
+    const processes = await this.executeRead(() => this.#listProcesses.execute());
+    if (processes) this.setProperty(this.#processes, processes);
   }
 
   setPathway(pathway: Pathway): void {

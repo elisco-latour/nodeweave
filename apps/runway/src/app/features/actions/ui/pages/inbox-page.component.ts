@@ -4,6 +4,8 @@ import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } fro
 import { filter, map } from 'rxjs';
 import { GovernanceService } from '../../../../core/governance/governance.service';
 import { IconComponent, type IconName } from '../../../../shared/icon.component';
+import { ErrorBannerComponent } from '../../../../shared/ui/error-banner.component';
+import { LoadingStateComponent } from '../../../../shared/ui/loading-state.component';
 import type { Action } from '../../domain/action.entity';
 import { InboxViewModel } from '../../state/inbox.view-model';
 import { KIND_TONE, KIND_ICON, INBOX_SORTS, KIND_FILTERS, actionAgo } from '../action-presentation';
@@ -13,7 +15,7 @@ import { KIND_TONE, KIND_ICON, INBOX_SORTS, KIND_FILTERS, actionAgo } from '../a
   selector: 'rw-inbox',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, ErrorBannerComponent, LoadingStateComponent],
   template: `
     <div class="surface">
       <div class="md">
@@ -43,7 +45,13 @@ import { KIND_TONE, KIND_ICON, INBOX_SORTS, KIND_FILTERS, actionAgo } from '../a
           </div>
 
           <div class="list">
-            @for (a of vm.visible(); track a.id) {
+            @if (vm.isLoading() && !vm.actions().length) {
+              <rw-loading label="Loading your inbox…" />
+            } @else if (vm.error() && !vm.actions().length) {
+              <rw-error-banner [message]="vm.error()!" [showRetry]="true" [showDismiss]="false" (retry)="vm.load()" />
+            } @else {
+              @if (vm.error()) { <rw-error-banner [message]="vm.error()!" (dismiss)="vm.clearError()" /> }
+              @for (a of vm.visible(); track a.id) {
               <a class="row" [class.done]="!a.isOpen" [routerLink]="['/inbox', a.id]" routerLinkActive="sel">
                 <span class="kind" [attr.data-tone]="tone(a)"><rw-icon [name]="icon(a)" [size]="16" /></span>
                 <span class="rbody">
@@ -60,11 +68,12 @@ import { KIND_TONE, KIND_ICON, INBOX_SORTS, KIND_FILTERS, actionAgo } from '../a
                   </span>
                 </span>
               </a>
-            } @empty {
-              <div class="empty">
-                <rw-icon name="check-circle" [size]="26" />
-                <p>{{ vm.tab() === 'pending' ? "No pending items — you're all caught up." : 'No actions match this filter.' }}</p>
-              </div>
+              } @empty {
+                <div class="empty">
+                  <rw-icon name="check-circle" [size]="26" />
+                  <p>{{ vm.tab() === 'pending' ? "No pending items — you're all caught up." : 'No actions match this filter.' }}</p>
+                </div>
+              }
             }
           </div>
         </aside>

@@ -3,6 +3,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { GovernanceService } from '../../../../core/governance/governance.service';
 import { StateChipComponent, stateTone } from '../../../../shared/state-chip.component';
 import { IconComponent } from '../../../../shared/icon.component';
+import { ErrorBannerComponent } from '../../../../shared/ui/error-banner.component';
+import { LoadingStateComponent } from '../../../../shared/ui/loading-state.component';
 import { CasesViewModel } from '../../state/cases.view-model';
 import { FILTERS, SORTS, type CaseFilterId, type CaseSortId } from '../../application/queries/case-query';
 import type { CreateCaseInput } from '../../application/ports/case.repository';
@@ -21,7 +23,7 @@ function csvCell(v: unknown): string {
  */
 @Component({
   selector: 'rw-cases',
-  imports: [IntakeWizardComponent, StateChipComponent, IconComponent],
+  imports: [IntakeWizardComponent, StateChipComponent, IconComponent, ErrorBannerComponent, LoadingStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [CasesViewModel],
   template: `
@@ -50,6 +52,12 @@ function csvCell(v: unknown): string {
       </div>
 
       <div class="tablecard">
+        @if (vm.isLoading() && !vm.cases().length) {
+          <rw-loading label="Loading cases…" />
+        } @else if (vm.error() && !vm.cases().length) {
+          <rw-error-banner [message]="vm.error()!" [showRetry]="true" [showDismiss]="false" (retry)="vm.refresh()" />
+        } @else {
+          @if (vm.error()) { <rw-error-banner [message]="vm.error()!" (dismiss)="vm.clearError()" /> }
         <div class="tscroll">
           <table>
             <thead>
@@ -89,6 +97,7 @@ function csvCell(v: unknown): string {
           <span class="pnum">{{ vm.result().page + 1 }} / {{ vm.result().pageCount }}</span>
           <button type="button" class="pbtn" [disabled]="vm.result().page >= vm.result().pageCount - 1" (click)="vm.nextPage()"><rw-icon name="chevron-right" [size]="16" /></button>
         </div>
+        }
       </div>
     </div>
 

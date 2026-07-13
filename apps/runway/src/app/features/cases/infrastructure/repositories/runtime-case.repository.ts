@@ -17,15 +17,18 @@ export class RuntimeCaseRepository implements ICaseRepository {
   readonly #rt = inject(RuntimeService);
 
   async list(): Promise<Case[]> {
+    this.#rt.assertAvailable();
     return this.#rt.cases().map((c) => CaseMapper.toDomain(c));
   }
 
   async getByRef(ref: string): Promise<Case | null> {
+    this.#rt.assertAvailable();
     const c = this.#rt.caseByRef(ref);
     return c ? CaseMapper.toDomain(c) : null;
   }
 
   async eventsFor(ref: string): Promise<DomainEvent[]> {
+    this.#rt.assertAvailable();
     return this.#rt.eventsFor(ref);
   }
 

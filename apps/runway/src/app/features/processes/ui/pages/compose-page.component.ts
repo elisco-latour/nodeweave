@@ -7,6 +7,7 @@ import { NwInspectorComponent, nodeFromDrop, allowNodeDrop, NW_DND_TYPE, type No
 import { ComposeViewModel } from '../../state/compose.view-model';
 import { processCatalog, buildTemplate } from '../process-catalog';
 import { IconComponent } from '../../../../shared/icon.component';
+import { ErrorBannerComponent } from '../../../../shared/ui/error-banner.component';
 import { stepIcon, stepColor } from '../step-visuals';
 
 /**
@@ -19,7 +20,7 @@ import { stepIcon, stepColor } from '../step-visuals';
  */
 @Component({
   selector: 'rw-compose',
-  imports: [VisualCanvasComponent, NodeweavePanelComponent, NwInspectorComponent, IconComponent],
+  imports: [VisualCanvasComponent, NodeweavePanelComponent, NwInspectorComponent, IconComponent, ErrorBannerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   providers: [ComposeViewModel],
@@ -40,6 +41,8 @@ import { stepIcon, stepColor } from '../step-visuals';
           <rw-icon [name]="justPublished() ? 'check' : 'flag'" [size]="16" />{{ justPublished() ? 'Published' : 'Publish' }}
         </button>
       </div>
+
+      @if (vm.error()) { <rw-error-banner [message]="vm.error()!" (dismiss)="vm.clearError()" /> }
 
       <div class="body">
         <aside class="palette">

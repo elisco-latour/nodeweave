@@ -42,4 +42,16 @@ describe('InboxViewModel', () => {
     await vm.resolve('1');
     expect(vm.error()).toBe('This action was already resolved.');
   });
+
+  it('surfaces an error and stops loading when the read fails', async () => {
+    const vm = configure([
+      { provide: ListActionsUseCase, useValue: { execute: async () => { throw new Error('Runway is temporarily unavailable. Please try again.'); } } },
+      { provide: ResolveActionUseCase, useValue: { execute: async () => ok(make('1', 'resolved')) } },
+      { provide: DismissActionUseCase, useValue: { execute: async () => ok(make('1', 'dismissed')) } },
+    ]);
+    await vm.load();
+    expect(vm.error()).toBe('Runway is temporarily unavailable. Please try again.');
+    expect(vm.isLoading()).toBe(false);
+    expect(vm.actions().length).toBe(0);
+  });
 });

@@ -17,10 +17,12 @@ export class RuntimeActionRepository implements IActionRepository {
   readonly #rt = inject(RuntimeService);
 
   async list(): Promise<Action[]> {
+    this.#rt.assertAvailable();
     return this.#rt.actions().map((a) => this.#toDomain(a));
   }
 
   async getById(id: string): Promise<Action | null> {
+    this.#rt.assertAvailable();
     const a = this.#rt.actionById(id);
     return a ? this.#toDomain(a) : null;
   }

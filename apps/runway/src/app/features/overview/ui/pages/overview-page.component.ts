@@ -3,6 +3,8 @@ import { RouterLink } from '@angular/router';
 import { GovernanceService } from '../../../../core/governance/governance.service';
 import { StateChipComponent, stateTone, type Tone } from '../../../../shared/state-chip.component';
 import { IconComponent, type IconName } from '../../../../shared/icon.component';
+import { ErrorBannerComponent } from '../../../../shared/ui/error-banner.component';
+import { LoadingStateComponent } from '../../../../shared/ui/loading-state.component';
 import { OverviewViewModel } from '../../state/overview.view-model';
 import type { Case } from '../../../cases';
 
@@ -16,7 +18,7 @@ interface Tile { label: string; value: number; icon: IconName; tone: Tone; link:
  */
 @Component({
   selector: 'rw-home',
-  imports: [RouterLink, StateChipComponent, IconComponent],
+  imports: [RouterLink, StateChipComponent, IconComponent, ErrorBannerComponent, LoadingStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [OverviewViewModel],
   template: `
@@ -86,6 +88,10 @@ interface Tile { label: string; value: number; icon: IconName; tone: Tone; link:
             }
           </section>
         </div>
+      } @else if (vm.isLoading()) {
+        <rw-loading label="Loading overview…" />
+      } @else if (vm.error()) {
+        <rw-error-banner [message]="vm.error()!" [showRetry]="true" [showDismiss]="false" (retry)="vm.load()" />
       }
     </div>
   `,

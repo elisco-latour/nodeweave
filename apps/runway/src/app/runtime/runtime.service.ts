@@ -37,6 +37,9 @@ export class RuntimeService {
   readonly allEvents = this.#events.asReadonly();
   readonly openActions = computed(() => this.#actions().filter((a) => a.status === 'open'));
 
+  /** Dev/testing chaos toggle: when on, repository reads throw — simulates a backend outage. */
+  readonly failReads = signal(false);
+
   constructor() {
     // Persist on any change — the event log + cases survive a refresh.
     effect(() => {
@@ -50,7 +53,13 @@ export class RuntimeService {
       const w = window as unknown as Record<string, unknown>;
       w['rwSeed'] = (n = 1000) => this.seedSynthetic(n);
       w['rwReset'] = () => { clearAll(); location.reload(); };
+      w['rwFail'] = (on = true) => this.failReads.set(on);
     }
+  }
+
+  /** Repository reads call this first; throws when the chaos toggle is on (a stand-in for a backend outage). */
+  assertAvailable(): void {
+    if (this.failReads()) throw new Error('Runway is temporarily unavailable. Please try again.');
   }
 
   caseByRef(ref: string): ReadinessRecord | undefined {

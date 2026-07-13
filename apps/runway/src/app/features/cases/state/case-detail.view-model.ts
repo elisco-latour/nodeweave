@@ -20,10 +20,12 @@ export class CaseDetailViewModel extends ViewModelBase {
   readonly events = this.#events.asReadonly();
 
   async load(ref: string): Promise<void> {
-    const [c, ev] = await Promise.all([this.#getCase.execute(ref), this.#getEvents.execute(ref)]);
-    this.batchUpdate(() => {
-      this.setProperty(this.#case, c);
-      this.setProperty(this.#events, ev);
-    });
+    const data = await this.executeRead(() => Promise.all([this.#getCase.execute(ref), this.#getEvents.execute(ref)]));
+    if (data) {
+      this.batchUpdate(() => {
+        this.setProperty(this.#case, data[0]);
+        this.setProperty(this.#events, data[1]);
+      });
+    }
   }
 }

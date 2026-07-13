@@ -21,6 +21,7 @@ export class OverviewViewModel extends ViewModelBase {
   }
 
   async load(): Promise<void> {
-    this.setProperty(this.#summary, await this.#getOverview.execute());
+    const summary = await this.executeRead(() => this.#getOverview.execute());
+    if (summary) this.setProperty(this.#summary, summary);
   }
 }

@@ -13,10 +13,12 @@ export class RuntimeOverviewRepository implements IOverviewRepository {
   readonly #rt = inject(RuntimeService);
 
   async listCases(): Promise<Case[]> {
+    this.#rt.assertAvailable();
     return this.#rt.cases().map((c) => new Case(c));
   }
 
   async openActionCount(): Promise<number> {
+    this.#rt.assertAvailable();
     return this.#rt.openActions().length;
   }
 }

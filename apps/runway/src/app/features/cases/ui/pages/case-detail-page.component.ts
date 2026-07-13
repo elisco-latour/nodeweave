@@ -2,6 +2,8 @@ import { Component, ChangeDetectionStrategy, computed, effect, inject, input } f
 import { RouterLink } from '@angular/router';
 import { GovernanceService } from '../../../../core/governance/governance.service';
 import { IconComponent } from '../../../../shared/icon.component';
+import { ErrorBannerComponent } from '../../../../shared/ui/error-banner.component';
+import { LoadingStateComponent } from '../../../../shared/ui/loading-state.component';
 import { CaseDetailViewModel } from '../../state/case-detail.view-model';
 import { CaseDetailComponent } from '../components/case-detail.component';
 
@@ -13,7 +15,7 @@ import { CaseDetailComponent } from '../components/case-detail.component';
  */
 @Component({
   selector: 'rw-case-detail-page',
-  imports: [CaseDetailComponent, IconComponent, RouterLink],
+  imports: [CaseDetailComponent, IconComponent, RouterLink, ErrorBannerComponent, LoadingStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [CaseDetailViewModel],
   template: `
@@ -21,6 +23,13 @@ import { CaseDetailComponent } from '../components/case-detail.component';
       <div class="page">
         <a class="crumb" routerLink="/cases"><rw-icon name="chevron-right" [size]="15" class="flip" />All cases</a>
         <rw-case-detail [case]="rec" [events]="vm.events()" [joinerName]="joinerName()" />
+      </div>
+    } @else if (vm.isLoading()) {
+      <rw-loading label="Loading case…" />
+    } @else if (vm.error()) {
+      <div class="page">
+        <a class="crumb" routerLink="/cases"><rw-icon name="chevron-right" [size]="15" class="flip" />All cases</a>
+        <rw-error-banner [message]="vm.error()!" [showRetry]="true" [showDismiss]="false" (retry)="vm.load(ref())" />
       </div>
     } @else {
       <div class="missing">

@@ -45,7 +45,8 @@ export class CasesViewModel extends ViewModelBase {
   }
 
   async load(): Promise<void> {
-    this.setProperty(this.#cases, await this.#listCases.execute());
+    const cases = await this.executeRead(() => this.#listCases.execute());
+    if (cases) this.setProperty(this.#cases, cases);
   }
 
   /** Re-read from the store — stands in for a backend refetch. */
