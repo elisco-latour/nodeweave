@@ -37,7 +37,7 @@
   --grey-86: #d6d3dc;
   --grey-80: #c4c0cc;
   --grey-64: #9a95a4;
-  --grey-52: #7c7689;
+  --grey-52: #6f697d; /* tuned darker for WCAG AA — small caption text (--faint) clears 4.5:1 on light surfaces */
   --grey-44: #655f72;
   --grey-36: #524d5e;
   --grey-24: #383440;
@@ -46,7 +46,7 @@
 
   /* ── Primitives: status hues (Fluent) ───────────────────────────────────── */
   --green-60: #0e7a3b;  --green-tint: #e7f6ec;
-  --amber-60: #bc4b09;  --amber-tint: #fbeee0;
+  --amber-60: #b0470a;  --amber-tint: #fbeee0; /* amber tuned darker for WCAG AA — warn chip text clears 4.5:1 on its tint */
   --red-60:   #c50f1f;  --red-tint:   #fdecec;
   --blue-60:  #0f6cbd;  --blue-tint:  #eaf3fb;
 
