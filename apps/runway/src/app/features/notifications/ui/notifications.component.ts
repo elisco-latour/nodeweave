@@ -1,46 +1,29 @@
-import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
-import { RuntimeService } from '../runtime/runtime.service';
-import { ShellService } from './shell.service';
-import { loadJson, saveJson } from '../runtime/persist';
-import { IconComponent, type IconName } from '../shared/icon.component';
-import { maskPersonal } from '../domain/data-dictionary';
-import type { EventType, DomainEvent } from '../domain/model';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { ShellService } from '../../../shell/shell.service';
+import { IconComponent, type IconName } from '../../../shared/icon.component';
+import type { Tone } from '../../../shared/state-chip.component';
+import { NotificationsViewModel } from '../state/notifications.view-model';
+import type { Notification } from '../domain/notification.entity';
+import { EVENT_ICON, EVENT_TONE, notifAgo } from './notification-presentation';
 
-type Tone = 'ok' | 'warn' | 'danger' | 'info' | 'idle';
-
-const EVENT_ICON: Record<EventType, IconName> = {
-  'case.created': 'cases', 'intake.rejected': 'error-circle',
-  'validation.passed': 'check-circle', 'validation.failed': 'warning',
-  'item.started': 'sync', 'item.prepared': 'sync', 'item.completed': 'check-circle', 'item.blocked': 'error-circle',
-  'reminder.sent': 'mail', 'escalation.raised': 'alert-urgent', 'exception.raised': 'warning',
-  'action.approved': 'check', 'action.rejected': 'dismiss',
-  'state.changed': 'flash', 'case.completed': 'flag', 'case.cancelled': 'minus-circle',
-};
-const EVENT_TONE: Record<EventType, Tone> = {
-  'case.created': 'info', 'intake.rejected': 'danger',
-  'validation.passed': 'ok', 'validation.failed': 'warn',
-  'item.started': 'info', 'item.prepared': 'info', 'item.completed': 'ok', 'item.blocked': 'danger',
-  'reminder.sent': 'info', 'escalation.raised': 'warn', 'exception.raised': 'warn',
-  'action.approved': 'ok', 'action.rejected': 'idle',
-  'state.changed': 'info', 'case.completed': 'ok', 'case.cancelled': 'idle',
-};
-const FEED_LIMIT = 40;
-const SEEN_KEY = 'notifSeen';
-
-/** Notifications bell — a recent-activity feed across all cases (distinct from the action queue). */
+/**
+ * Notifications bell — a recent-activity feed across all cases (distinct from
+ * the action queue). Smart shell widget: provides and binds the
+ * NotificationsViewModel; navigation goes through the ShellService facade.
+ */
 @Component({
   selector: 'rw-notifications',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [NotificationsViewModel],
   template: `
-    <button type="button" class="bell" [class.on]="open()" (click)="toggle()" title="Notifications" aria-label="Notifications">
+    <button type="button" class="bell" [class.on]="vm.open()" (click)="vm.toggle()" title="Notifications" aria-label="Notifications">
       <rw-icon name="alert" [size]="20" />
-      @if (unread() > 0) { <span class="ndot">{{ unreadLabel() }}</span> }
+      @if (vm.unread() > 0) { <span class="ndot">{{ vm.unreadLabel() }}</span> }
     </button>
 
-    @if (open()) {
-      <div class="scrim" (click)="close()"></div>
+    @if (vm.open()) {
+      <div class="scrim" (click)="vm.close()"></div>
       <div class="panel" role="dialog" aria-label="Notifications">
         <div class="phead">
           <strong>Notifications</strong>
@@ -48,7 +31,7 @@ const SEEN_KEY = 'notifSeen';
           <span class="sub">Recent activity</span>
         </div>
         <div class="feed">
-          @for (e of feed(); track e.id) {
+          @for (e of vm.feed(); track e.id) {
             <button type="button" class="nrow" (click)="openEvent(e)">
               <span class="ico" [attr.data-tone]="toneFor(e)"><rw-icon [name]="iconFor(e)" [size]="16" /></span>
               <span class="nbody">
@@ -107,49 +90,15 @@ const SEEN_KEY = 'notifSeen';
   `,
 })
 export class NotificationsComponent {
-  readonly #rt = inject(RuntimeService);
+  readonly vm = inject(NotificationsViewModel);
   readonly #shell = inject(ShellService);
 
-  readonly open = signal(false);
-  readonly lastSeen = signal<number>(loadJson<number>(SEEN_KEY, Date.now()));
+  iconFor(n: Notification): IconName { return EVENT_ICON[n.type] ?? 'info'; }
+  toneFor(n: Notification): Tone { return EVENT_TONE[n.type] ?? 'info'; }
+  ago(iso: string): string { return notifAgo(iso); }
 
-  readonly #sorted = computed(() => [...this.#rt.allEvents()].sort((a, b) => b.at.localeCompare(a.at)));
-  readonly feed = computed(() => this.#sorted().slice(0, FEED_LIMIT));
-  readonly unread = computed(() => {
-    const seen = this.lastSeen();
-    return this.#rt.allEvents().reduce((n, e) => (new Date(e.at).getTime() > seen ? n + 1 : n), 0);
-  });
-  readonly unreadLabel = computed(() => (this.unread() > 99 ? '99+' : String(this.unread())));
-
-  toggle(): void {
-    const next = !this.open();
-    this.open.set(next);
-    if (next) this.#markSeen();
-  }
-  close(): void { this.open.set(false); }
-
-  #markSeen(): void {
-    const now = Date.now();
-    this.lastSeen.set(now);
-    saveJson(SEEN_KEY, now);
-  }
-
-  openEvent(e: DomainEvent): void {
-    this.close();
-    this.#shell.openCase(e.caseRef);
-  }
-
-  iconFor(e: DomainEvent): IconName { return EVENT_ICON[e.type] ?? 'info'; }
-  toneFor(e: DomainEvent): Tone { return EVENT_TONE[e.type] ?? 'info'; }
-  joiner(e: DomainEvent): string {
-    const rec = this.#rt.caseByRef(e.caseRef);
-    return rec ? maskPersonal(rec.joinerName, this.#rt.piiAuthorized()) : e.caseRef;
-  }
-  ago(iso: string): string {
-    const ms = Date.now() - new Date(iso).getTime();
-    const h = Math.floor(ms / 3.6e6);
-    if (h < 1) return 'just now';
-    if (h < 24) return `${h}h`;
-    return `${Math.floor(h / 24)}d`;
+  openEvent(n: Notification): void {
+    this.vm.close();
+    this.#shell.openCase(n.caseRef);
   }
 }

@@ -7,6 +7,7 @@ import { provideActionsFeature } from './app/features/actions';
 import { provideCasesFeature } from './app/features/cases';
 import { provideOverviewFeature } from './app/features/overview';
 import { provideProcessesFeature } from './app/features/processes';
+import { provideNotificationsFeature } from './app/features/notifications';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -21,5 +22,6 @@ bootstrapApplication(AppComponent, {
     ...provideCasesFeature(),
     ...provideOverviewFeature(),
     ...provideProcessesFeature(),
+    ...provideNotificationsFeature(),
   ],
 }).catch((err) => console.error(err));

@@ -5,7 +5,7 @@ import { IconComponent, type IconName } from './shared/icon.component';
 import { SearchComponent } from './shell/search.component';
 import { TourComponent } from './shell/tour.component';
 import { TourService } from './shell/tour.service';
-import { NotificationsComponent } from './shell/notifications.component';
+import { NotificationsComponent } from './features/notifications';
 import { ThemeService } from './shell/theme.service';
 import type { View } from './shell/shell.service';
 
