@@ -1,22 +1,27 @@
 import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { RuntimeService } from '../runtime/runtime.service';
-import { StateChipComponent, stateTone } from '../shared/state-chip.component';
-import { IconComponent, type IconName } from '../shared/icon.component';
-import { maskPersonal } from '../domain/data-dictionary';
-import { READINESS_STATE_LABEL, confidenceOf, type ReadinessRecord } from '../domain/model';
-import { matchesFilter } from '../features/cases';
+import { RuntimeService } from '../../../../runtime/runtime.service';
+import { StateChipComponent, stateTone, type Tone } from '../../../../shared/state-chip.component';
+import { IconComponent, type IconName } from '../../../../shared/icon.component';
+import { maskPersonal } from '../../../../domain/data-dictionary';
+import { OverviewViewModel } from '../../state/overview.view-model';
+import type { Case } from '../../../cases';
 
-type Tone = 'accent' | 'ok' | 'warn' | 'danger' | 'info';
 interface Tile { label: string; value: number; icon: IconName; tone: Tone; link: string; }
-const TODAY = new Date().toISOString().slice(0, 10);
 
-/** Overview dashboard — onboarding readiness at a glance (the reporting surface). */
+/**
+ * Overview dashboard — onboarding readiness at a glance (the reporting surface).
+ * Smart page: provides and binds the OverviewViewModel; the tiles and
+ * distribution legend are presentation projections of the summary read model.
+ *
+ * TODO (strangler): PII masking reads RuntimeService.piiAuthorized() directly —
+ * becomes a GovernanceService/port (same cross-cutting debt as the other pages).
+ */
 @Component({
   selector: 'rw-home',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, StateChipComponent, IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [OverviewViewModel],
   template: `
     <div class="wrap">
       <header class="head">
@@ -27,62 +32,64 @@ const TODAY = new Date().toISOString().slice(0, 10);
         <a class="btn primary" routerLink="/cases" [queryParams]="{ create: 1 }"><rw-icon name="add" [size]="16" />New case</a>
       </header>
 
-      <div class="tiles">
-        @for (t of tiles(); track t.label) {
-          <a class="tile" [attr.data-tone]="t.tone" [routerLink]="t.link">
-            <span class="tico"><rw-icon [name]="t.icon" [size]="20" /></span>
-            <span class="tval">{{ t.value }}</span>
-            <span class="tlabel">{{ t.label }}</span>
-          </a>
-        }
-      </div>
-
-      <div class="readiness-card">
-        <div class="rc-head">
-          <span class="rc-title">Overall readiness</span>
-          <span class="rc-pct">{{ avgReadiness() }}%</span>
-        </div>
-        <div class="rc-bar"><span [style.width.%]="avgReadiness()"></span></div>
-        <div class="rc-legend">
-          @for (s of distribution(); track s.label) {
-            <span class="rc-seg"><i [style.background]="s.color"></i>{{ s.label }} <b>{{ s.count }}</b></span>
+      @if (vm.summary(); as s) {
+        <div class="tiles">
+          @for (t of tiles(); track t.label) {
+            <a class="tile" [attr.data-tone]="t.tone" [routerLink]="t.link">
+              <span class="tico"><rw-icon [name]="t.icon" [size]="20" /></span>
+              <span class="tval">{{ t.value }}</span>
+              <span class="tlabel">{{ t.label }}</span>
+            </a>
           }
         </div>
-      </div>
 
-      <div class="cols">
-        <section class="panel">
-          <div class="p-head"><rw-icon name="warning" [size]="16" /><h2>Needs attention</h2><a routerLink="/cases">All cases <rw-icon name="chevron-right" [size]="13" /></a></div>
-          @for (c of atRisk(); track c.caseRef) {
-            <a class="prow" [routerLink]="['/cases', c.caseRef]">
-              <span class="pw" [attr.data-pw]="c.pathway"><rw-icon [name]="c.pathway === 'project-level' ? 'branch' : 'cases'" [size]="15" /></span>
-              <span class="pbody">
-                <span class="pname">{{ name(c) }}</span>
-                <span class="pmeta">{{ c.caseRef }} · ready by {{ c.readinessDeadline }}</span>
-              </span>
-              <rw-chip [label]="label(c)" [tone]="tone(c)" />
-            </a>
-          } @empty {
-            <div class="p-empty"><rw-icon name="check-circle" [size]="22" /><p>Nothing at risk right now.</p></div>
-          }
-        </section>
+        <div class="readiness-card">
+          <div class="rc-head">
+            <span class="rc-title">Overall readiness</span>
+            <span class="rc-pct">{{ s.averageReadiness }}%</span>
+          </div>
+          <div class="rc-bar"><span [style.width.%]="s.averageReadiness"></span></div>
+          <div class="rc-legend">
+            @for (seg of distribution(); track seg.label) {
+              <span class="rc-seg"><i [style.background]="seg.color"></i>{{ seg.label }} <b>{{ seg.count }}</b></span>
+            }
+          </div>
+        </div>
 
-        <section class="panel">
-          <div class="p-head"><rw-icon name="clock" [size]="16" /><h2>Upcoming Day 1</h2><a routerLink="/cases">All cases <rw-icon name="chevron-right" [size]="13" /></a></div>
-          @for (c of upcoming(); track c.caseRef) {
-            <a class="prow" [routerLink]="['/cases', c.caseRef]">
-              <span class="daybox"><span class="d-day">{{ day(c.startDate) }}</span><span class="d-mon">{{ mon(c.startDate) }}</span></span>
-              <span class="pbody">
-                <span class="pname">{{ name(c) }}</span>
-                <span class="pmeta">{{ c.role }} · {{ pct(c) }}% ready</span>
-              </span>
-              <rw-chip [label]="label(c)" [tone]="tone(c)" />
-            </a>
-          } @empty {
-            <div class="p-empty"><rw-icon name="clock" [size]="22" /><p>No upcoming start dates.</p></div>
-          }
-        </section>
-      </div>
+        <div class="cols">
+          <section class="panel">
+            <div class="p-head"><rw-icon name="warning" [size]="16" /><h2>Needs attention</h2><a routerLink="/cases">All cases <rw-icon name="chevron-right" [size]="13" /></a></div>
+            @for (c of s.atRisk; track c.caseRef) {
+              <a class="prow" [routerLink]="['/cases', c.caseRef]">
+                <span class="pw" [attr.data-pw]="c.pathway"><rw-icon [name]="c.pathway === 'project-level' ? 'branch' : 'cases'" [size]="15" /></span>
+                <span class="pbody">
+                  <span class="pname">{{ name(c) }}</span>
+                  <span class="pmeta">{{ c.caseRef }} · ready by {{ c.readinessDeadline }}</span>
+                </span>
+                <rw-chip [label]="c.stateLabel" [tone]="tone(c)" />
+              </a>
+            } @empty {
+              <div class="p-empty"><rw-icon name="check-circle" [size]="22" /><p>Nothing at risk right now.</p></div>
+            }
+          </section>
+
+          <section class="panel">
+            <div class="p-head"><rw-icon name="clock" [size]="16" /><h2>Upcoming Day 1</h2><a routerLink="/cases">All cases <rw-icon name="chevron-right" [size]="13" /></a></div>
+            @for (c of s.upcoming; track c.caseRef) {
+              <a class="prow" [routerLink]="['/cases', c.caseRef]">
+                <span class="daybox"><span class="d-day">{{ day(c.startDate) }}</span><span class="d-mon">{{ mon(c.startDate) }}</span></span>
+                <span class="pbody">
+                  <span class="pname">{{ name(c) }}</span>
+                  <span class="pmeta">{{ c.role }} · {{ c.confidencePct }}% ready</span>
+                </span>
+                <rw-chip [label]="c.stateLabel" [tone]="tone(c)" />
+              </a>
+            } @empty {
+              <div class="p-empty"><rw-icon name="clock" [size]="22" /><p>No upcoming start dates.</p></div>
+            }
+          </section>
+        </div>
+      }
     </div>
   `,
   styles: `
@@ -141,51 +148,35 @@ const TODAY = new Date().toISOString().slice(0, 10);
     @media (max-width: 900px) { .tiles { grid-template-columns: repeat(2, 1fr); } .cols { grid-template-columns: 1fr; } }
   `,
 })
-export class HomeComponent {
+export class OverviewPageComponent {
+  readonly vm = inject(OverviewViewModel);
   readonly #rt = inject(RuntimeService);
 
-  readonly #cases = computed(() => this.#rt.cases());
-
   readonly tiles = computed<Tile[]>(() => {
-    const cs = this.#cases();
+    const s = this.vm.summary();
+    if (!s) return [];
     return [
-      { label: 'Open actions', value: this.#rt.openActions().length, icon: 'alert', tone: 'accent', link: '/inbox' },
-      { label: 'At risk', value: cs.filter((c) => matchesFilter(c, 'at-risk')).length, icon: 'warning', tone: 'danger', link: '/cases' },
-      { label: 'In progress', value: cs.filter((c) => c.state === 'in-progress').length, icon: 'sync', tone: 'info', link: '/cases' },
-      { label: 'Ready for Day 1', value: cs.filter((c) => c.state === 'ready-for-day-1').length, icon: 'flag', tone: 'ok', link: '/cases' },
+      { label: 'Open actions', value: s.openActions, icon: 'alert', tone: 'accent', link: '/inbox' },
+      { label: 'At risk', value: s.atRiskCount, icon: 'warning', tone: 'danger', link: '/cases' },
+      { label: 'In progress', value: s.inProgressCount, icon: 'sync', tone: 'info', link: '/cases' },
+      { label: 'Ready for Day 1', value: s.readyCount, icon: 'flag', tone: 'ok', link: '/cases' },
     ];
-  });
-
-  readonly avgReadiness = computed(() => {
-    const active = this.#cases().filter((c) => c.state !== 'completed' && c.state !== 'cancelled');
-    if (!active.length) return 0;
-    return Math.round((active.reduce((s, c) => s + confidenceOf(c), 0) / active.length) * 100);
   });
 
   readonly distribution = computed(() => {
-    const cs = this.#cases();
-    const n = (fn: (c: ReadinessRecord) => boolean) => cs.filter(fn).length;
+    const s = this.vm.summary();
+    if (!s) return [];
+    const d = s.distribution;
     return [
-      { label: 'Ready / done', color: '#107c10', count: n((c) => c.state === 'ready-for-day-1' || c.state === 'completed') },
-      { label: 'In progress', color: '#7500c0', count: n((c) => c.state === 'in-progress' || c.state === 'ready-for-orchestration') },
-      { label: 'Waiting', color: '#bc4b09', count: n((c) => c.state === 'waiting-for-info') },
-      { label: 'Blocked', color: '#c50f1f', count: n((c) => c.state === 'blocked' || c.state === 'exception') },
+      { label: 'Ready / done', color: '#107c10', count: d.readyOrDone },
+      { label: 'In progress', color: '#7500c0', count: d.inProgress },
+      { label: 'Waiting', color: '#bc4b09', count: d.waiting },
+      { label: 'Blocked', color: '#c50f1f', count: d.blocked },
     ];
   });
 
-  readonly atRisk = computed(() =>
-    this.#cases().filter((c) => matchesFilter(c, 'at-risk')).sort((a, b) => a.readinessDeadline.localeCompare(b.readinessDeadline)).slice(0, 5));
-
-  readonly upcoming = computed(() =>
-    this.#cases()
-      .filter((c) => c.startDate >= TODAY && c.state !== 'completed' && c.state !== 'cancelled')
-      .sort((a, b) => a.startDate.localeCompare(b.startDate))
-      .slice(0, 5));
-
-  name(c: ReadinessRecord): string { return maskPersonal(c.joinerName, this.#rt.piiAuthorized()); }
-  label(c: ReadinessRecord): string { return READINESS_STATE_LABEL[c.state]; }
-  tone(c: ReadinessRecord) { return stateTone(c.state); }
-  pct(c: ReadinessRecord): number { return Math.round(confidenceOf(c) * 100); }
+  name(c: Case): string { return maskPersonal(c.joinerName, this.#rt.piiAuthorized()); }
+  tone(c: Case): Tone { return stateTone(c.state); }
   day(iso: string): string { return String(new Date(iso).getDate()); }
   mon(iso: string): string { return new Date(iso).toLocaleString(undefined, { month: 'short' }); }
 }

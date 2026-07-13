@@ -10,8 +10,8 @@ export { CaseDetailPageComponent } from './ui/pages/case-detail-page.component';
 export { provideCasesFeature } from './cases.providers';
 
 /**
- * Transitional: the Overview dashboard (not yet migrated) reuses the case
- * filter classification. Remove this export once the overview slice consumes
- * case stats through its own ViewModel/use case.
+ * Case classification policy, reused across slices: the overview dashboard's
+ * "at risk" bucket goes through the same predicate as the Cases filter, so the
+ * two can never disagree.
  */
 export { matchesFilter, type CaseFilterId } from './application/queries/case-query';

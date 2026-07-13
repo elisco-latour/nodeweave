@@ -1,5 +1,5 @@
 import type { Routes } from '@angular/router';
-import { HomeComponent } from './operate/home.component';
+import { OverviewPageComponent, OverviewViewModel } from './features/overview';
 import { InboxPageComponent, ActionDetailPageComponent, InboxViewModel } from './features/actions';
 import { CasesPageComponent, CaseDetailPageComponent } from './features/cases';
 import { ComposeComponent } from './compose/compose.component';
@@ -14,7 +14,7 @@ import { SettingsComponent } from './shell/settings.component';
  */
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
-  { path: 'home', component: HomeComponent, title: 'Overview — Runway' },
+  { path: 'home', component: OverviewPageComponent, title: 'Overview — Runway', providers: [OverviewViewModel] },
   {
     path: 'inbox',
     component: InboxPageComponent,
