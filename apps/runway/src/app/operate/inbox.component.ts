@@ -13,6 +13,22 @@ export const KIND_LABEL: Record<ActionKind, string> = { approval: 'Approval', de
 export const KIND_CTA: Record<ActionKind, string> = { approval: 'Approve', decision: 'Confirm', 'human-task': 'Mark done', triage: 'Resolve' };
 export const KIND_ICON: Record<ActionKind, IconName> = { approval: 'check-circle', decision: 'split', 'human-task': 'person', triage: 'alert-urgent' };
 
+type StatusTab = 'all' | 'pending';
+type InboxSort = 'newest' | 'oldest' | 'kind' | 'case';
+const INBOX_SORTS: { id: InboxSort; label: string }[] = [
+  { id: 'newest', label: 'Newest' },
+  { id: 'oldest', label: 'Oldest' },
+  { id: 'kind', label: 'Type' },
+  { id: 'case', label: 'Case' },
+];
+const KIND_FILTERS: { id: 'all' | ActionKind; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'triage', label: 'Triage' },
+  { id: 'decision', label: 'Decision' },
+  { id: 'approval', label: 'Approval' },
+  { id: 'human-task', label: 'Human' },
+];
+
 export function actionAgo(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
   const h = Math.floor(ms / 3.6e6);
@@ -37,27 +53,56 @@ export function actionAgo(iso: string): string {
         <span class="count">{{ openCount() }} open</span>
       </header>-->
       <div class="md">
-        <aside class="list">
-          @for (a of actions(); track a.id) {
-            <a class="row" [class.done]="a.status !== 'open'" [routerLink]="['/inbox', a.id]" routerLinkActive="sel">
-              <span class="kind" [attr.data-tone]="tone(a)"><rw-icon [name]="icon(a)" [size]="16" /></span>
-              <span class="rbody">
-                <span class="r1">
-                  <span class="title">{{ a.title }}</span>
-                  @if (a.status !== 'open') { <rw-icon name="check" [size]="14" class="donetick" /> }
+        <aside class="listcol">
+          <div class="lbar">
+            <div class="tabs" role="tablist">
+              <button type="button" class="tab" role="tab" [class.on]="tab() === 'all'" (click)="tab.set('all')">
+                All <span class="n">{{ allCount() }}</span>
+              </button>
+              <button type="button" class="tab" role="tab" [class.on]="tab() === 'pending'" (click)="tab.set('pending')">
+                Pending <span class="n">{{ pendingCount() }}</span>
+              </button>
+            </div>
+            <span class="grow"></span>
+            <label class="picker" title="Sort by">
+              <rw-icon name="sort" [size]="15" />
+              <select [value]="sortBy()" (change)="sortBy.set($any($event.target).value)" aria-label="Sort by">
+                @for (s of inboxSorts; track s.id) { <option [value]="s.id">{{ s.label }}</option> }
+              </select>
+            </label>
+            <label class="picker" title="Filter by type">
+              <rw-icon name="filter" [size]="15" />
+              <select [value]="kindFilter()" (change)="kindFilter.set($any($event.target).value)" aria-label="Filter by type">
+                @for (k of kindFilters; track k.id) { <option [value]="k.id">{{ k.label }}</option> }
+              </select>
+            </label>
+          </div>
+
+          <div class="list">
+            @for (a of actions(); track a.id) {
+              <a class="row" [class.done]="a.status !== 'open'" [routerLink]="['/inbox', a.id]" routerLinkActive="sel">
+                <span class="kind" [attr.data-tone]="tone(a)"><rw-icon [name]="icon(a)" [size]="16" /></span>
+                <span class="rbody">
+                  <span class="r1">
+                    <span class="title">{{ a.title }}</span>
+                    @if (a.status !== 'open') { <rw-icon name="check" [size]="14" class="donetick" /> }
+                  </span>
+                  <span class="r2">
+                    <span class="ref">{{ a.caseRef }}</span>
+                    <span class="dot">·</span>
+                    <span class="joiner">{{ joiner(a) }}</span>
+                    <span class="grow"></span>
+                    <span class="ago">{{ ago(a.createdAt) }}</span>
+                  </span>
                 </span>
-                <span class="r2">
-                  <span class="ref">{{ a.caseRef }}</span>
-                  <span class="dot">·</span>
-                  <span class="joiner">{{ joiner(a) }}</span>
-                  <span class="grow"></span>
-                  <span class="ago">{{ ago(a.createdAt) }}</span>
-                </span>
-              </span>
-            </a>
-          } @empty {
-            <div class="empty"><rw-icon name="check-circle" [size]="26" /><p>No actions yet.</p></div>
-          }
+              </a>
+            } @empty {
+              <div class="empty">
+                <rw-icon name="check-circle" [size]="26" />
+                <p>{{ tab() === 'pending' ? "No pending items — you're all caught up." : 'No actions match this filter.' }}</p>
+              </div>
+            }
+          </div>
         </aside>
 
         <div class="pane">
@@ -81,9 +126,24 @@ export function actionAgo(iso: string): string {
     .sub { margin: var(--s-4) 0 0; color: var(--muted); font-size: var(--fs-300); }
     .count { font-size: var(--fs-200); font-weight: var(--fw-semibold); color: var(--muted); background: var(--surface); border: 1px solid var(--border); padding: var(--s-4) var(--s-10); border-radius: var(--radius-pill); }
 
-    .md { flex: 1; min-height: 0; display: grid; grid-template-columns: 380px 1fr; border-top: 1px solid var(--border); }
+    .md { flex: 1; min-height: 0; display: grid; grid-template-columns: 380px 1fr; }
 
-    .list { border-right: 1px solid var(--border); overflow-y: auto; padding: var(--s-8); min-height: 0; }
+    /* List column = a toolbar (tabs + sort/filter) over the scrolling queue. */
+    .listcol { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--border); }
+    .lbar { flex: none; display: flex; align-items: center; gap: var(--s-6); padding: var(--s-8) var(--s-10); border-bottom: 1px solid var(--border); }
+    .tabs { display: inline-flex; gap: 2px; }
+    .tab { display: inline-flex; align-items: center; gap: var(--s-6); height: 28px; padding: 0 var(--s-10); border: none; background: transparent; color: var(--muted); border-radius: var(--radius-sm); font: inherit; font-size: var(--fs-200); font-weight: var(--fw-semibold); cursor: pointer; }
+    .tab:hover { background: var(--surface-3); color: var(--text); }
+    .tab.on { background: var(--accent-weak); color: var(--accent); }
+    .tab .n { font-size: var(--fs-100); font-weight: var(--fw-bold); background: var(--surface-3); color: var(--muted); border-radius: var(--radius-pill); padding: 0 6px; min-width: 16px; text-align: center; }
+    .tab.on .n { background: var(--accent-weak-2); color: var(--accent); }
+    .grow { flex: 1; }
+    .picker { display: inline-flex; align-items: center; gap: 3px; height: 28px; padding: 0 var(--s-4); border-radius: var(--radius-sm); color: var(--faint); }
+    .picker:hover { background: var(--surface-3); }
+    .picker select { border: none; background: transparent; font: inherit; font-size: var(--fs-200); font-weight: var(--fw-semibold); color: var(--muted); cursor: pointer; padding: var(--s-2) 0; }
+    .picker select:focus { outline: none; }
+
+    .list { flex: 1; overflow-y: auto; padding: var(--s-8); min-height: 0; }
     .row { position: relative; display: flex; align-items: flex-start; gap: var(--s-10); width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius); padding: var(--s-10) var(--s-12); margin-bottom: 2px; text-decoration: none; cursor: pointer; transition: background 0.1s ease; }
     .row:hover { background: var(--surface-3); }
     .row.sel { background: var(--accent-weak); border-color: var(--accent-border); }
@@ -118,15 +178,25 @@ export function actionAgo(iso: string): string {
 export class InboxComponent {
   readonly #rt = inject(RuntimeService);
   readonly #router = inject(Router);
+  readonly inboxSorts = INBOX_SORTS;
+  readonly kindFilters = KIND_FILTERS;
+
+  readonly tab = signal<StatusTab>('all');
+  readonly sortBy = signal<InboxSort>('newest');
+  readonly kindFilter = signal<'all' | ActionKind>('all');
 
   readonly openCount = computed(() => this.#rt.openActions().length);
-  readonly actions = computed(() =>
-    [...this.#rt.actions()].sort((a, b) => {
-      const ao = a.status === 'open' ? 0 : 1;
-      const bo = b.status === 'open' ? 0 : 1;
-      return ao !== bo ? ao - bo : b.createdAt.localeCompare(a.createdAt);
-    }),
-  );
+  readonly allCount = computed(() => this.#rt.actions().length);
+  readonly pendingCount = this.openCount;
+
+  readonly actions = computed(() => {
+    const status = this.tab();
+    const kind = this.kindFilter();
+    const rows = this.#rt.actions().filter(
+      (a) => (status === 'all' || a.status === 'open') && (kind === 'all' || a.kind === kind),
+    );
+    return [...rows].sort(this.#comparator(this.sortBy()));
+  });
 
   readonly #url = toSignal(
     this.#router.events.pipe(filter((e) => e instanceof NavigationEnd), map(() => this.#router.url)),
@@ -136,6 +206,16 @@ export class InboxComponent {
     const m = this.#url().match(/\/inbox\/([^/?#]+)/);
     return m ? decodeURIComponent(m[1]) : null;
   });
+
+  #comparator(s: InboxSort): (a: ActionItem, b: ActionItem) => number {
+    switch (s) {
+      case 'oldest': return (a, b) => a.createdAt.localeCompare(b.createdAt);
+      case 'kind': return (a, b) => a.kind.localeCompare(b.kind) || b.createdAt.localeCompare(a.createdAt);
+      case 'case': return (a, b) => a.caseRef.localeCompare(b.caseRef) || b.createdAt.localeCompare(a.createdAt);
+      case 'newest':
+      default: return (a, b) => b.createdAt.localeCompare(a.createdAt);
+    }
+  }
 
   tone(a: ActionItem): Tone { return KIND_TONE[a.kind]; }
   icon(a: ActionItem): IconName { return KIND_ICON[a.kind]; }
