@@ -1,4 +1,4 @@
-import type { IconName } from '../shared/icon.component';
+import type { IconName } from '../../../shared/icon.component';
 
 /**
  * Shared visual vocabulary for process steps — the Fluent icon, brand-aligned

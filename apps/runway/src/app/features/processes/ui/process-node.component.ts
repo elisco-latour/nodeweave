@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, computed, input } from '@angular/core';
 import { Node } from '@nodeweave/angular';
-import { IconComponent, type IconName } from '../shared/icon.component';
+import { IconComponent, type IconName } from '../../../shared/icon.component';
 import type { RunState, NodeKind } from './process-graph';
 
 const RUN_LABEL: Record<RunState, string> = {
@@ -20,9 +20,8 @@ const TICK_ICON: Partial<Record<RunState, IconName>> = {
 /** Read-only node on the case process map. Lit by the case's readiness state. */
 @Component({
   selector: 'rw-process-node',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="pn" [attr.data-run]="run()">
       <span class="rail"></span>

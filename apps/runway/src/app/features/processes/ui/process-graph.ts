@@ -1,5 +1,5 @@
 import { Node, Port, Edge, type VisualCanvasService } from '@nodeweave/angular';
-import type { ReadinessRecord, Pathway, ReadinessItem } from '../domain/model';
+import type { ReadinessRecord, Pathway, ReadinessItem } from '../../../domain/model';
 
 /** Visual run-state of a node on the read-only case map. */
 export type RunState = 'done' | 'active' | 'awaiting' | 'blocked' | 'pending' | 'skipped';

@@ -6,6 +6,7 @@ import { routes } from './app/app.routes';
 import { provideActionsFeature } from './app/features/actions';
 import { provideCasesFeature } from './app/features/cases';
 import { provideOverviewFeature } from './app/features/overview';
+import { provideProcessesFeature } from './app/features/processes';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -19,5 +20,6 @@ bootstrapApplication(AppComponent, {
     ...provideActionsFeature(),
     ...provideCasesFeature(),
     ...provideOverviewFeature(),
+    ...provideProcessesFeature(),
   ],
 }).catch((err) => console.error(err));

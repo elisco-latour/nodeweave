@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, computed, input, signal } from '@an
 import { StateChipComponent, itemTone, stateTone, ITEM_STATE_LABEL } from '../../../../shared/state-chip.component';
 import { IconComponent, type IconName } from '../../../../shared/icon.component';
 import type { Fulfilment, DomainEvent, ReadinessItemState, Actor } from '../../../../domain/model';
-import { ProcessMapComponent } from '../../../../operate/process-map.component';
+import { ProcessMapComponent } from '../../../processes';
 import type { Case } from '../../domain/case.entity';
 
 const FULFIL_LABEL: Record<Fulfilment, string> = { auto: 'Automated', 'agent-assisted': 'Agent-assisted', human: 'Human' };
@@ -18,9 +18,7 @@ const TODAY = new Date().toISOString().slice(0, 10);
  * The readiness view for one case: outcome-first, with a readiness/flow toggle.
  * Dumb presentational component — it receives the `Case` entity, its activity
  * events, and the (already masked) joiner name via inputs; it holds no services.
- *
- * TODO (strangler): `rw-process-map` still lives in operate/ — it moves into a
- * processes slice when that migrates; this import is the temporary seam.
+ * The process map comes from the processes slice's public barrel.
  */
 @Component({
   selector: 'rw-case-detail',

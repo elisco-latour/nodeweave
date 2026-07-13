@@ -1,14 +1,13 @@
 import { Component, ChangeDetectionStrategy, computed, inject, input } from '@angular/core';
 import { Node, VisualCanvasService } from '@nodeweave/angular';
-import { IconComponent } from '../shared/icon.component';
+import { IconComponent } from '../../../shared/icon.component';
 import { stepIcon, stepColor, stepKindLabel } from './step-visuals';
 
 /** Editable process step on the Compose canvas. Colour/icon from the type. */
 @Component({
   selector: 'rw-step-node',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="step" [style.--step]="color()">
       <span class="rail"></span>

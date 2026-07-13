@@ -4,32 +4,34 @@ import {
 } from '@angular/core';
 import { VisualCanvasComponent, NodeweavePanelComponent, type VisualCanvasService } from '@nodeweave/angular';
 import { NwInspectorComponent, nodeFromDrop, allowNodeDrop, NW_DND_TYPE, type NodeTypeDefinition } from '@nodeweave/angular-authoring';
-import type { Pathway } from '../domain/model';
-import { ProcessStore } from '../runtime/process-store';
-import { processCatalog, buildTemplate } from './process-catalog';
-import { IconComponent } from '../shared/icon.component';
-import { stepIcon, stepColor } from './step-visuals';
+import { ComposeViewModel } from '../../state/compose.view-model';
+import { processCatalog, buildTemplate } from '../process-catalog';
+import { IconComponent } from '../../../../shared/icon.component';
+import { stepIcon, stepColor } from '../step-visuals';
 
 /**
  * Compose — the Process Studio. Author/evolve the onboarding process for a
  * pathway on the visual canvas (Fluent palette + schema inspector) and publish
- * a versioned ProcessDefinition to the store that Operate reads.
+ * a versioned process via the ViewModel that Operate reads.
+ *
+ * Smart page: the ComposeViewModel owns the pathway + publish contract; the
+ * canvas concerns (catalog, template seeding, drag/drop, inspector) stay here.
  */
 @Component({
   selector: 'rw-compose',
-  standalone: true,
+  imports: [VisualCanvasComponent, NodeweavePanelComponent, NwInspectorComponent, IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [VisualCanvasComponent, NodeweavePanelComponent, NwInspectorComponent, IconComponent],
+  providers: [ComposeViewModel],
   template: `
     <div class="rw-compose">
       <div class="cbar">
         <div class="seg">
-          <button type="button" [class.on]="pathway() === 'centre-level'" (click)="pathway.set('centre-level')">Centre-level</button>
-          <button type="button" [class.on]="pathway() === 'project-level'" (click)="pathway.set('project-level')">Project-level</button>
+          <button type="button" [class.on]="vm.pathway() === 'centre-level'" (click)="vm.setPathway('centre-level')">Centre-level</button>
+          <button type="button" [class.on]="vm.pathway() === 'project-level'" (click)="vm.setPathway('project-level')">Project-level</button>
         </div>
-        <span class="ver">{{ processName() }}</span>
-        <span class="verchip" [class.pub]="isPublished()">{{ versionLabel() }}</span>
+        <span class="ver">{{ vm.processName() }}</span>
+        <span class="verchip" [class.pub]="vm.isPublished()">{{ vm.versionLabel() }}</span>
         <span class="grow"></span>
         <span class="count"><rw-icon name="compose" [size]="15" />{{ cv.service.nodes().length }} steps</span>
         <span class="count"><rw-icon name="branch" [size]="15" />{{ cv.service.edges().length }} links</span>
@@ -141,12 +143,11 @@ import { stepIcon, stepColor } from './step-visuals';
     .rw-compose .inspector .field textarea:focus { border-color: var(--brand) !important; box-shadow: 0 0 0 3px rgba(161, 0, 255, 0.15) !important; }
   `,
 })
-export class ComposeComponent {
+export class ComposePageComponent {
+  readonly vm = inject(ComposeViewModel);
   readonly cvRef = viewChild(VisualCanvasComponent);
   readonly wrap = viewChild<ElementRef<HTMLElement>>('wrap');
 
-  readonly #store = inject(ProcessStore);
-  readonly pathway = signal<Pathway>('centre-level');
   readonly catalog = processCatalog;
   readonly paletteGroups = processCatalog.byCategory();
   readonly nodeTypes = processCatalog.nodeTypes();
@@ -156,13 +157,6 @@ export class ComposeComponent {
   // Exposed for the template.
   readonly stepIcon = stepIcon;
   readonly stepColor = stepColor;
-
-  readonly processName = computed(() => (this.pathway() === 'centre-level' ? 'centre-onboarding' : 'project-onboarding'));
-  readonly isPublished = computed(() => !!this.#store.published(this.pathway()));
-  readonly versionLabel = computed(() => {
-    const p = this.#store.published(this.pathway());
-    return p ? `v${p.version} · published` : 'draft';
-  });
 
   readonly inspector = computed(() => {
     const cv = this.cvRef();
@@ -180,20 +174,22 @@ export class ComposeComponent {
     // Seed / re-seed the template when the canvas is ready or the pathway changes.
     effect(() => {
       const cv = this.cvRef();
-      const p = this.pathway();
+      const p = this.vm.pathway();
       if (cv) buildTemplate(cv.service, p);
     });
   }
 
   reset(): void {
     const cv = this.cvRef();
-    if (cv) buildTemplate(cv.service, this.pathway());
+    if (cv) buildTemplate(cv.service, this.vm.pathway());
   }
 
-  publish(service: VisualCanvasService): void {
-    this.#store.publish(this.pathway(), service.toJSON());
-    this.justPublished.set(true);
-    setTimeout(() => this.justPublished.set(false), 2200);
+  async publish(service: VisualCanvasService): Promise<void> {
+    const ok = await this.vm.publish(service.toJSON());
+    if (ok) {
+      this.justPublished.set(true);
+      setTimeout(() => this.justPublished.set(false), 2200);
+    }
   }
 
   onDragStart(ev: DragEvent, item: NodeTypeDefinition): void {

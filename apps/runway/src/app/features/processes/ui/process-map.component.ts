@@ -3,8 +3,8 @@ import {
   afterNextRender, effect, inject, input, viewChild,
 } from '@angular/core';
 import { VisualCanvasComponent } from '@nodeweave/angular';
-import type { ReadinessRecord } from '../domain/model';
-import { ProcessStore } from '../runtime/process-store';
+import type { ReadinessRecord } from '../../../domain/model';
+import { ProcessStore } from '../../../runtime/process-store';
 import { buildCaseMap } from './process-graph';
 import { ProcessNodeComponent } from './process-node.component';
 
@@ -13,13 +13,15 @@ import { ProcessNodeComponent } from './process-node.component';
  * nodeweave, lit by the case's readiness state. Pan/zoom only — nodes are
  * non-interactive (pointer-events disabled) so it reads as a live map, not an
  * editor. Rebuilds when the selected case changes.
+ *
+ * Reads the shared ProcessStore directly (a runtime store, like RuntimeService)
+ * so the canvas rebuilds reactively when a new process is published.
  */
 @Component({
   selector: 'rw-process-map',
-  standalone: true,
+  imports: [VisualCanvasComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [VisualCanvasComponent],
   template: `
     <div class="rw-map">
       <nodeweave #cv background="dots" [backgroundGap]="20" [nodeTypes]="nodeTypes" [nodesResizable]="false"></nodeweave>
