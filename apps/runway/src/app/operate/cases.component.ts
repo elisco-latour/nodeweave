@@ -23,17 +23,15 @@ function csvCell(v: unknown): string {
   imports: [IntakeWizardComponent, StateChipComponent, IconComponent],
   template: `
     <div class="surface">
-      <header class="head">
+      <!--<header class="head">
         <div>
           <h1>Cases</h1>
           <p class="sub">Every onboarding — the canonical readiness record, from intake through to Day 1.</p>
         </div>
         <span class="count">{{ result().matched }} shown · {{ cases().length }} total</span>
-      </header>
+      </header>-->
 
-      <div class="cmdbar">
-        <button type="button" class="btn primary" (click)="wizardOpen.set(true)"><rw-icon name="add" [size]="16" />New case</button>
-        <span class="divider"></span>
+      <div class="cbar">
         <button type="button" class="cmd" (click)="refresh()"><rw-icon name="refresh" [size]="17" [class.spin]="refreshing()" />Refresh</button>
         <button type="button" class="cmd" (click)="exportCsv()"><rw-icon name="download" [size]="17" />Export</button>
         <label class="qsearch">
@@ -53,6 +51,7 @@ function csvCell(v: unknown): string {
             @for (f of filters; track f.id) { <option [value]="f.id">{{ f.label }} ({{ counts()[f.id] }})</option> }
           </select>
         </label>
+        <button type="button" class="btn primary" (click)="wizardOpen.set(true)"><rw-icon name="add" [size]="16" />New case</button>
       </div>
 
       <div class="tablecard">
@@ -110,8 +109,24 @@ function csvCell(v: unknown): string {
     h1 { margin: 0; font-family: var(--font-display); font-size: var(--fs-600); font-weight: var(--fw-bold); letter-spacing: -0.02em; }
     .sub { margin: var(--s-4) 0 0; color: var(--muted); font-size: var(--fs-300); }
     .count { font-size: var(--fs-200); color: var(--faint); font-variant-numeric: tabular-nums; white-space: nowrap; margin-top: var(--s-6); }
-
-    .cmdbar { flex: none; display: flex; align-items: center; gap: var(--s-4); padding: 0 var(--s-24) var(--s-12); flex-wrap: wrap; }
+    .cbar {
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: var(--s-12);
+      padding: var(--s-10) var(--s-16);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-size: var(--fs-300);
+    }
+    .cmdbar { 
+      flex: none; 
+      display: flex; 
+      align-items: center;
+      gap: var(--s-4);
+      padding: var(--s-24) var(--s-12);
+      flex-wrap: wrap; 
+    }
     .divider { width: 1px; height: 20px; background: var(--border); margin: 0 var(--s-8); }
     .grow { flex: 1; }
     .btn { display: inline-flex; align-items: center; gap: var(--s-6); height: 32px; padding: 0 var(--s-12); border: 1px solid transparent; border-radius: var(--radius-sm); font: inherit; font-size: var(--fs-300); font-weight: var(--fw-semibold); cursor: pointer; box-shadow: none; }
@@ -130,7 +145,18 @@ function csvCell(v: unknown): string {
     .picker select:focus { outline: none; }
 
     /* Elevated table container floating over the page. */
-    .tablecard { flex: 1; min-height: 0; margin: 0 var(--s-24) var(--s-24); display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-4); overflow: hidden; }
+    .tablecard {
+      flex: 1;
+      min-height: 0;
+      /* margin: 0 var(--s-24) var(--s-24); */
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      /* border: 1px solid var(--border); */
+      /* border-radius: var(--radius-lg); */
+      box-shadow: var(--shadow-4);
+      overflow: hidden;
+    }
     .tscroll { flex: 1; overflow: auto; min-height: 0; }
     table { width: 100%; border-collapse: collapse; font-size: var(--fs-300); }
     thead th { position: sticky; top: 0; z-index: 1; background: var(--surface-2); text-align: left; font-size: var(--fs-100); text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); font-weight: var(--fw-bold); padding: var(--s-10) var(--s-12); border-bottom: 1px solid var(--border); white-space: nowrap; }

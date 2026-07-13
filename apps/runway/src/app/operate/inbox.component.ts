@@ -29,14 +29,13 @@ export function actionAgo(iso: string): string {
   imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent],
   template: `
     <div class="surface">
-      <header class="head">
+      <!--<header class="head">
         <div>
           <h1>Inbox</h1>
           <p class="sub">Things that need a person. Everything else, the agent is handling.</p>
         </div>
         <span class="count">{{ openCount() }} open</span>
-      </header>
-
+      </header>-->
       <div class="md">
         <aside class="list">
           @for (a of actions(); track a.id) {
