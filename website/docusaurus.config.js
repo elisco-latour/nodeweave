@@ -7,11 +7,11 @@ const config = {
   tagline: 'A framework-agnostic node / graph canvas',
   favicon: 'img/favicon.svg',
 
-  url: 'https://arasuite.github.io',
-  baseUrl: '/',
+  url: 'https://elisco-latour.github.io',
+  baseUrl: '/nodeweave/',
 
-  organizationName: 'arasuite',
-  projectName: 'visual-canvas',
+  organizationName: 'elisco-latour',
+  projectName: 'nodeweave',
 
   onBrokenLinks: 'warn',
   onBrokenAnchors: 'warn',
@@ -54,7 +54,7 @@ const config = {
           { type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs' },
           { to: '/docs/getting-started', label: 'Getting started', position: 'left' },
           { to: '/docs/angular', label: 'Angular', position: 'left' },
-          { href: 'https://github.com/arasuite/visual-canvas', label: 'GitHub', position: 'right' },
+          { href: 'https://github.com/elisco-latour/nodeweave', label: 'GitHub', position: 'right' },
         ],
       },
       footer: {
