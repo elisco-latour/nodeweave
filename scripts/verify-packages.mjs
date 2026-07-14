@@ -36,17 +36,18 @@ const FORBID = [
 const isRawTs = (p) => /\.ts$/.test(p) && !/\.d\.ts$/.test(p);
 
 /**
- * Extract the first complete top-level JSON array from npm's stdout.
+ * Extract the first complete top-level JSON value (object or array) from npm's
+ * stdout.
  *
- * `npm pack --json` emits a JSON array, but newer npm can append extra content
- * after it (notices, a second document). A naive `slice(indexOf('['),
- * lastIndexOf(']'))` then grabs a stray `]` and leaves trailing text that
- * `JSON.parse` rejects ("non-whitespace character after JSON"). Scan bracket
- * depth (string-aware) from the first `[` and stop at its matching `]`.
+ * `npm pack --json` output has shifted across npm versions and newer npm can
+ * append extra content after the JSON (notices, a second document). A naive
+ * `slice(indexOf('['), lastIndexOf(']'))` grabs a stray `]` and leaves trailing
+ * text that `JSON.parse` rejects. Scan bracket depth (string-aware) from the
+ * first `[`/`{` and stop at its matching close.
  */
-function firstJsonArray(out) {
-  const start = out.indexOf('[');
-  if (start === -1) throw new Error(`no JSON array in npm output:\n${out.slice(0, 300)}`);
+function firstJsonValue(out) {
+  const start = out.search(/[[{]/);
+  if (start === -1) throw new Error(`no JSON in npm output:\n${out.slice(0, 300)}`);
   let depth = 0, inStr = false, esc = false;
   for (let i = start; i < out.length; i++) {
     const c = out[i];
@@ -60,7 +61,22 @@ function firstJsonArray(out) {
     else if (c === '[' || c === '{') depth++;
     else if (c === ']' || c === '}') { if (--depth === 0) return out.slice(start, i + 1); }
   }
-  throw new Error(`unterminated JSON array in npm output:\n${out.slice(start, start + 300)}`);
+  throw new Error(`unterminated JSON in npm output:\n${out.slice(start, start + 300)}`);
+}
+
+/**
+ * The list of packed file paths from `npm pack --dry-run --json`, normalized
+ * across npm's two output shapes:
+ *   npm < 12: [ { files: [...], … } ]
+ *   npm ≥ 12: { "<pkg-name>": { files: [...], … } }
+ */
+function packedFiles(out) {
+  const parsed = JSON.parse(firstJsonValue(out));
+  const entry = Array.isArray(parsed) ? parsed[0] : Object.values(parsed)[0];
+  if (!entry || !Array.isArray(entry.files)) {
+    throw new Error(`unexpected npm pack --json shape: ${JSON.stringify(parsed).slice(0, 300)}`);
+  }
+  return entry.files.map((f) => f.path.replace(/\\/g, '/'));
 }
 
 let failed = false;
@@ -74,7 +90,7 @@ for (const pkg of PACKAGES) {
   let files;
   try {
     const out = execSync('npm pack --dry-run --json', { cwd: pkg.packDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-    files = JSON.parse(firstJsonArray(out))[0].files.map((f) => f.path.replace(/\\/g, '/'));
+    files = packedFiles(out);
   } catch (e) {
     fail(`npm pack failed: ${e.message}`);
     continue;
