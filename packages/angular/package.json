@@ -1,6 +1,6 @@
 {
   "name": "@build744/nodeweave-angular",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Angular 22 integration for nodeweave — a signal-first node/graph canvas.",
   "type": "module",
   "exports": {
@@ -16,7 +16,7 @@
     "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
     "rxjs": "^7.4.0",
-    "@build744/nodeweave-core": "^0.1.0"
+    "@build744/nodeweave-core": "^0.2.0"
   },
   "dependencies": {
     "tslib": "^2.8.0"
