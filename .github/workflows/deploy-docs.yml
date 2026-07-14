@@ -3,6 +3,10 @@ name: Deploy docs
 on:
   push:
     branches: [main]
+    paths:
+      - 'website/**'
+      - 'docs/**'
+      - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
 
 # Required for GitHub Pages deployment via Actions.
