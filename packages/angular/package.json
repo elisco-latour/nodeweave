@@ -34,14 +34,14 @@
   "sideEffects": false,
   "author": "Koffi Eli Kponblanou",
   "license": "ISC",
-  "homepage": "https://github.com/arasuite/visual-canvas/tree/main/packages/angular#readme",
+  "homepage": "https://github.com/elisco-latour/nodeweave/tree/main/packages/angular#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arasuite/visual-canvas.git",
+    "url": "git+https://github.com/elisco-latour/nodeweave.git",
     "directory": "packages/angular"
   },
   "bugs": {
-    "url": "https://github.com/arasuite/visual-canvas/issues"
+    "url": "https://github.com/elisco-latour/nodeweave/issues"
   },
   "publishConfig": {
     "access": "public"

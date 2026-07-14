@@ -38,14 +38,14 @@
   "keywords": ["node-editor", "canvas", "dag", "web-components", "graph", "flow"],
   "author": "Koffi Eli Kponblanou",
   "license": "ISC",
-  "homepage": "https://github.com/arasuite/visual-canvas/tree/main/packages/core#readme",
+  "homepage": "https://github.com/elisco-latour/nodeweave/tree/main/packages/core#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arasuite/visual-canvas.git",
+    "url": "git+https://github.com/elisco-latour/nodeweave.git",
     "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/arasuite/visual-canvas/issues"
+    "url": "https://github.com/elisco-latour/nodeweave/issues"
   },
   "publishConfig": {
     "access": "public"
