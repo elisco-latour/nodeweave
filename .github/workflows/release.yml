@@ -23,6 +23,10 @@ permissions:
   pull-requests: write # open the Version Packages PR
   id-token: write # npm provenance
 
+# Run JavaScript actions on Node 24 (they still default to Node 20 until GitHub flips it).
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   release:
     name: Version or publish
