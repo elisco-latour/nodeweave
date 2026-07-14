@@ -1,6 +1,6 @@
 {
   "name": "@build744/nodeweave-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Framework-agnostic node/graph canvas engine — Web Components, command pattern, and DAG validation.",
   "type": "module",
   "main": "./dist/index.js",
@@ -27,15 +27,29 @@
       "default": "./dist/components.js"
     }
   },
-  "sideEffects": ["./dist/index.js", "./dist/components.js", "./dist/components/*.js"],
-  "files": ["dist", "README.md"],
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/components.js",
+    "./dist/components/*.js"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
     "test": "node --test \"tests/**/*.test.js\"",
     "prepare": "tsc"
   },
-  "keywords": ["node-editor", "canvas", "dag", "web-components", "graph", "flow"],
+  "keywords": [
+    "node-editor",
+    "canvas",
+    "dag",
+    "web-components",
+    "graph",
+    "flow"
+  ],
   "author": "Koffi Eli Kponblanou",
   "license": "ISC",
   "homepage": "https://github.com/elisco-latour/nodeweave/tree/main/packages/core#readme",
