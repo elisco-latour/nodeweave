@@ -6,10 +6,10 @@
   "type": "module",
   "packageManager": "pnpm@10.26.2",
   "scripts": {
-    "build": "pnpm --filter @build744/core --filter @build744/angular --filter @build744/angular-authoring build",
-    "test": "pnpm --filter @build744/core test",
+    "build": "pnpm --filter @build744/nodeweave-core --filter @build744/nodeweave-angular --filter @build744/nodeweave-angular-authoring build",
+    "test": "pnpm --filter @build744/nodeweave-core test",
     "test:e2e": "playwright test",
-    "typecheck": "pnpm --filter @build744/core exec tsc --noEmit",
+    "typecheck": "pnpm --filter @build744/nodeweave-core exec tsc --noEmit",
     "verify:packages": "node scripts/verify-packages.mjs",
     "changeset": "changeset",
     "version-packages": "changeset version",

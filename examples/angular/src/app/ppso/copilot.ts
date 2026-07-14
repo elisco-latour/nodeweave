@@ -1,5 +1,5 @@
-import { Edge, type VisualCanvasService } from '@build744/angular';
-import { NodeCatalog } from '@build744/angular-authoring';
+import { Edge, type VisualCanvasService } from '@build744/nodeweave-angular';
+import { NodeCatalog } from '@build744/nodeweave-angular-authoring';
 
 // ── Proposed operations (what a "spec edit" is, structurally) ────────────────
 export interface AddNodeOp { kind: 'addNode'; type: string; title?: string; ref?: string; }

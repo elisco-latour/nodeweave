@@ -12,7 +12,7 @@ bindings on top (Angular today; the core is renderer-agnostic by design).
    └──────────────────────────────────────────────┘
         ▲                     ▲                ▲
    canvas-* (default)    Angular renderer   (React / Svelte / …)
-   Web Components        @build744/angular      future
+   Web Components        @build744/nodeweave-angular      future
 ```
 
 ## Features
@@ -30,9 +30,9 @@ bindings on top (Angular today; the core is renderer-agnostic by design).
 
 | Package | Description |
 |---------|-------------|
-| [`@build744/core`](packages/core) | Framework-agnostic engine + default `<canvas-*>` Web Components |
-| [`@build744/angular`](packages/angular) | Angular 22 binding (signal-first) |
-| [`@build744/angular-authoring`](packages/angular-authoring) | Catalog-driven authoring UX (palette, schema inspector, drag-to-create) |
+| [`@build744/nodeweave-core`](packages/core) | Framework-agnostic engine + default `<canvas-*>` Web Components |
+| [`@build744/nodeweave-angular`](packages/angular) | Angular 22 binding (signal-first) |
+| [`@build744/nodeweave-angular-authoring`](packages/angular-authoring) | Catalog-driven authoring UX (palette, schema inspector, drag-to-create) |
 
 Examples live in [`examples/`](examples): `vanilla` and `wireframe` (plain Web
 Components) and `angular` (Angular 22).
@@ -41,10 +41,10 @@ Components) and `angular` (Angular 22).
 
 ```bash
 # vanilla / Web Components
-pnpm add @build744/core
+pnpm add @build744/nodeweave-core
 
 # Angular
-pnpm add @build744/angular @build744/core
+pnpm add @build744/nodeweave-angular @build744/nodeweave-core
 ```
 
 ## Quick start — vanilla
@@ -58,7 +58,7 @@ import {
   CanvasState, Node, Port,
   DragController, PanZoomController, SelectionController,
   EdgeRoutingController, KeyboardController, ResizeController,
-} from '@build744/core'; // importing from the root also registers <canvas-*>
+} from '@build744/nodeweave-core'; // importing from the root also registers <canvas-*>
 
 const state = new CanvasState();
 const ws = document.getElementById('ws');
@@ -86,7 +86,7 @@ See [docs/getting-started.md](docs/getting-started.md).
 
 ```ts
 import { Component } from '@angular/core';
-import { VisualCanvasComponent, Node, Port } from '@build744/angular';
+import { VisualCanvasComponent, Node, Port } from '@build744/nodeweave-angular';
 
 @Component({
   selector: 'app-editor',
@@ -111,7 +111,7 @@ See [docs/angular.md](docs/angular.md) — including custom Angular node compone
 
 - [Getting started (vanilla)](docs/getting-started.md)
 - [Angular guide](docs/angular.md)
-- [`@build744/core` API reference](docs/core-api.md)
+- [`@build744/nodeweave-core` API reference](docs/core-api.md)
 - [Custom edges](docs/custom-edges.md)
 - [Layout](docs/layout.md)
 - [Export & persistence](docs/export.md)
@@ -127,7 +127,7 @@ See [docs/angular.md](docs/angular.md) — including custom Angular node compone
   through a `CommandHistory`, so undo/redo is free.
 - **The engine is renderer-agnostic.** Controllers find nodes/ports by CSS
   selector, so any view layer works — the `<canvas-*>` Web Components are the
-  default; `@build744/angular` renders with Angular; other frameworks can too.
+  default; `@build744/nodeweave-angular` renders with Angular; other frameworks can too.
 
 ## Development
 
@@ -136,7 +136,7 @@ pnpm workspace — Node 24, TypeScript ~6.0, Angular 22.
 ```bash
 pnpm install
 pnpm build             # build the three @build744/* packages
-pnpm test              # @build744/core unit tests (node:test)
+pnpm test              # @build744/nodeweave-core unit tests (node:test)
 pnpm verify:packages   # pre-publish dry-run (tarball contents + publint + attw)
 pnpm --filter @build744/example-angular start   # run the Angular example
 ```

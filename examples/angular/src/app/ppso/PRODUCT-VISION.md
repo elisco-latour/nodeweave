@@ -196,7 +196,7 @@ Orchestrate **across** authoritative systems, referencing their data:
 | Built (prototype) | Role |
 |---|---|
 | `nodeweave` canvas + Angular binding | Visual surface for **Compose** (author) and **Operate** (live readiness map) |
-| `@build744/angular-authoring` (catalog, palette, schema inspector, DnD) | The Compose toolkit |
+| `@build744/nodeweave-angular-authoring` (catalog, palette, schema inspector, DnD) | The Compose toolkit |
 | Process catalogue + graph→YAML compiler | ProcessVersion definition + the compiled spec the runtime runs |
 | Branch/wait ports + labeled ports | Real gate outcomes + suspend/resume (maps to readiness states/blockers) |
 | Dry‑run simulation (scenarios, animated) | Compose confidence check; seed of the live execution trace |

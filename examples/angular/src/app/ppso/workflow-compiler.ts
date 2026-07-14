@@ -1,4 +1,4 @@
-import type { VisualCanvasService, Node } from '@build744/angular';
+import type { VisualCanvasService, Node } from '@build744/nodeweave-angular';
 
 export interface WorkflowNodeSpec {
   id: string;

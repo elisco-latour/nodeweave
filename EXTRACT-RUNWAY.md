@@ -40,9 +40,9 @@ resolves outside the monorepo. In the new repo:
 - **Depend on the published packages** in `package.json` — replace each
   `"@build744/…": "workspace:*"` with a real range once they're on npm:
   ```jsonc
-  "@build744/angular": "^0.1.0",
-  "@build744/angular-authoring": "^0.1.0",
-  "@build744/core": "^1.0.0"
+  "@build744/nodeweave-angular": "^0.1.0",
+  "@build744/nodeweave-angular-authoring": "^0.1.0",
+  "@build744/nodeweave-core": "^1.0.0"
   ```
   (During local dev before publish, use `pnpm link` / a file: dependency / a
   packed tarball.)

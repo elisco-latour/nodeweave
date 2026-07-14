@@ -41,13 +41,13 @@ importers:
       '@angular/platform-browser':
         specifier: ^22.0.0
         version: 22.0.6(@angular/common@22.0.6(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2))
-      '@build744/angular':
+      '@build744/nodeweave-angular':
         specifier: workspace:*
         version: link:../../packages/angular
-      '@build744/angular-authoring':
+      '@build744/nodeweave-angular-authoring':
         specifier: workspace:*
         version: link:../../packages/angular-authoring
-      '@build744/core':
+      '@build744/nodeweave-core':
         specifier: workspace:*
         version: link:../../packages/core
       rxjs:
@@ -91,7 +91,7 @@ importers:
       '@angular/core':
         specifier: ^22.0.0
         version: 22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2)
-      '@build744/core':
+      '@build744/nodeweave-core':
         specifier: workspace:*
         version: link:../core
       ng-packagr:
@@ -122,10 +122,10 @@ importers:
       '@angular/core':
         specifier: ^22.0.0
         version: 22.0.6(@angular/compiler@22.0.6)(rxjs@7.8.2)
-      '@build744/angular':
+      '@build744/nodeweave-angular':
         specifier: workspace:*
         version: link:../angular
-      '@build744/core':
+      '@build744/nodeweave-core':
         specifier: workspace:*
         version: link:../core
       ng-packagr:

@@ -1,13 +1,13 @@
 # Angular guide
 
-`@build744/angular` is a signal-first Angular 22 binding. It renders the graph
+`@build744/nodeweave-angular` is a signal-first Angular 22 binding. It renders the graph
 with Angular (so nodes can be your own components) while reusing the
 framework-agnostic engine and interaction controllers.
 
 ## Install
 
 ```bash
-pnpm add @build744/angular @build744/core
+pnpm add @build744/nodeweave-angular @build744/nodeweave-core
 ```
 
 Requires Angular `^22`, `rxjs ^7`. The component is standalone and works with
@@ -28,7 +28,7 @@ bootstrapApplication(AppComponent, {
 
 ```ts
 import { Component } from '@angular/core';
-import { VisualCanvasComponent, Node, Port } from '@build744/angular';
+import { VisualCanvasComponent, Node, Port } from '@build744/nodeweave-angular';
 
 @Component({
   selector: 'app-editor',
@@ -106,7 +106,7 @@ connect and resize are handled for you.
 
 ```ts
 import { Component, input } from '@angular/core';
-import { Node } from '@build744/angular';
+import { Node } from '@build744/nodeweave-angular';
 
 @Component({
   selector: 'app-task-node',

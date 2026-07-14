@@ -6,8 +6,8 @@ import {
   screenToFlowPosition,
   flowToScreenPosition,
   type Point,
-} from '@build744/core/core';
-import { VisualRegistry, TopologyRegistry, SchemaRegistry } from '@build744/core/registries';
+} from '@build744/nodeweave-core/core';
+import { VisualRegistry, TopologyRegistry, SchemaRegistry } from '@build744/nodeweave-core/registries';
 
 type Viewport = CanvasState['viewport'];
 type CanvasJSON = ReturnType<CanvasState['toJSON']>;

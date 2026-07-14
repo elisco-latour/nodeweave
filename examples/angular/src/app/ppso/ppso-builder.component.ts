@@ -8,8 +8,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { VisualCanvasComponent, NodeweavePanelComponent } from '@build744/angular';
-import { NwPaletteComponent, NwInspectorComponent, nodeFromDrop, allowNodeDrop } from '@build744/angular-authoring';
+import { VisualCanvasComponent, NodeweavePanelComponent } from '@build744/nodeweave-angular';
+import { NwPaletteComponent, NwInspectorComponent, nodeFromDrop, allowNodeDrop } from '@build744/nodeweave-angular-authoring';
 import { processCatalog, buildOnboardingTemplate } from './process-catalog';
 import { compileToWorkflow, toYaml } from './workflow-compiler';
 import { runSimulation, clearRunStates, type Scenario } from './simulator';

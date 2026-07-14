@@ -1,7 +1,7 @@
 /*
- * Public API of @build744/angular-authoring
+ * Public API of @build744/nodeweave-angular-authoring
  *
- * A catalog-driven authoring layer on top of @build744/angular: describe your
+ * A catalog-driven authoring layer on top of @build744/nodeweave-angular: describe your
  * node types once (label, icon, ports, config schema, renderer) and get a
  * palette, a schema inspector, and drag-to-create for free.
  */

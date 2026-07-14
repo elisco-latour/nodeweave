@@ -1,19 +1,19 @@
 # Getting started (vanilla)
 
-`@build744/core` ships as native ES modules and Web Components — no bundler
+`@build744/nodeweave-core` ships as native ES modules and Web Components — no bundler
 required. This guide builds a minimal, interactive canvas.
 
 ## Install
 
 ```bash
-pnpm add @build744/core
+pnpm add @build744/nodeweave-core
 ```
 
 Or load it directly in the browser (it's plain ESM):
 
 ```html
 <script type="module">
-  import { CanvasState /* … */ } from '/node_modules/@build744/core/dist/index.js';
+  import { CanvasState /* … */ } from '/node_modules/@build744/nodeweave-core/dist/index.js';
 </script>
 ```
 
@@ -36,7 +36,7 @@ See [theming.md](theming.md) for the full list of variables.
 
 ## 2. State + controllers
 
-Importing from `@build744/core` (the root entry) both gives you the symbols
+Importing from `@build744/nodeweave-core` (the root entry) both gives you the symbols
 **and** registers the `<canvas-*>` custom elements.
 
 ```js
@@ -44,7 +44,7 @@ import {
   CanvasState, Node, Port, Edge,
   DragController, PanZoomController, SelectionController,
   EdgeRoutingController, KeyboardController, ResizeController,
-} from '@build744/core';
+} from '@build744/nodeweave-core';
 
 const state = new CanvasState();
 const ws = document.getElementById('ws');
@@ -67,7 +67,7 @@ controllers.forEach((c) => c.attach());
 ```
 
 > Tree-shaking: if you don't need the default Web Components, import the engine
-> from `@build744/core/core` and `@build744/core/controllers` instead of the
+> from `@build744/nodeweave-core/core` and `@build744/nodeweave-core/controllers` instead of the
 > root entry (the root registers the components as a side effect).
 
 ## 3. Nodes, ports, edges
@@ -173,10 +173,10 @@ minimap colouring, and the config drawer). See
 [core-api.md#registries](core-api.md#registries).
 
 ```js
-import { VisualRegistry, TopologyRegistry, SchemaRegistry } from '@build744/core';
+import { VisualRegistry, TopologyRegistry, SchemaRegistry } from '@build744/nodeweave-core';
 
 const visual = new VisualRegistry();
 visual.register('action', { color: '#4dabf7', label: 'Action' });
 ```
 
-Next: the [`@build744/core` API reference](core-api.md).
+Next: the [`@build744/nodeweave-core` API reference](core-api.md).

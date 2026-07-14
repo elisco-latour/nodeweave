@@ -4,7 +4,7 @@ An edge's appearance is driven by fields on the `Edge` itself — set them when
 you create it (edges are immutable, so pass everything to the constructor).
 
 ```js
-import { Edge } from '@build744/core';
+import { Edge } from '@build744/nodeweave-core';
 
 new Edge({
   id: 'e1',
@@ -59,7 +59,7 @@ The path builders are exported for advanced use — e.g. drawing an overlay,
 a custom minimap, or your own edge layer:
 
 ```js
-import { getBezierPath, getSmoothStepPath, getEdgeCenter, buildEdgePath } from '@build744/core';
+import { getBezierPath, getSmoothStepPath, getEdgeCenter, buildEdgePath } from '@build744/nodeweave-core';
 
 const d = getSmoothStepPath({ x: 0, y: 0 }, { x: 200, y: 80 }, { borderRadius: 12 });
 const mid = getEdgeCenter({ x: 0, y: 0 }, { x: 200, y: 80 });

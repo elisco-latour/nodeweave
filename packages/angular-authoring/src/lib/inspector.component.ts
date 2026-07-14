@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, computed, input } from '@angular/core';
-import { Node, VisualCanvasService } from '@build744/angular';
-import type { SchemaDefinition, SchemaField } from '@build744/angular';
-import { RuleEvaluator } from '@build744/core/core';
+import { Node, VisualCanvasService } from '@build744/nodeweave-angular';
+import type { SchemaDefinition, SchemaField } from '@build744/nodeweave-angular';
+import { RuleEvaluator } from '@build744/nodeweave-core/core';
 
 interface FieldEntry {
   key: string;
