@@ -32,6 +32,7 @@ bindings on top (Angular today; the core is renderer-agnostic by design).
 |---------|-------------|
 | [`@nodeweave/core`](packages/core) | Framework-agnostic engine + default `<canvas-*>` Web Components |
 | [`@nodeweave/angular`](packages/angular) | Angular 22 binding (signal-first) |
+| [`@nodeweave/angular-authoring`](packages/angular-authoring) | Catalog-driven authoring UX (palette, schema inspector, drag-to-create) |
 
 Examples live in [`examples/`](examples): `vanilla` and `wireframe` (plain Web
 Components) and `angular` (Angular 22).
@@ -134,11 +135,20 @@ pnpm workspace — Node 24, TypeScript ~6.0, Angular 22.
 
 ```bash
 pnpm install
-pnpm build     # build @nodeweave/core then @nodeweave/angular
-pnpm test      # @nodeweave/core unit tests (node:test)
+pnpm build             # build the three @nodeweave/* packages
+pnpm test              # @nodeweave/core unit tests (node:test)
+pnpm verify:packages   # pre-publish dry-run (tarball contents + publint + attw)
 pnpm --filter @nodeweave/example-angular start   # run the Angular example
 ```
+
+## Releasing
+
+Independent per-package semantic versioning via [Changesets](https://github.com/changesets/changesets),
+published to npm from CI. Add a changeset with your change (`pnpm changeset`);
+merging to `main` opens a "Version Packages" PR, and merging that publishes.
+See [RELEASING.md](RELEASING.md).
 
 ## License
 
 ISC
+

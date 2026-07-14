@@ -1,6 +1,6 @@
 {
   "name": "@nodeweave/core",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Framework-agnostic node/graph canvas engine — Web Components, command pattern, and DAG validation.",
   "type": "module",
   "main": "./dist/index.js",
