@@ -1,6 +1,6 @@
 # Theming
 
-Every `@nodeweave/core` Web Component (and the `@nodeweave/angular` renderer)
+Every `@build744/core` Web Component (and the `@build744/angular` renderer)
 styles itself through `--nw-*` CSS custom properties with built-in fallbacks.
 Set them on `:root` (or any ancestor) to theme the canvas — no build step,
 and dark/light is just a different set of values.

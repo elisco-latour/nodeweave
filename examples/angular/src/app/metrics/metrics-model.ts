@@ -1,6 +1,6 @@
-import { Edge } from '@nodeweave/angular';
-import type { SchemaDefinition, SchemaField, VisualCanvasService } from '@nodeweave/angular';
-import { NodeCatalog, type NodeTypeDefinition } from '@nodeweave/angular-authoring';
+import { Edge } from '@build744/angular';
+import type { SchemaDefinition, SchemaField, VisualCanvasService } from '@build744/angular';
+import { NodeCatalog, type NodeTypeDefinition } from '@build744/angular-authoring';
 import { ProjectNodeComponent } from './project-node.component';
 import { MetricNodeComponent } from './metric-node.component';
 

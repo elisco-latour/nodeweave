@@ -26,7 +26,7 @@ For pipeline-shaped graphs, `PipelineBuilder` lays jobs out in columns by
 stage and wires dependencies into edges — returning a ready `CanvasState`.
 
 ```js
-import { PipelineBuilder } from '@nodeweave/core';
+import { PipelineBuilder } from '@build744/core';
 
 const state = new PipelineBuilder()
   .addJob('checkout', 'Checkout', 0)

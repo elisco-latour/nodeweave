@@ -1,4 +1,4 @@
-import { CanvasState, Node, Port } from '@nodeweave/core/core';
+import { CanvasState, Node, Port } from '@build744/core/core';
 
 export interface Point {
   x: number;

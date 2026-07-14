@@ -8,13 +8,13 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { VisualCanvasComponent, NodeweavePanelComponent } from '@nodeweave/angular';
+import { VisualCanvasComponent, NodeweavePanelComponent } from '@build744/angular';
 import {
   NwPaletteComponent,
   NwInspectorComponent,
   nodeFromDrop,
   allowNodeDrop,
-} from '@nodeweave/angular-authoring';
+} from '@build744/angular-authoring';
 import { buildMockup, metricsCatalog } from './metrics-model';
 
 @Component({

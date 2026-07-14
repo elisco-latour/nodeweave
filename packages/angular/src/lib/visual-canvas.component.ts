@@ -13,8 +13,8 @@ import {
   output,
 } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
-import { CanvasState, Node } from '@nodeweave/core/core';
-import type { ControllerOptions } from '@nodeweave/core/controllers';
+import { CanvasState, Node } from '@build744/core/core';
+import type { ControllerOptions } from '@build744/core/controllers';
 import {
   DragController,
   PanZoomController,
@@ -22,14 +22,14 @@ import {
   EdgeRoutingController,
   KeyboardController,
   ResizeController,
-} from '@nodeweave/core/controllers';
+} from '@build744/core/controllers';
 import { VisualCanvasService } from './visual-canvas.service';
 import { VcEdgeLayerComponent } from './vc-edge-layer.component';
 import { VcNodeIdDirective, VcPortDirective } from './dom-bindings';
 import { portViews, type PortView } from './node-layout';
 
 // Registers the <canvas-background> / <canvas-controls> custom elements.
-import '@nodeweave/core';
+import '@build744/core';
 
 export type BackgroundVariant = 'dots' | 'lines' | 'cross';
 

@@ -1,14 +1,14 @@
-# @nodeweave/core — API reference
+# @build744/core — API reference
 
 ## Entry points
 
 | Import | Contents |
 |--------|----------|
-| `@nodeweave/core` | Everything, and registers the `<canvas-*>` Web Components |
-| `@nodeweave/core/core` | Engine only — `CanvasState`, `Node`, `Edge`, `Port`, `CommandHistory`, `PipelineBuilder`, `RuleEvaluator`, `ViewportCulling`, edge-path helpers |
-| `@nodeweave/core/controllers` | Interaction controllers + `ControllerOptions` |
-| `@nodeweave/core/registries` | `Registry`, `VisualRegistry`, `TopologyRegistry`, `SchemaRegistry` |
-| `@nodeweave/core/components` | Registers the `<canvas-*>` Web Components |
+| `@build744/core` | Everything, and registers the `<canvas-*>` Web Components |
+| `@build744/core/core` | Engine only — `CanvasState`, `Node`, `Edge`, `Port`, `CommandHistory`, `PipelineBuilder`, `RuleEvaluator`, `ViewportCulling`, edge-path helpers |
+| `@build744/core/controllers` | Interaction controllers + `ControllerOptions` |
+| `@build744/core/registries` | `Registry`, `VisualRegistry`, `TopologyRegistry`, `SchemaRegistry` |
+| `@build744/core/components` | Registers the `<canvas-*>` Web Components |
 
 ---
 

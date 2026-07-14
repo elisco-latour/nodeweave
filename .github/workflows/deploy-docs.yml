@@ -37,7 +37,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Build docs site
-        run: pnpm --filter @nodeweave/website build
+        run: pnpm --filter @build744/website build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: website/build

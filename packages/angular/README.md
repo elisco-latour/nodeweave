@@ -1,4 +1,4 @@
-# @nodeweave/angular
+# @build744/angular
 
 Angular 22 integration for [nodeweave](../../README.md) — a signal-first
 node/graph canvas.
@@ -6,7 +6,7 @@ node/graph canvas.
 ## Install
 
 ```bash
-pnpm add @nodeweave/angular @nodeweave/core
+pnpm add @build744/angular @build744/core
 ```
 
 Requires Angular `^22` and `rxjs ^7`.
@@ -15,7 +15,7 @@ Requires Angular `^22` and `rxjs ^7`.
 
 ```ts
 import { Component, viewChild } from '@angular/core';
-import { VisualCanvasComponent, Node, Port } from '@nodeweave/angular';
+import { VisualCanvasComponent, Node, Port } from '@build744/angular';
 
 @Component({
   selector: 'app-editor',
@@ -53,7 +53,7 @@ node of that type; ports, edges, drag, connect and resize are handled for you.
 
 ```ts
 import { Component, input } from '@angular/core';
-import { Node } from '@nodeweave/angular';
+import { Node } from '@build744/angular';
 
 @Component({
   selector: 'app-task-node',

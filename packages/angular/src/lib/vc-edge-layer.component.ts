@@ -7,7 +7,7 @@ import {
   computed,
   inject,
 } from '@angular/core';
-import { buildEdgePath, getEdgeCenter } from '@nodeweave/core/core';
+import { buildEdgePath, getEdgeCenter } from '@build744/core/core';
 import { VisualCanvasService } from './visual-canvas.service';
 import { portCanvas } from './node-layout';
 
