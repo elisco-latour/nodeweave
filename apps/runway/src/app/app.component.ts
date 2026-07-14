@@ -7,6 +7,7 @@ import { SearchComponent } from './shell/search.component';
 import { TourComponent } from './shell/tour.component';
 import { TourService } from './shell/tour.service';
 import { NotificationsComponent } from './features/notifications';
+import { UserMenuComponent, SessionService } from './core/auth';
 import { ThemeService } from './shell/theme.service';
 import type { View } from './shell/shell.service';
 
@@ -23,8 +24,10 @@ const NAV: NavItem[] = [
   selector: 'rw-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, SearchComponent, TourComponent, NotificationsComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, IconComponent, SearchComponent, TourComponent, NotificationsComponent, UserMenuComponent],
+  host: { '[class.authed]': 'session.isAuthenticated()' },
   template: `
+    @if (session.isAuthenticated()) {
     <!-- Command bar -->
     <header class="chrome">
       <div class="chrome-left">
@@ -51,12 +54,14 @@ const NAV: NavItem[] = [
         <a class="icon-btn" routerLink="/settings" routerLinkActive="on" title="Settings" aria-label="Settings"><rw-icon name="settings" [size]="20" /></a>
         <a class="icon-btn" routerLink="/help" routerLinkActive="on" title="Help" aria-label="Help"><rw-icon name="help" [size]="20" /></a>
         <button type="button" class="icon-btn" title="Apps" aria-label="Apps"><rw-icon name="waffle" [size]="20" /></button>
-        <span class="avatar" title="PPSO Operations" aria-hidden="true">NR</span>
+        <rw-user-menu />
       </div>
     </header>
+    }
 
     <div class="shell">
       <!-- Navigation rail -->
+      @if (session.isAuthenticated()) {
       <nav class="rail" [class.collapsed]="collapsed()">
         <ul class="nav">
           @for (item of nav; track item.id) {
@@ -78,6 +83,7 @@ const NAV: NavItem[] = [
           <span class="runtime"><span class="pulse"></span><span class="nav-label">Mock runtime</span></span>
         </div>
       </nav>
+      }
 
       <!-- Content -->
       <main><router-outlet /></main>
@@ -86,7 +92,9 @@ const NAV: NavItem[] = [
     <rw-tour />
   `,
   styles: `
-    :host { display: grid; grid-template-rows: var(--chrome-h) 1fr; height: 100vh; overflow: hidden; }
+    :host { display: grid; grid-template-rows: 1fr; height: 100vh; overflow: hidden; }
+    :host(.authed) { grid-template-rows: var(--chrome-h) 1fr; }
+    :host(:not(.authed)) .shell { grid-template-columns: 1fr; }
 
     /* ── Command bar ─────────────────────────────────────────────────────── */
     .chrome {
@@ -182,6 +190,7 @@ const NAV: NavItem[] = [
 export class AppComponent {
   readonly rt = inject(RuntimeService);
   readonly gov = inject(GovernanceService);
+  readonly session = inject(SessionService);
   readonly tour = inject(TourService);
   readonly #theme = inject(ThemeService); // instantiate so the saved theme is applied on boot
   readonly collapsed = signal(false);
