@@ -16,7 +16,7 @@
     "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
     "rxjs": "^7.4.0",
-    "@nodeweave/core": "^1.0.0",
+    "@nodeweave/core": "^0.1.0",
     "@nodeweave/angular": "^0.1.0"
   },
   "dependencies": {

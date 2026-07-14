@@ -1,14 +1,18 @@
 /**
- * Runway design tokens — Fluent Design language on the Accenture brand.
+ * Accenture × Fluent design tokens — drop into your global stylesheet.
  *
  * Two layers:
  *   1. Primitives — the Accenture purple ramp, Fluent neutral greys, status hues.
- *   2. Semantic tokens — what components actually consume (--surface, --accent…).
+ *   2. Semantic tokens — what components consume (--surface, --accent, --brand…).
  *
- * Semantics are defined against primitives so a dark theme is a token swap, not
- * a rewrite (see the `.dark` scope at the bottom — light is the shipped theme).
- * Accessibility: interactive text/icons use the deep purple (--accent, ~8:1 on
- * white); the vivid brand (--brand, #A100FF) is reserved for fills + identity.
+ * Rules:
+ *   - Components reference SEMANTIC tokens only. Never hardcode hex in a component.
+ *   - Only reference tokens that exist. An undefined var() (e.g. a missing --s-14)
+ *     invalidates the whole declaration → the property falls back to 0. Stick to
+ *     the scales defined here.
+ *   - Accessibility: --brand (#A100FF) is for FILLS/identity only. Interactive
+ *     text/icons on light surfaces use --accent (#7500C0, ~8:1 on white).
+ *   - Dark theme is the `.dark` scope at the bottom — add class="dark" to <html>.
  */
 
 :root {
@@ -69,7 +73,6 @@
   --chrome-hover: rgba(255, 255, 255, 0.14);
   --chrome-pressed: rgba(255, 255, 255, 0.24);
   --chrome-search-bg: rgba(255, 255, 255, 0.16);
-  --chrome-search-fg: #ffffff;
   --chrome-search-placeholder: rgba(255, 255, 255, 0.72);
 
   /* ── Semantic: surfaces & text ──────────────────────────────────────────── */
@@ -125,7 +128,7 @@
   --fw-semibold: 600;
   --fw-bold: 700;
 
-  /* ── Spacing (4px grid) ─────────────────────────────────────────────────── */
+  /* ── Spacing (4px grid — reference only what exists; note: no --s-14) ────── */
   --s-2: 2px;   --s-4: 4px;   --s-6: 6px;   --s-8: 8px;   --s-10: 10px;
   --s-12: 12px; --s-16: 16px; --s-20: 20px; --s-24: 24px; --s-32: 32px; --s-40: 40px;
 
@@ -152,43 +155,32 @@ html, body {
   text-rendering: optimizeLegibility;
 }
 
-/* Keyboard focus — a single, brand-coloured ring everywhere (Fluent). */
+/* Keyboard focus — one brand-coloured ring everywhere (Fluent). */
 :where(button, a, input, textarea, select, [tabindex]):focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
-:where(button, a, input, textarea, select, [tabindex]):focus:not(:focus-visible) {
-  outline: none;
-}
+:where(button, a, input, textarea, select, [tabindex]):focus:not(:focus-visible) { outline: none; }
 
 /* Fluent-style thin scrollbars. */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--grey-80) transparent;
-}
+* { scrollbar-width: thin; scrollbar-color: var(--grey-80) transparent; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-thumb {
-  background: var(--grey-80);
-  border: 3px solid transparent;
-  background-clip: content-box;
-  border-radius: var(--radius-pill);
-}
+*::-webkit-scrollbar-thumb { background: var(--grey-80); border: 3px solid transparent; background-clip: content-box; border-radius: var(--radius-pill); }
 *::-webkit-scrollbar-thumb:hover { background: var(--grey-64); background-clip: content-box; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
-/* ── Dark theme (structured, not yet shipped) ─────────────────────────────────
-   Add class="dark" on <html> to activate. Values are placeholders to prove the
-   token seams; tune before enabling. */
+/* ── Dark theme — add class="dark" on <html> (ThemeService) ───────────────── */
 .dark {
   color-scheme: dark;
   --brand: var(--acn-40);
   --brand-hover: var(--acn-30);
   --brand-pressed: var(--acn-50);
   --accent: var(--acn-30);
+  --accent-strong: var(--acn-20);
   --accent-weak: #241033;
   --accent-weak-2: #2f1443;
   --accent-border: #45206b;
