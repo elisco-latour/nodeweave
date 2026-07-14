@@ -54,10 +54,26 @@ the tarball contains `package.json` + `README` + `LICENSE` + compiled code +
 `.d.ts` and **leaks no** `src`/`tests`/`examples`/`.claude`/tooling; then runs
 `publint` (fatal) and `attw` (advisory).
 
-## One-time setup
+## One-time setup — npm Trusted Publishing (OIDC, tokenless)
 
-- **`NPM_TOKEN`** repository secret — an npm automation/granular token with
-  publish rights to the `@nodeweave` scope.
+Publishing is **tokenless**: no `NPM_TOKEN` secret. CI authenticates with npm via
+the workflow's OIDC id-token, so each package needs a trusted publisher on
+npmjs.com. A package must exist on npm before you can configure it, so the very
+first `0.1.0` publish was done token-based; every release since is tokenless.
+
+For **each** package (`@build744/nodeweave-core`, `-angular`, `-angular-authoring`):
+
+1. npmjs.com → the package → **Settings** → **Trusted Publisher** → **GitHub Actions**.
+2. Organization/user `elisco-latour`, repository `nodeweave`, workflow `release.yml`
+   (leave the environment blank unless the job sets one).
+
+Also:
+
 - The scope must allow public publishing (each package already sets
   `publishConfig.access: "public"`).
-- Provenance uses the workflow's OIDC token (`id-token: write`, already set).
+- The workflow needs `id-token: write` (already set) and a recent npm — the
+  `release.yml` step `npm install --global npm@latest` guarantees `>= 11.5.1`.
+- Provenance is signed with the same OIDC token (`NPM_CONFIG_PROVENANCE: true`).
+
+Once all three trusted publishers are configured, the classic `NPM_TOKEN` secret
+can be deleted.

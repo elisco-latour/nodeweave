@@ -3,9 +3,10 @@
  *
  * Publishes each package's real artifact — `@build744/nodeweave-core` from its root, the
  * Angular libraries from their ng-packagr `dist/` — with npm provenance. Skips a
- * package whose exact version is already on npm (safe to re-run). Prints a
- * `New tag: name@version` line per publish so changesets/action creates the git
- * tag + GitHub release.
+ * package whose exact version is already on npm (safe to re-run). Creates the git
+ * tag and prints a `New tag: name@version` line per publish so changesets/action
+ * pushes the tag + cuts a GitHub release (this replaces `changeset publish`, which
+ * would otherwise create those tags itself).
  *
  * Run in CI after `pnpm build` (provenance needs the CI OIDC token). Invoked by
  * `pnpm release`.
@@ -32,7 +33,15 @@ for (const pkg of PACKAGES) {
 
   console.log(`Publishing ${tag} …`);
   execSync('npm publish --provenance --access public', { cwd: pkg.dir, stdio: 'inherit' });
-  console.log(`New tag: ${tag}`); // parsed by changesets/action → git tag + GitHub release
+
+  // Tag locally so changesets/action can `git push origin <tag>` + cut a GitHub
+  // release. Guarded: publish already succeeded, so a pre-existing tag must never
+  // fail the step.
+  try {
+    execSync(`git tag "${tag}"`, { stdio: 'inherit' });
+  } catch { /* tag already exists locally — changesets/action will still push it */ }
+
+  console.log(`New tag: ${tag}`); // parsed by changesets/action → git push tag + GitHub release
   published++;
 }
 
