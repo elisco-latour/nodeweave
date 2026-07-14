@@ -54,7 +54,7 @@ const config = {
           { type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs' },
           { to: '/docs/getting-started', label: 'Getting started', position: 'left' },
           { to: '/docs/angular', label: 'Angular', position: 'left' },
-          { href: 'https://github.com/arasuite/visual-canvas', label: 'GitHub', position: 'right' },
+          { href: 'https://github.com/elisco-latour/nodeweave', label: 'GitHub', position: 'right' },
         ],
       },
       footer: {
