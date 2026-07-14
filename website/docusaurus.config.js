@@ -7,11 +7,11 @@ const config = {
   tagline: 'A framework-agnostic node / graph canvas',
   favicon: 'img/favicon.svg',
 
-  url: 'https://arasuite.github.io',
+  url: 'https://elisco-latour.github.io',
   baseUrl: '/nodeweave/',
 
-  organizationName: 'arasuite',
-  projectName: 'visual-canvas',
+  organizationName: 'elisco-latour',
+  projectName: 'nodeweave',
 
   onBrokenLinks: 'warn',
   onBrokenAnchors: 'warn',
