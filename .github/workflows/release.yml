@@ -32,10 +32,14 @@ jobs:
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
+      # First publish is token-based (needs always-auth + registry-url). After the
+      # first release, set up npm Trusted Publishing for each package, then drop
+      # NODE_AUTH_TOKEN + always-auth + registry-url here for the tokenless OIDC flow.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
+          always-auth: true
           registry-url: 'https://registry.npmjs.org'
 
       - run: pnpm install --frozen-lockfile
