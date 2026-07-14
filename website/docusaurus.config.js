@@ -8,7 +8,7 @@ const config = {
   favicon: 'img/favicon.svg',
 
   url: 'https://arasuite.github.io',
-  baseUrl: '/',
+  baseUrl: '/nodeweave/',
 
   organizationName: 'arasuite',
   projectName: 'visual-canvas',
