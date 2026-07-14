@@ -4,11 +4,6 @@ Guidance for AI agents (and humans) working in this repo. **nodeweave** is a
 framework-agnostic node/graph canvas: a TypeScript core of Web Components +
 interaction controllers, with framework bindings on top (Angular today).
 
-> The files under `.github/prompts/` and `.github/skills/` are historical
-> artifacts from the original vanilla-JS build. They predate the TypeScript
-> migration and the monorepo and are **not** current guidance — prefer this
-> file and `docs/`.
-
 ## Repository
 
 pnpm workspace. Node 24, TypeScript ~6.0, Angular 22.
