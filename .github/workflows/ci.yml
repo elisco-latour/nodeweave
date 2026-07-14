@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
 
+# Run JavaScript actions on Node 24 (they still default to Node 20 until GitHub flips it).
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-test:
     name: Build & test
