@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Type } from '@angular/core';
-import { VisualCanvasComponent, Node, Port } from '@build744/angular';
+import { VisualCanvasComponent, Node, Port } from '@build744/nodeweave-angular';
 import { FancyNodeComponent } from './fancy-node.component';
 
 @Component({

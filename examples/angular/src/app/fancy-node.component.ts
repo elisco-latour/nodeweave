@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
-import { Node } from '@build744/angular';
+import { Node } from '@build744/nodeweave-angular';
 
 /**
  * A custom Angular node component. Receives the node via a `node` input and

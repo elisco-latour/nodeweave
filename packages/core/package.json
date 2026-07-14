@@ -1,5 +1,5 @@
 {
-  "name": "@build744/core",
+  "name": "@build744/nodeweave-core",
   "version": "0.1.0",
   "description": "Framework-agnostic node/graph canvas engine — Web Components, command pattern, and DAG validation.",
   "type": "module",

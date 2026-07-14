@@ -2,7 +2,7 @@
  * Pre-publish verification (the release dry-run gate).
  *
  * For each publishable @nodeweave package, packs the exact artifact that will be
- * published — `@build744/core` from its root (files allowlist), the Angular
+ * published — `@build744/nodeweave-core` from its root (files allowlist), the Angular
  * libraries from their ng-packagr `dist/` — and:
  *   1. asserts the tarball contains only the built artifact (README + LICENSE +
  *      package.json + compiled code) and leaks NO source / tests / examples /
@@ -17,9 +17,9 @@ import { execSync } from 'node:child_process';
 
 // packDir = the directory whose package.json is the published manifest.
 const PACKAGES = [
-  { name: '@build744/core', packDir: 'packages/core' },
-  { name: '@build744/angular', packDir: 'packages/angular/dist' },
-  { name: '@build744/angular-authoring', packDir: 'packages/angular-authoring/dist' },
+  { name: '@build744/nodeweave-core', packDir: 'packages/core' },
+  { name: '@build744/nodeweave-angular', packDir: 'packages/angular/dist' },
+  { name: '@build744/nodeweave-angular-authoring', packDir: 'packages/angular-authoring/dist' },
 ];
 
 const REQUIRE = [

@@ -8,9 +8,9 @@ Published packages:
 
 | Package | Build | Published artifact |
 |---|---|---|
-| `@build744/core` | `tsc` | package root (`files: ["dist", …]`) |
-| `@build744/angular` | `ng-packagr` | `packages/angular/dist/` |
-| `@build744/angular-authoring` | `ng-packagr` | `packages/angular-authoring/dist/` |
+| `@build744/nodeweave-core` | `tsc` | package root (`files: ["dist", …]`) |
+| `@build744/nodeweave-angular` | `ng-packagr` | `packages/angular/dist/` |
+| `@build744/nodeweave-angular-authoring` | `ng-packagr` | `packages/angular-authoring/dist/` |
 
 Examples (`@build744/example-*`) and the docs site (`@build744/website`) are
 `private` and never published.

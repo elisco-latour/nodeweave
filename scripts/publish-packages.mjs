@@ -1,7 +1,7 @@
 /**
  * Publish the built @nodeweave packages to npm.
  *
- * Publishes each package's real artifact — `@build744/core` from its root, the
+ * Publishes each package's real artifact — `@build744/nodeweave-core` from its root, the
  * Angular libraries from their ng-packagr `dist/` — with npm provenance. Skips a
  * package whose exact version is already on npm (safe to re-run). Prints a
  * `New tag: name@version` line per publish so changesets/action creates the git
@@ -14,9 +14,9 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const PACKAGES = [
-  { name: '@build744/core', dir: 'packages/core' },
-  { name: '@build744/angular', dir: 'packages/angular/dist' },
-  { name: '@build744/angular-authoring', dir: 'packages/angular-authoring/dist' },
+  { name: '@build744/nodeweave-core', dir: 'packages/core' },
+  { name: '@build744/nodeweave-angular', dir: 'packages/angular/dist' },
+  { name: '@build744/nodeweave-angular-authoring', dir: 'packages/angular-authoring/dist' },
 ];
 
 let published = 0;

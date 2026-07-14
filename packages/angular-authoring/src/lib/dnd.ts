@@ -1,4 +1,4 @@
-import { Node, VisualCanvasService } from '@build744/angular';
+import { Node, VisualCanvasService } from '@build744/nodeweave-angular';
 import { NodeCatalog } from './node-catalog';
 
 /** MIME type carried by a palette drag so the canvas knows what to create. */

@@ -1,12 +1,12 @@
 {
-  "name": "@build744/angular-authoring",
+  "name": "@build744/nodeweave-angular-authoring",
   "version": "0.1.0",
   "description": "Catalog-driven authoring UX for nodeweave — palette, schema-driven inspector, and drag-to-create for Angular.",
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/types/build744-angular-authoring.d.ts",
-      "default": "./dist/fesm2022/build744-angular-authoring.mjs"
+      "types": "./dist/types/build744-nodeweave-angular-authoring.d.ts",
+      "default": "./dist/fesm2022/build744-nodeweave-angular-authoring.mjs"
     }
   },
   "scripts": {
@@ -16,8 +16,8 @@
     "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
     "rxjs": "^7.4.0",
-    "@build744/core": "^0.1.0",
-    "@build744/angular": "^0.1.0"
+    "@build744/nodeweave-core": "^0.1.0",
+    "@build744/nodeweave-angular": "^0.1.0"
   },
   "dependencies": {
     "tslib": "^2.8.0"
@@ -30,8 +30,8 @@
     "ng-packagr": "^22.0.0",
     "rxjs": "^7.8.0",
     "typescript": "~6.0.2",
-    "@build744/core": "workspace:*",
-    "@build744/angular": "workspace:*"
+    "@build744/nodeweave-core": "workspace:*",
+    "@build744/nodeweave-angular": "workspace:*"
   },
   "sideEffects": false,
   "author": "Koffi Eli Kponblanou",

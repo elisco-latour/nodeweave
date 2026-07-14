@@ -13,7 +13,7 @@ localStorage.setItem('graph', JSON.stringify(json));
 state.loadFromJSON(JSON.parse(localStorage.getItem('graph')));
 
 // or build a fresh state
-import { CanvasState } from '@build744/core';
+import { CanvasState } from '@build744/nodeweave-core';
 const restored = CanvasState.fromJSON(json);
 ```
 

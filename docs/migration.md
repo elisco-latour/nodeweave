@@ -35,7 +35,7 @@ via a command history.
 - **Immutable edges.** Set `type` / `label` / `animated` / `markerEnd` when you
   construct an `Edge`; to change one, replace it.
 - **Framework-agnostic core.** The engine + controllers are DOM-level and
-  renderer-agnostic; `@build744/angular` is one binding. React/Svelte bindings
+  renderer-agnostic; `@build744/nodeweave-angular` is one binding. React/Svelte bindings
   can be built the same way (drive the engine, render your view).
 - **Ports vs handles.** Ports have a `direction` (`in` / `out`) and belong to a
   node; edges connect an out-port to an in-port.
