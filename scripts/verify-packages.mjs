@@ -35,6 +35,34 @@ const FORBID = [
 ];
 const isRawTs = (p) => /\.ts$/.test(p) && !/\.d\.ts$/.test(p);
 
+/**
+ * Extract the first complete top-level JSON array from npm's stdout.
+ *
+ * `npm pack --json` emits a JSON array, but newer npm can append extra content
+ * after it (notices, a second document). A naive `slice(indexOf('['),
+ * lastIndexOf(']'))` then grabs a stray `]` and leaves trailing text that
+ * `JSON.parse` rejects ("non-whitespace character after JSON"). Scan bracket
+ * depth (string-aware) from the first `[` and stop at its matching `]`.
+ */
+function firstJsonArray(out) {
+  const start = out.indexOf('[');
+  if (start === -1) throw new Error(`no JSON array in npm output:\n${out.slice(0, 300)}`);
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < out.length; i++) {
+    const c = out[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === '\\') esc = true;
+      else if (c === '"') inStr = false;
+      continue;
+    }
+    if (c === '"') inStr = true;
+    else if (c === '[' || c === '{') depth++;
+    else if (c === ']' || c === '}') { if (--depth === 0) return out.slice(start, i + 1); }
+  }
+  throw new Error(`unterminated JSON array in npm output:\n${out.slice(start, start + 300)}`);
+}
+
 let failed = false;
 const fail = (m) => { console.error(`  ✗ ${m}`); failed = true; };
 const pass = (m) => console.log(`  ✓ ${m}`);
@@ -46,8 +74,7 @@ for (const pkg of PACKAGES) {
   let files;
   try {
     const out = execSync('npm pack --dry-run --json', { cwd: pkg.packDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-    const json = out.slice(out.indexOf('['), out.lastIndexOf(']') + 1);
-    files = JSON.parse(json)[0].files.map((f) => f.path.replace(/\\/g, '/'));
+    files = JSON.parse(firstJsonArray(out))[0].files.map((f) => f.path.replace(/\\/g, '/'));
   } catch (e) {
     fail(`npm pack failed: ${e.message}`);
     continue;
