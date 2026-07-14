@@ -38,11 +38,11 @@ The app consumed the packages via the workspace (`workspace:*`), which no longer
 resolves outside the monorepo. In the new repo:
 
 - **Depend on the published packages** in `package.json` — replace each
-  `"@nodeweave/…": "workspace:*"` with a real range once they're on npm:
+  `"@build744/…": "workspace:*"` with a real range once they're on npm:
   ```jsonc
-  "@nodeweave/angular": "^0.1.0",
-  "@nodeweave/angular-authoring": "^0.1.0",
-  "@nodeweave/core": "^1.0.0"
+  "@build744/angular": "^0.1.0",
+  "@build744/angular-authoring": "^0.1.0",
+  "@build744/core": "^1.0.0"
   ```
   (During local dev before publish, use `pnpm link` / a file: dependency / a
   packed tarball.)

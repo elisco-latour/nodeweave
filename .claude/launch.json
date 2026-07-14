@@ -16,7 +16,7 @@
     {
       "name": "angular-example",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@nodeweave/example-angular", "exec", "ng", "serve", "example", "--port", "4200"],
+      "runtimeArgs": ["--filter", "@build744/example-angular", "exec", "ng", "serve", "example", "--port", "4200"],
       "port": 4200
     },
     {
@@ -28,7 +28,7 @@
     {
       "name": "docs",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@nodeweave/website", "exec", "docusaurus", "start", "--port", "3200", "--no-open"],
+      "runtimeArgs": ["--filter", "@build744/website", "exec", "docusaurus", "start", "--port", "3200", "--no-open"],
       "port": 3200
     }
   ]

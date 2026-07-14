@@ -1,5 +1,5 @@
 import { Directive, ElementRef, effect, inject, input } from '@angular/core';
-import { Port } from '@nodeweave/core/core';
+import { Port } from '@build744/core/core';
 
 /**
  * Sets the `nodeId` DOM property on a node host element so the framework

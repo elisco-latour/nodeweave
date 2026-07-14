@@ -1,6 +1,6 @@
 import { Type } from '@angular/core';
-import { Node, Port } from '@nodeweave/angular';
-import type { SchemaDefinition } from '@nodeweave/angular';
+import { Node, Port } from '@build744/angular';
+import type { SchemaDefinition } from '@build744/angular';
 
 export type PortDir = 'in' | 'out';
 

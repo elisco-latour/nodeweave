@@ -1,6 +1,6 @@
-import { Edge } from '@nodeweave/angular';
-import type { SchemaField, VisualCanvasService } from '@nodeweave/angular';
-import { NodeCatalog, type NodeTypeDefinition, type PortSpec } from '@nodeweave/angular-authoring';
+import { Edge } from '@build744/angular';
+import type { SchemaField, VisualCanvasService } from '@build744/angular';
+import { NodeCatalog, type NodeTypeDefinition, type PortSpec } from '@build744/angular-authoring';
 import { StepNodeComponent } from './step-node.component';
 
 // ── Schema field shorthands ──────────────────────────────────────────────────

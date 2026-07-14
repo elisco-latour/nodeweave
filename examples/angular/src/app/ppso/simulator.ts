@@ -1,4 +1,4 @@
-import { Edge, type VisualCanvasService } from '@nodeweave/angular';
+import { Edge, type VisualCanvasService } from '@build744/angular';
 
 export type Scenario = 'valid' | 'missing' | 'invalid';
 export type RunState = 'running' | 'done' | 'skipped' | 'waiting';

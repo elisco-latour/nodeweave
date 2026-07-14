@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, computed, inject, input } from '@angular/core';
-import { Node, VisualCanvasService } from '@nodeweave/angular';
+import { Node, VisualCanvasService } from '@build744/angular';
 
 /** Category presentation derived from the node type's prefix (`trigger.*`, …). */
 const CATEGORIES: Record<string, { color: string; icon: string; label: string }> = {

@@ -23,7 +23,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Build packages
         run: pnpm build
-      - name: Unit tests (@nodeweave/core)
+      - name: Unit tests (@build744/core)
         run: pnpm test
       - name: Verify publishable packages (dry-run)
         run: pnpm verify:packages
@@ -44,4 +44,4 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Build docs site
-        run: pnpm --filter @nodeweave/website build
+        run: pnpm --filter @build744/website build

@@ -1,4 +1,4 @@
-# @nodeweave/angular-authoring
+# @build744/angular-authoring
 
 Catalog-driven authoring UX for [nodeweave](../../README.md) — a palette, a
 schema-driven inspector, and drag-to-create for the Angular canvas.
@@ -6,7 +6,7 @@ schema-driven inspector, and drag-to-create for the Angular canvas.
 ## Install
 
 ```bash
-pnpm add @nodeweave/angular-authoring @nodeweave/angular @nodeweave/core
+pnpm add @build744/angular-authoring @build744/angular @build744/core
 ```
 
 Requires Angular `^22` and `rxjs ^7`.
@@ -23,7 +23,7 @@ Requires Angular `^22` and `rxjs ^7`.
 ## Usage
 
 ```ts
-import { NodeCatalog, NwInspectorComponent, nodeFromDrop, allowNodeDrop, NW_DND_TYPE } from '@nodeweave/angular-authoring';
+import { NodeCatalog, NwInspectorComponent, nodeFromDrop, allowNodeDrop, NW_DND_TYPE } from '@build744/angular-authoring';
 
 const catalog = new NodeCatalog([
   { type: 'task', label: 'Task', ports: ['in', 'out'], component: MyNodeComponent, configSchema: { fields: { title: { type: 'string', label: 'Title' } } } },

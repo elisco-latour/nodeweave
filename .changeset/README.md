@@ -1,7 +1,7 @@
 # Changesets
 
 This folder is managed by [Changesets](https://github.com/changesets/changesets) —
-it drives per-package semantic versioning and changelogs for the `@nodeweave/*`
+it drives per-package semantic versioning and changelogs for the `@build744/*`
 packages.
 
 **When you make a change that should ship**, add a changeset:

@@ -1,6 +1,6 @@
 name: Release
 
-# Changesets-driven release for @nodeweave/*.
+# Changesets-driven release for @build744/*.
 #
 # On push to main:
 #   - if there are pending changesets → open/update a "Version Packages" PR

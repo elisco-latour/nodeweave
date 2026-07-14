@@ -1,6 +1,6 @@
 # Releasing
 
-The `@nodeweave/*` packages are versioned and published independently with
+The `@build744/*` packages are versioned and published independently with
 [Changesets](https://github.com/changesets/changesets) and published to the
 public npm registry from CI.
 
@@ -8,11 +8,11 @@ Published packages:
 
 | Package | Build | Published artifact |
 |---|---|---|
-| `@nodeweave/core` | `tsc` | package root (`files: ["dist", …]`) |
-| `@nodeweave/angular` | `ng-packagr` | `packages/angular/dist/` |
-| `@nodeweave/angular-authoring` | `ng-packagr` | `packages/angular-authoring/dist/` |
+| `@build744/core` | `tsc` | package root (`files: ["dist", …]`) |
+| `@build744/angular` | `ng-packagr` | `packages/angular/dist/` |
+| `@build744/angular-authoring` | `ng-packagr` | `packages/angular-authoring/dist/` |
 
-Examples (`@nodeweave/example-*`) and the docs site (`@nodeweave/website`) are
+Examples (`@build744/example-*`) and the docs site (`@build744/website`) are
 `private` and never published.
 
 ## 1. Add a changeset with your change
@@ -36,7 +36,7 @@ The **Release** workflow (`.github/workflows/release.yml`) runs on every push to
    PR that applies the version bumps and updates each `CHANGELOG.md`.
 3. When that PR is **merged** (no pending changesets) → it **publishes** the
    changed packages to npm (with provenance) and creates a git tag +
-   GitHub release per package (`@nodeweave/x@1.2.3`).
+   GitHub release per package (`@build744/x@1.2.3`).
 
 Publishing is idempotent — a version already on npm is skipped, so re-runs are safe.
 
