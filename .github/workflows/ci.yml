@@ -21,6 +21,8 @@ jobs:
         run: pnpm build
       - name: Unit tests (@nodeweave/core)
         run: pnpm test
+      - name: Verify publishable packages (dry-run)
+        run: pnpm verify:packages
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
       - name: Browser tests (component + e2e)
