@@ -1,6 +1,6 @@
 name: Release
 
-# Changesets-driven release for @build744/*.
+# Changesets-driven release for @build744/nodeweave-*.
 #
 # On push to main:
 #   - if there are pending changesets → open/update a "Version Packages" PR
@@ -9,8 +9,10 @@ name: Release
 #     packages to npm.
 #
 # The publish is gated on the dry-run (pnpm verify:packages) passing first.
-# Requires an NPM_TOKEN secret (automation token with publish rights to the
-# @nodeweave scope). Provenance uses the workflow's OIDC token.
+# Auth is tokenless — npm Trusted Publishing (OIDC) via the workflow's id-token;
+# no NPM_TOKEN secret. Each package must have a trusted publisher configured on
+# npmjs.com (owner elisco-latour, repo nodeweave, workflow release.yml).
+# Provenance is signed with the same OIDC token.
 on:
   push:
     branches: [main]
@@ -36,15 +38,15 @@ jobs:
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
-      # First publish is token-based (needs always-auth + registry-url). After the
-      # first release, set up npm Trusted Publishing for each package, then drop
-      # NODE_AUTH_TOKEN + always-auth + registry-url here for the tokenless OIDC flow.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
-          always-auth: true
-          registry-url: 'https://registry.npmjs.org'
+      # npm Trusted Publishing (OIDC) needs a recent npm (>= 11.5.1). No
+      # registry-url/always-auth: those only wire up a token-based .npmrc, which
+      # the tokenless OIDC flow replaces.
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install --global npm@latest
 
       - run: pnpm install --frozen-lockfile
       - name: Build packages
@@ -65,5 +67,4 @@ jobs:
           title: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: 'true'
